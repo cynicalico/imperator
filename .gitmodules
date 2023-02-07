@@ -1,0 +1,38 @@
+[submodule "external/stduuid"]
+	path = external/stduuid
+	url = ../../mariusbancila/stduuid.git
+[submodule "external/fmt"]
+	path = external/fmt
+	url = ../../fmtlib/fmt.git
+[submodule "external/spdlog"]
+	path = external/spdlog
+	url = ../../gabime/spdlog.git
+[submodule "external/glfw"]
+	path = external/glfw
+	url = ../../glfw/glfw.git
+[submodule "external/glm"]
+	path = external/glm
+	url = ../../g-truc/glm.git
+[submodule "external/glad"]
+	path = external/glad
+	url = ../../Dav1dde/glad.git
+	branch = glad2
+[submodule "external/libnyquist"]
+	path = external/libnyquist
+	url = ../../ddiakopoulos/libnyquist.git
+[submodule "external/openal-soft"]
+	path = external/openal-soft
+	url = ../../kcat/openal-soft.git
+[submodule "external/pcg-cpp"]
+	path = external/pcg-cpp
+	url = ../../imneme/pcg-cpp.git
+[submodule "external/imgui"]
+	path = external/imgui
+	url = ../../ocornut/imgui.git
+	branch = docking
+[submodule "external/implot"]
+	path = external/implot
+	url = ../../epezent/implot.git
+[submodule "external/re2"]
+	path = external/re2
+	url = ../../google/re2.git
