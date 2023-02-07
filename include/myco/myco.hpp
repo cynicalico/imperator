@@ -1,3 +1,3 @@
 #pragma once
 
-int add(int a, int b);
+#include "myco/core/scheduler.hpp"
