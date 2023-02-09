@@ -20,9 +20,6 @@
 [submodule "external/libnyquist"]
 	path = external/libnyquist
 	url = ../../ddiakopoulos/libnyquist.git
-[submodule "external/openal-soft"]
-	path = external/openal-soft
-	url = ../../kcat/openal-soft.git
 [submodule "external/pcg-cpp"]
 	path = external/pcg-cpp
 	url = ../../imneme/pcg-cpp.git
