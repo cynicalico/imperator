@@ -33,3 +33,6 @@
 [submodule "external/re2"]
 	path = external/re2
 	url = ../../google/re2.git
+[submodule "external/openal-soft"]
+	path = external/openal-soft
+	url = ../../kcat/openal-soft.git
