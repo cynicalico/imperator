@@ -4,9 +4,9 @@
 #include <string>
 
 int main(int, char *[]) {
-  std::string s = "hello how are you";
+  std::string s = "hello how are you 123";
 
-  RE2 re(R"((\w+))");
+  RE2 re(R"(([a-z]+))");
   assert(re.ok());
 
   auto sp = re2::StringPiece(s);
