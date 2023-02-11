@@ -25,6 +25,7 @@ std::string read_file(const std::filesystem::path &path) {
 
 struct ShaderSrc {
   std::string name{"unknown"};
+
   std::optional<std::string> vert{};
   std::optional<std::string> frag{};
   std::optional<std::string> geom{};
@@ -54,36 +55,30 @@ int main(int, char *[]) {
   auto sp = re2::StringPiece(s);
 
   std::string c1, c2;
-  std::vector<std::tuple<std::string, std::string, std::size_t>> pragmas{};
+  std::vector<std::tuple<std::string, std::string, std::size_t, std::size_t>> pragmas{};
 
   while (RE2::FindAndConsume(&sp, pragma_w_args, &c1, &c2)) {
     auto curr_pos = sp.data() - s.data();
-    fmt::println("{} {} {}", c1, c2, curr_pos);
-    pragmas.emplace_back(c1, c2, curr_pos);
+    pragmas.emplace_back(c1, c2, curr_pos - c1.size() - c2.size() - 11, curr_pos);
   }
 
   while (RE2::FindAndConsume(&sp, pragma_no_args, &c1)) {
     auto curr_pos = sp.data() - s.data();
-    fmt::println("{} {}", c1, curr_pos);
-    pragmas.emplace_back(c1, c1, curr_pos);
+    pragmas.emplace_back(c1, c1, curr_pos - c1.size() - 9, curr_pos);
   }
 
   for (int i = 0; i < pragmas.size(); ++i) {
-    auto &[name, value, n] = pragmas[i];
+    auto &[name, value, _, p_end] = pragmas[i];
 
     if (name == "name")
       src.name = value;
 
-    else
-      src.add(
-          name,
-          (i < pragmas.size() - 1)
-              ? s.substr(n, std::get<2>(pragmas[i+1]) - n)
-              : s.substr(n, std::string::npos)
-      );
-  }
+    else {
+      std::size_t s_len = std::string::npos;
+      if (i < pragmas.size() - 1)
+        s_len = std::get<2>(pragmas[i + 1]) - p_end - 1;
 
-  fmt::println("vert:\n{}", src.vert.value_or("none"));
-  fmt::println("frag:\n{}", src.frag.value_or("none"));
-  fmt::println("geom:\n{}", src.geom.value_or("none"));
+      src.add(name, s.substr(p_end, s_len));
+    }
+  }
 }

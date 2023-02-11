@@ -5,6 +5,8 @@ project(myco VERSION 0.1
 
 option(MYCO_BUILD_EXAMPLES "Build example programs" ON)
 
+set(MYCO_SPDLOG_LEVEL "SPDLOG_LEVEL_DEBUG" CACHE STRING "spdlog log level")
+
 if(MSVC)
     set(CMAKE_CXX_STANDARD 23)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
@@ -15,6 +17,10 @@ endif()
 include(include/CMakeLists.txt)
 include(src/CMakeLists.txt)
 add_library(myco STATIC ${MYCO_INCLUDE_FILES} ${MYCO_SRC_FILES})
+
+target_compile_definitions(myco PUBLIC
+#        IMGUI_USER_CONFIG="capra/capra_imconfig.hpp"
+        SPDLOG_ACTIVE_LEVEL=${MYCO_SPDLOG_LEVEL})
 
 target_include_directories(myco PUBLIC include)
 
