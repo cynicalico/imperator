@@ -30,3 +30,7 @@ target_link_libraries(myco PUBLIC myco_externals)
 if(MYCO_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/scratch" AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/scratch")
+    add_subdirectory(scratch)
+endif()
