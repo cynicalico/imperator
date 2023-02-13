@@ -1,4 +1,9 @@
 add_library(myco_externals STATIC
+        external/flat/flat_map.hpp
+        external/flat/flat_multimap.hpp
+        external/flat/flat_multiset.hpp
+        external/flat/flat_set.hpp
+
         external/imgui/backends/imgui_impl_glfw.h
         external/imgui/backends/imgui_impl_opengl3.h
         external/imgui/backends/imgui_impl_opengl3_loader.h
@@ -70,6 +75,7 @@ add_subdirectory(external/spdlog)
 add_subdirectory(external/stduuid)
 
 target_include_directories(myco_externals PUBLIC
+        external/flat
         external/imgui/backends
         external/imgui
         external/implot
