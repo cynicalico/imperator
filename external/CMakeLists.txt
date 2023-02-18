@@ -63,6 +63,8 @@ set(ALSOFT_INSTALL_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ALSOFT_INSTALL_UTILS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/openal-soft)
 
+add_subdirectory(external/rapidcsv)
+
 set(RE2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/re2)
 
@@ -89,6 +91,7 @@ target_link_libraries(myco_externals PUBLIC
         glm::glm
         libnyquist
         OpenAL::OpenAL
+        rapidcsv
         re2::re2
         spdlog::spdlog_header_only
         stduuid)

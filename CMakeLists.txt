@@ -16,7 +16,7 @@ endif()
 
 include(include/CMakeLists.txt)
 include(src/CMakeLists.txt)
-add_library(myco STATIC ${MYCO_INCLUDE_FILES} ${MYCO_SRC_FILES})
+add_library(myco STATIC ${MYCO_INCLUDE_FILES} ${MYCO_SRC_FILES} scratch/priority_v2.cpp)
 
 target_compile_definitions(myco PUBLIC
 #        IMGUI_USER_CONFIG="capra/capra_imconfig.hpp"

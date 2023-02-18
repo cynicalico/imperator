@@ -38,7 +38,7 @@ struct ShaderSrc {
     else if (type == "geometry")
       geom = src;
     else
-      throw std::exception(fmt::format("Unknown shader pragma: {}", type).c_str());
+      throw std::invalid_argument(fmt::format("Unknown shader pragma: {}", type).c_str());
   }
 };
 
