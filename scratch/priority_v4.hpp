@@ -5,7 +5,6 @@
 #include "fmt/format.h"
 #include <limits>
 #include <ranges>
-#include <set>
 #include <string>
 #include <stack>
 #include <unordered_map>
@@ -13,13 +12,14 @@
 #include <vector>
 
 template<typename T>
-class PrioListV3 {
+class PrioListV4 {
   static const std::size_t MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
 
 public:
-  PrioListV3() = default;
+  PrioListV4() = default;
 
-  void add(const std::string &name, T v, std::set<std::string> deps = {});
+  void add(const std::string &name, T v, std::vector<std::string> &deps);
+  void add(const std::string &name, T v);
 
   std::string debug_stringify();
 
@@ -30,19 +30,19 @@ private:
   std::vector<std::size_t> order_{};
   std::vector<T> vals_{};
   std::vector<std::size_t> idx_{};
-  std::vector<std::set<std::size_t>> saved_deps_{};
-  std::vector<std::set<std::size_t>> unmet_deps_{};
+  std::vector<std::vector<std::size_t>> saved_deps_{};
+  std::vector<std::vector<std::size_t>> unmet_deps_{};
 
   void hash_get_i_deps_(
       const std::string &name,
-      std::set<std::string> &deps,
+      std::vector<std::string> &deps,
       std::size_t &I,
-      std::set<std::size_t> &i_deps
+      std::vector<std::size_t> &i_deps
   );
 
   void find_min_and_max_(
       std::size_t I,
-      const std::set<std::size_t> &deps,
+      const std::vector<std::size_t> &deps,
       std::size_t &min, std::size_t &max,
       std::vector<std::size_t> &unmet_deps_idxs
   );
@@ -51,13 +51,13 @@ private:
 };
 
 template<typename T>
-void PrioListV3<T>::add(const std::string &name, T v, std::set<std::string> deps) {
+void PrioListV4<T>::add(const std::string &name, T v, std::vector<std::string> &deps) {
   std::size_t I;
-  std::set<std::size_t> I_deps{};
+  std::vector<std::size_t> I_deps{};
   hash_get_i_deps_(name, deps, I, I_deps);
 
   if (idx_[I] != MAX_SIZE_T) {
-    MYCO_LOG_WARN("{} already added to PrioListV3 at idx {}", name, idx_[I]);
+    MYCO_LOG_WARN("{} already added to PrioListV4 at idx {}", name, idx_[I]);
     return;
   }
   saved_deps_[I] = I_deps;
@@ -86,11 +86,16 @@ void PrioListV3<T>::add(const std::string &name, T v, std::set<std::string> deps
 }
 
 template<typename T>
-void PrioListV3<T>::hash_get_i_deps_(
+void PrioListV4<T>::add(const std::string &name, T v) {
+  add(name, v, {});
+}
+
+template<typename T>
+void PrioListV4<T>::hash_get_i_deps_(
     const std::string &name,
-    std::set<std::string> &deps,
+    std::vector<std::string> &deps,
     std::size_t &I,
-    std::set<std::size_t> &I_deps
+    std::vector<std::size_t> &I_deps
 ) {
   if (!s_to_i_.contains(name)) {
     s_to_i_[name] = s_to_i_.size();
@@ -109,14 +114,14 @@ void PrioListV3<T>::hash_get_i_deps_(
       saved_deps_.emplace_back();
       unmet_deps_.emplace_back();
     }
-    I_deps.emplace(s_to_i_[d]);
+    I_deps.emplace_back(s_to_i_[d]);
   }
 }
 
 template<typename T>
-void PrioListV3<T>::find_min_and_max_(
+void PrioListV4<T>::find_min_and_max_(
     std::size_t I,
-    const std::set<std::size_t> &deps,
+    const std::vector<std::size_t> &deps,
     std::size_t &min, std::size_t &max,
     std::vector<std::size_t> &unmet_deps_idxs
 ) {
@@ -125,7 +130,7 @@ void PrioListV3<T>::find_min_and_max_(
     if (idx_[d] != MAX_SIZE_T)
       deps_idxs.emplace_back(idx_[d] + 1);
     else
-      unmet_deps_[d].emplace(I);
+      unmet_deps_[d].emplace_back(I);
   }
   min = deps_idxs.empty() ? 0 : std::ranges::max(deps_idxs);
 
@@ -136,13 +141,14 @@ void PrioListV3<T>::find_min_and_max_(
 }
 
 template<typename T>
-bool PrioListV3<T>::adjust_unmet_(std::vector<std::size_t> &unmet_deps_idxs, std::size_t &min_idx) {
+bool PrioListV4<T>::adjust_unmet_(std::vector<std::size_t> &unmet_deps_idxs, std::size_t &min_idx) {
   while (!unmet_deps_idxs.empty()) {
     std::size_t idx = unmet_deps_idxs.back();
     unmet_deps_idxs.pop_back();
 
     while (idx < min_idx - 1) {
-      if (saved_deps_[order_[idx + 1]].contains(order_[idx])) {
+      auto &curr = saved_deps_[order_[idx + 1]];
+      if (std::find(curr.begin(), curr.end(), order_[idx]) != curr.end()) {
         unmet_deps_idxs.emplace_back(idx);
         unmet_deps_idxs.emplace_back(idx + 1);
         break;
@@ -164,7 +170,7 @@ bool PrioListV3<T>::adjust_unmet_(std::vector<std::size_t> &unmet_deps_idxs, std
 }
 
 template<typename T>
-std::string PrioListV3<T>::debug_stringify() {
+std::string PrioListV4<T>::debug_stringify() {
   std::string s = "[";
   for (const auto &[i, e]: myco::enumerate(order_))
     s += fmt::format("{}{}", i != 0 ? ", " : "", i_to_s_[e]);
