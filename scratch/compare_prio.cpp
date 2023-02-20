@@ -47,7 +47,7 @@ int main(int, char *[]) {
 
   std::vector<std::tuple<std::size_t, double, double, double>> times{};
 
-  for (auto N = 100; N <= 5'000; N += 100) {
+  for (auto N = 100; N <= 15'000; N += 100) {
     std::vector<std::string> items{};
     std::unordered_map<std::string, std::set<std::string>> deps_s{};
     std::unordered_map<std::string, std::unordered_set<std::string>> deps_us{};
@@ -71,15 +71,14 @@ int main(int, char *[]) {
     for (const auto &[i, e]: myco::enumerate(items))
       check_string += fmt::format("{}{}", i != 0 ? ", " : "", e);
     check_string += "]";
-    myco::seed(0);
-    myco::shuffle(items);
+    myco::partial_shuffle(items, 0.25);
 
     auto sw1 = myco::Stopwatch();
-    auto p1 = PrioListV1<int>();
-    for (const auto &i: items)
-      p1.add(i, 0, deps_s[i]);
-    if (p1.debug_stringify() != check_string)
-      MYCO_LOG_ERROR("Bad {} {}", p1.debug_stringify(), check_string);
+//    auto p1 = PrioListV1<int>();
+//    for (const auto &i: items)
+//      p1.add(i, 0, deps_s[i]);
+//    if (p1.debug_stringify() != check_string)
+//      MYCO_LOG_ERROR("Bad {} {}", p1.debug_stringify(), check_string);
     sw1.stop();
 
     auto sw2 = myco::Stopwatch();
@@ -87,7 +86,7 @@ int main(int, char *[]) {
     for (const auto &i: items)
       p2.add(i, 0, deps_s[i]);
     if (p2.debug_stringify() != check_string)
-      MYCO_LOG_ERROR("Bad {} {}", p1.debug_stringify(), check_string);
+      MYCO_LOG_ERROR("Bad {} {}", p2.debug_stringify(), check_string);
     sw2.stop();
 
     auto sw3 = myco::Stopwatch();
@@ -95,7 +94,7 @@ int main(int, char *[]) {
     for (const auto &i: items)
       p3.add(i, 0, deps_s[i]);
     if (p3.debug_stringify() != check_string)
-      MYCO_LOG_ERROR("Bad {} {}", p2.debug_stringify(), check_string);
+      MYCO_LOG_ERROR("Bad {} {}", p3.debug_stringify(), check_string);
     sw3.stop();
 
     fmt::print("{:<10} {:<10.3f} {:<10.3f} {:<10.3f}\n",

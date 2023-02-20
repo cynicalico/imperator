@@ -4,6 +4,7 @@
 #include "uuid.h"
 #include <cstdint>
 #include <concepts>
+#include <ranges>
 
 namespace myco {
 namespace internal {
@@ -126,6 +127,18 @@ void shuffle(Iterable &i) {
 template<typename Iter>
 void shuffle(Iter &start, Iter &end) {
   pcg_extras::shuffle(start, end, internal::generator());
+}
+
+template<std::ranges::random_access_range R>
+void partial_shuffle(R &&r, double percentage) {
+  auto n = std::ranges::size(r);
+  while (n > 1) {
+    n--;
+    if (get<bool>(percentage)) {
+      auto k = get(n + 1);
+      std::swap(std::ranges::begin(r)[k], std::ranges::begin(r)[n]);
+    }
+  }
 }
 
 std::string base58(std::size_t length);
