@@ -36,9 +36,6 @@
 [submodule "external/openal-soft"]
 	path = external/openal-soft
 	url = ../../kcat/openal-soft.git
-[submodule "external/flat"]
-	path = external/flat
-	url = ../../pubby/flat.git
 [submodule "external/rapidcsv"]
 	path = external/rapidcsv
 	url = ../../d99kris/rapidcsv.git
