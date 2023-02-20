@@ -118,6 +118,16 @@ T get(double chance) {
   return BoolDist(chance)(internal::generator());
 }
 
+template<typename Iterable>
+void shuffle(Iterable &i) {
+  pcg_extras::shuffle(i.begin(), i.end(), internal::generator());
+}
+
+template<typename Iter>
+void shuffle(Iter &start, Iter &end) {
+  pcg_extras::shuffle(start, end, internal::generator());
+}
+
 std::string base58(std::size_t length);
 
 std::string uuidv4();

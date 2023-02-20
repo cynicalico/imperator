@@ -10,9 +10,9 @@
 #include <string>
 
 template<typename T>
-class PrioTracker {
+class PrioListV1 {
 public:
-  PrioTracker() = default;
+  PrioListV1() = default;
 
   void add(const std::string &name, T v, std::set<std::string> deps = {});
 
@@ -31,7 +31,7 @@ private:
 };
 
 template<typename T>
-void PrioTracker<T>::add(const std::string &name, T v, std::set<std::string> deps) {
+void PrioListV1<T>::add(const std::string &name, T v, std::set<std::string> deps) {
   if (std::find_if(order_.begin(), order_.end(), [name](const auto &p) { return p.first == name; }) != order_.end()) {
     MYCO_LOG_WARN("{} already added", name);
     return;
@@ -84,7 +84,7 @@ void PrioTracker<T>::add(const std::string &name, T v, std::set<std::string> dep
 
 template<typename T>
 std::tuple<std::size_t, std::optional<std::size_t>, std::set<std::size_t>>
-PrioTracker<T>::find_min_and_max_(const std::string &name, const std::set<std::string> &deps) {
+PrioListV1<T>::find_min_and_max_(const std::string &name, const std::set<std::string> &deps) {
   std::size_t min_idx = 0;
   std::optional<std::size_t> max_idx{};
   std::set<std::size_t> unmet_deps_idxs{};
@@ -110,7 +110,7 @@ PrioTracker<T>::find_min_and_max_(const std::string &name, const std::set<std::s
 }
 
 template<typename T>
-std::tuple<bool, std::size_t> PrioTracker<T>::bubble_(const std::string &name, std::size_t idx, std::size_t min_idx) {
+std::tuple<bool, std::size_t> PrioListV1<T>::bubble_(const std::string &name, std::size_t idx, std::size_t min_idx) {
   while (idx < min_idx) {
     if (saved_deps_[order_[idx + 1].first].contains(order_[idx].first))
       return {false, idx + 1};  // Try and move the dependency forward enough for us to move this one
@@ -126,7 +126,7 @@ std::tuple<bool, std::size_t> PrioTracker<T>::bubble_(const std::string &name, s
 }
 
 template<typename T>
-std::string PrioTracker<T>::debug_stringify() {
+std::string PrioListV1<T>::debug_stringify() {
   std::string s = "[";
   std::size_t i = 0;
   for (const auto &e: order_) {

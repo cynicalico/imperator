@@ -1,20 +1,23 @@
+#pragma once
+
 #include "myco/util/helpers.hpp"
 #include "myco/util/log.hpp"
 #include "fmt/format.h"
 #include <limits>
 #include <ranges>
-#include <set>
+#include <unordered_set>
 #include <string>
+#include <stack>
 #include <unordered_map>
 #include <string>
 #include <vector>
 
 template<typename T>
-class PrioListV2 {
-  static const std::size_t MAX_SIZE_T;
+class PrioListV3 {
+  static const std::size_t MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
 
 public:
-  PrioListV2() = default;
+  PrioListV3() = default;
 
   void add(const std::string &name, T v, std::set<std::string> deps = {});
 
@@ -24,8 +27,8 @@ private:
   std::unordered_map<std::string, std::size_t> s_to_i_{};
   std::vector<std::string> i_to_s_{};
 
-  std::vector<std::size_t> o_{};
-  std::vector<T> v_{};
+  std::vector<std::size_t> order_{};
+  std::vector<T> vals_{};
   std::vector<std::size_t> idx_{};
   std::vector<std::set<std::size_t>> saved_deps_{};
   std::vector<std::set<std::size_t>> unmet_deps_{};
@@ -39,25 +42,22 @@ private:
 
   void find_min_and_max_(
       std::size_t I,
-      std::set<std::size_t> &deps,
+      const std::set<std::size_t> &deps,
       std::size_t &min, std::size_t &max,
-      std::set<std::size_t> &unmet_deps_idxs
+      std::vector<std::size_t> &unmet_deps_idxs
   );
 
-  bool bubble_(std::size_t I, std::size_t &idx, std::size_t min_idx);
+  bool adjust_unmet_(std::vector<std::size_t> &unmet_deps_idxs, std::size_t &min_idx);
 };
 
 template<typename T>
-const std::size_t PrioListV2<T>::MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
-
-template<typename T>
-void PrioListV2<T>::add(const std::string &name, T v, std::set<std::string> deps) {
+void PrioListV3<T>::add(const std::string &name, T v, std::set<std::string> deps) {
   std::size_t I;
   std::set<std::size_t> I_deps{};
   hash_get_i_deps_(name, deps, I, I_deps);
 
   if (idx_[I] != MAX_SIZE_T) {
-    MYCO_LOG_WARN("{} already added to PrioListV2 at idx {}", name, idx_[I]);
+    MYCO_LOG_WARN("{} already added to PrioListV3 at idx {}", name, idx_[I]);
     return;
   }
   saved_deps_[I] = I_deps;
@@ -65,40 +65,28 @@ void PrioListV2<T>::add(const std::string &name, T v, std::set<std::string> deps
   std::size_t min_idx = 0;
   if (!I_deps.empty()) {
     std::size_t max_idx;
-    std::set<std::size_t> unmet_deps_idxs{};
+    std::vector<std::size_t> unmet_deps_idxs{};
     find_min_and_max_(I, I_deps, min_idx, max_idx, unmet_deps_idxs);
 
-    while (max_idx < min_idx) {
-      std::size_t bubble_idx = std::ranges::max(
-          unmet_deps_idxs | std::views::filter([min_idx](auto e) { return e < min_idx; }));
-//      I_deps.erase(o_[bubble_idx]);  // We won't need to look for this one anymore
-
-      bool success;
-      std::size_t f_idx = bubble_idx;
-      do {
-        std::size_t old_f_idx = f_idx;
-        success = bubble_(I, f_idx, min_idx - 1);
-      } while (!success && f_idx < min_idx);
-
-      unmet_deps_idxs.clear();
-      find_min_and_max_(I, I_deps, min_idx, max_idx, unmet_deps_idxs);
+    if (max_idx < min_idx) {
+      std::ranges::sort(unmet_deps_idxs);
+      adjust_unmet_(unmet_deps_idxs, min_idx);
     }
 
     if (!unmet_deps_idxs.empty())
       unmet_deps_[I].clear();
   }
 
-  o_.insert(o_.begin() + min_idx, I);
-  v_.insert(v_.begin() + min_idx, v);
+  order_.insert(order_.begin() + min_idx, I);
+  vals_.insert(vals_.begin() + min_idx, v);
 
   idx_[I] = min_idx;
-  for (std::size_t i = min_idx + 1; i < o_.size(); ++i)
-    if (idx_[o_[i]] != MAX_SIZE_T)
-      idx_[o_[i]]++;
+  for (std::size_t i = min_idx + 1; i < order_.size(); ++i)
+    idx_[order_[i]]++;
 }
 
 template<typename T>
-void PrioListV2<T>::hash_get_i_deps_(
+void PrioListV3<T>::hash_get_i_deps_(
     const std::string &name,
     std::set<std::string> &deps,
     std::size_t &I,
@@ -126,11 +114,11 @@ void PrioListV2<T>::hash_get_i_deps_(
 }
 
 template<typename T>
-void PrioListV2<T>::find_min_and_max_(
+void PrioListV3<T>::find_min_and_max_(
     std::size_t I,
-    std::set<std::size_t> &deps,
+    const std::set<std::size_t> &deps,
     std::size_t &min, std::size_t &max,
-    std::set<std::size_t> &unmet_deps_idxs
+    std::vector<std::size_t> &unmet_deps_idxs
 ) {
   std::vector<std::size_t> deps_idxs{};
   for (const auto &d: deps) {
@@ -142,36 +130,43 @@ void PrioListV2<T>::find_min_and_max_(
   min = deps_idxs.empty() ? 0 : std::ranges::max(deps_idxs);
 
   for (const auto &n: unmet_deps_[I])
-    unmet_deps_idxs.emplace(idx_[n]);
+    if (idx_[n] < min)
+      unmet_deps_idxs.emplace_back(idx_[n]);
   max = unmet_deps_idxs.empty() ? MAX_SIZE_T : std::ranges::min(unmet_deps_idxs);
 }
 
 template<typename T>
-bool PrioListV2<T>::bubble_(std::size_t I, std::size_t &idx, std::size_t min_idx) {
-  while (idx < min_idx) {
-    if (saved_deps_[o_[idx + 1]].contains(o_[idx])) {
+bool PrioListV3<T>::adjust_unmet_(std::vector<std::size_t> &unmet_deps_idxs, std::size_t &min_idx) {
+  while (!unmet_deps_idxs.empty()) {
+    std::size_t idx = unmet_deps_idxs.back();
+    unmet_deps_idxs.pop_back();
+
+    while (idx < min_idx - 1) {
+      if (saved_deps_[order_[idx + 1]].contains(order_[idx])) {
+        unmet_deps_idxs.emplace_back(idx);
+        unmet_deps_idxs.emplace_back(idx + 1);
+        break;
+      }
+
+      std::swap(order_[idx], order_[idx + 1]);
+      std::swap(vals_[idx], vals_[idx + 1]);
+
       idx++;
-      return false;
+      idx_[order_[idx]]++;
+      idx_[order_[idx - 1]]--;
     }
 
-    std::swap(o_[idx], o_[idx + 1]);
-    std::swap(v_[idx], v_[idx + 1]);
-    idx_[o_[idx]]--;
-    idx_[o_[idx + 1]]++;
-
-    idx++;
+    if (idx == min_idx - 1)
+      min_idx--;
   }
 
   return true;
 }
 
 template<typename T>
-std::string PrioListV2<T>::debug_stringify() {
+std::string PrioListV3<T>::debug_stringify() {
   std::string s = "[";
-  for (const auto [i, e]: myco::enumerate(o_)) {
-    if (i != 0)
-      s += ", ";
-    s += fmt::format("{}", i_to_s_[e]);
-  }
+  for (const auto &[i, e]: myco::enumerate(order_))
+    s += fmt::format("{}{}", i != 0 ? ", " : "", i_to_s_[e]);
   return s + "]";
 }
