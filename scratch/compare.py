@@ -17,7 +17,7 @@ def main():
 
     i = 1
     j = 0
-    while i < max_col:
+    while i <= max_col:
         for m in range(col_counts[j]):
             axs[j].plot(df[df.columns[0]], df[df.columns[i + m]])
         axs[j].set(xlabel=df.columns[0])
