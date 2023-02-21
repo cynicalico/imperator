@@ -2,6 +2,6 @@
 
 namespace myco {
 
-std::vector<std::unordered_map<std::string, ReceiverI *>> Scheduler::receivers_{};
+std::vector<PrioList<std::unique_ptr<ReceiverI>>> Scheduler::receivers_{};
 
 } // namespace myco

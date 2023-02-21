@@ -13,7 +13,7 @@
 
 template<typename T>
 class PrioListV4 {
-  static const std::size_t MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
+  static const std::size_t MAX_SIZE_T;
 
 public:
   PrioListV4() = default;
@@ -49,6 +49,9 @@ private:
 
   bool adjust_unmet_(std::vector<std::size_t> &unmet_deps_idxs, std::size_t &min_idx);
 };
+
+template<typename T>
+const std::size_t PrioListV4<T>::MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
 
 template<typename T>
 void PrioListV4<T>::add(const std::string &name, T v, std::vector<std::string> &deps) {

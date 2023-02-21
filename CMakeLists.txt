@@ -27,6 +27,11 @@ target_include_directories(myco PUBLIC include)
 include(external/CMakeLists.txt)
 target_link_libraries(myco PUBLIC myco_externals)
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(myco PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
 if(MYCO_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
