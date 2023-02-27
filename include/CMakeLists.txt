@@ -1,4 +1,9 @@
 set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
+        include/myco/core/modules/module.hpp
+        include/myco/core/modules/window.hpp
+        include/myco/core/engine.hpp
+        include/myco/core/glfw_callbacks.hpp
+        include/myco/core/msgs.hpp
         include/myco/core/scheduler.hpp
 
         include/myco/util/helpers.hpp
