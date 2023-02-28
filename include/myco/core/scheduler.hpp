@@ -126,7 +126,7 @@ class Scheduler {
 public:
   template<typename T>
   static void sub(const std::string &name, std::vector<std::string> &&deps, const Receiver<T> &&recv) {
-    if (type_id<T> >= receivers_.size())
+    while (type_id<T> >= receivers_.size())
       receivers_.emplace_back();
     receivers_[type_id<T>].add(
         name,
@@ -142,8 +142,9 @@ public:
 
   template<typename T, typename... Args>
   static void send_nowait(Args &&... args) {
-    for (const auto &p: receivers_[type_id<T>])
-      p.v->call(std::any(T{std::forward<Args>(args)...}));
+    if (type_id<T> < receivers_.size())
+      for (const auto &p: receivers_[type_id<T>])
+        p.v->call(std::any(T{std::forward<Args>(args)...}));
   }
 
   template<typename T>

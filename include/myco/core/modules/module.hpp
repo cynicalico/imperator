@@ -1,6 +1,7 @@
 #pragma once
 
 #include "myco/core/scheduler.hpp"
+#include <mutex>
 #include <string>
 
 namespace myco {
@@ -30,8 +31,13 @@ public:
 
   explicit Module(std::vector<std::string> &&dependencies) : ModuleI() {
     name = ModuleInfo<T>::name;
-    Scheduler::sub<Initialize>(name, std::forward<std::vector<std::string>>(dependencies), [&](const auto &e){ initialize_(e); });
-    Scheduler::sub<ReleaseEngine>(name, [&](const auto &){ release_engine_(); });
+    Scheduler::sub<Initialize>(
+        name,
+        std::forward<std::vector<std::string>>(dependencies),
+        [&](const auto &e) {
+          std::call_once(is_initialized_, [&](){ initialize_(e); });
+        });
+    Scheduler::sub<ReleaseEngine>(name, [&](const auto &) { release_engine_(); });
   }
 
   ~Module() override {
@@ -40,7 +46,11 @@ public:
 
 protected:
   virtual void initialize_(const Initialize &e);
+
   void release_engine_();
+
+private:
+  std::once_flag is_initialized_;
 };
 
 template<typename T>
@@ -58,4 +68,4 @@ void Module<T>::release_engine_() {
 #define DECLARE_MYCO_MODULE(module)             \
   template<> struct myco::ModuleInfo<module> {  \
     static constexpr auto name = #module;       \
-  };
+  }

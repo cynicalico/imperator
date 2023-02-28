@@ -16,6 +16,18 @@ struct Initialize {
 
 struct ReleaseEngine {};
 
+struct Shutdown {};
+
+struct Update {
+  double dt;
+};
+
+struct StartFrame {};
+
+struct Draw {};
+
+struct EndFrame {};
+
 /* GLFW CALLBACKS */
 
 struct GlfwWindowClose {

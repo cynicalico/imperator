@@ -2,7 +2,9 @@
 
 namespace myco {
 
-Engine::Engine() {}
+Engine::Engine() {
+  Scheduler::sub<Shutdown>("myco::Engine", [&](const auto &){ received_shutdown_ = true; });
+}
 
 Engine::~Engine() {
   auto init_prio = Scheduler::get_prio<Initialize>();

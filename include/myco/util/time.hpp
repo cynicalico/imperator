@@ -1,7 +1,10 @@
 #pragma once
 
+#include "myco/util/averagers.hpp"
 #include <chrono>
 #include <cstddef>
+#include <deque>
+#include <vector>
 
 namespace myco {
 
@@ -31,18 +34,68 @@ T time_sec() {
 
 class Stopwatch {
 public:
-  Stopwatch() { start(); }
+  Stopwatch();
 
-  void start() { start_ = time_nsec(); }
-  void stop() { end_ = time_nsec(); }
+  void start();
+  void stop();
 
-  std::uint64_t elapsed_nsec() const { return end_ - start_; }
-  double elapsed_usec() const { return (end_ - start_) / 1e3; }
-  double elapsed_msec() const { return (end_ - start_) / 1e6; }
-  double elapsed_sec() const { return (end_ - start_) / 1e9; }
+  std::uint64_t elapsed_nsec() const;
+  double elapsed_usec() const;
+  double elapsed_msec() const;
+  double elapsed_sec() const;
 
 private:
   std::uint64_t start_{}, end_{};
+};
+
+
+class Ticker {
+public:
+  explicit Ticker(double interval = 0.0);
+
+  void reset();
+
+  std::uint64_t tick();
+
+  double dt_nsec();
+  double dt_usec();
+  double dt_msec();
+  double dt_sec();
+
+  std::uint64_t elapsed_nsec() const;
+  double elapsed_usec() const;
+  double elapsed_msec() const;
+  double elapsed_sec() const;
+
+private:
+  std::uint64_t start_{0};
+  std::uint64_t last_{0};
+  std::uint64_t dt_{0};
+  std::uint64_t interval_{0};
+  std::uint64_t acc_{0};
+};
+
+class FrameCounter {
+public:
+  explicit FrameCounter(double interval = 0.0);
+
+  void reset();
+
+  std::uint64_t update();
+
+  double fps() const;
+  double dt() const;
+
+  std::vector<double> dts_vec() const;
+
+private:
+  std::uint64_t start_time_;
+  std::deque<std::uint64_t> timestamps_{};
+  std::deque<double> dts_{};
+
+  Ticker user_ticker_;
+  Ticker ticker_{0.5};
+  EMA averager_{1.0};
 };
 
 } // namespace myco

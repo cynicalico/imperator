@@ -7,8 +7,11 @@
 #include "myco/core/engine.hpp"
 #include "myco/core/scheduler.hpp"
 
+#include "myco/gfx/context2d.hpp"
+
 #include "myco/util/helpers.hpp"
 #include "myco/util/log.hpp"
+#include "myco/util/platform.hpp"
 #include "myco/util/rnd.hpp"
 #include "myco/util/time.hpp"
 

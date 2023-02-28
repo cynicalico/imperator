@@ -28,4 +28,4 @@ private:
 
 } // namespace myco
 
-DECLARE_MYCO_MODULE(myco::Application)
+DECLARE_MYCO_MODULE(myco::Application);

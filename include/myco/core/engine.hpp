@@ -5,6 +5,7 @@
 #include "myco/core/modules/application.hpp"
 #include "myco/core/modules/module.hpp"
 #include "myco/core/modules/window.hpp"
+#include "myco/util/time.hpp"
 
 #include <type_traits>
 
@@ -25,6 +26,7 @@ public:
   void run();
 
 private:
+  bool received_shutdown_{false};
   std::unordered_map<std::string, std::shared_ptr<ModuleI>> modules_{};
 
   template<class T, class TR, typename... Args> requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
@@ -53,6 +55,16 @@ void Engine::run() {
   add_module_<Application, T>();
 
   Scheduler::send_nowait<Initialize>(shared_from_this());
+
+  auto ticker = Ticker();
+  while (!received_shutdown_) {
+    ticker.tick();
+    Scheduler::send_nowait<Update>(ticker.dt_sec());
+
+    Scheduler::send_nowait<StartFrame>();
+    Scheduler::send_nowait<Draw>();
+    Scheduler::send_nowait<EndFrame>();
+  }
 
   Scheduler::send_nowait<ReleaseEngine>();
 }
