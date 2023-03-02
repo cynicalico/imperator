@@ -22,6 +22,7 @@ namespace myco {
 class Context2D : std::enable_shared_from_this<Context2D> {
 public:
   std::unique_ptr<GladGLContext> gl{nullptr};
+  glm::ivec2 version{0, 0};
 
   explicit Context2D(const Window &window);
 

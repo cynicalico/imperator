@@ -87,7 +87,7 @@ void Window::initialize_(const Initialize &e) {
   Module::initialize_(e);
 
   Scheduler::sub<StartFrame>(name, [&](const auto &e){ start_frame_(e); });
-  Scheduler::sub<EndFrame>(name, [&](const auto &e){ end_frame_(e); });
+  Scheduler::sub<EndFrame>(name, {ModuleInfo<Application>::name}, [&](const auto &e){ end_frame_(e); });
 
   Scheduler::sub<GlfwWindowClose>(name, [&](const auto &e){ close_callback_(e); });
 

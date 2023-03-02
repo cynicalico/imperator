@@ -10,6 +10,7 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
 
         include/myco/gfx/color.hpp
         include/myco/gfx/context2d.hpp
+        include/myco/gfx/dear.hpp
 
         include/myco/util/averagers.hpp
         include/myco/util/enum_bitops.hpp

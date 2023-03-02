@@ -15,9 +15,7 @@ class ModuleI {
 public:
   std::string name;
 
-  virtual ~ModuleI() {
-    MYCO_LOG_DEBUG("ModuleI destroyed");
-  }
+  virtual ~ModuleI() = default;
 };
 
 template<typename T>
@@ -38,11 +36,11 @@ public:
           std::call_once(is_initialized_, [&](){ initialize_(e); });
         });
     Scheduler::sub<ReleaseEngine>(name, [&](const auto &) { release_engine_(); });
+
+    MYCO_LOG_DEBUG("Initialized {}", name);
   }
 
-  ~Module() override {
-    MYCO_LOG_DEBUG("Module destroyed");
-  };
+  ~Module() override = default;
 
 protected:
   virtual void initialize_(const Initialize &e);

@@ -2,19 +2,20 @@
 
 class Indev : public myco::Application {
 public:
-  std::shared_ptr<myco::Context2D> ctx{};
-
   void initialize() override {
     window->open({
       .title = "Indev",
       .size = {1280, 720},
-      .flags = myco::WindowFlags::centered | myco::WindowFlags::vsync
+      .flags = myco::WindowFlags::centered
     });
     ctx = std::make_shared<myco::Context2D>(*window);
+    dear = std::make_unique<myco::Dear>(*window, *ctx);
+
+    application_show_debug_overlay();
   }
 
   void update(double dt) override {
-    MYCO_LOG_INFO("dt: {}", 1 / dt);
+
   }
 
   void draw() override {

@@ -9,6 +9,7 @@ set(MYCO_SRC_FILES ${MYCO_SRC_FILES}
 
         src/myco/gfx/color.cpp
         src/myco/gfx/context2d.cpp
+        src/myco/gfx/dear.cpp
 
         src/myco/util/averagers.cpp
         src/myco/util/log.cpp
