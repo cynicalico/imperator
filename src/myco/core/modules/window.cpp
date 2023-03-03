@@ -1,5 +1,6 @@
 #include "myco/util/log.hpp"
 
+#include "myco/core/modules/input.hpp"
 #include "myco/core/modules/window.hpp"
 #include "myco/core/engine.hpp"
 
@@ -86,6 +87,8 @@ void Window::swap() const {
 void Window::initialize_(const Initialize &e) {
   Module::initialize_(e);
 
+  Scheduler::sub<Update>(name, {ModuleInfo<Input>::name}, [&](const auto &e){ update_(e.dt); });
+
   Scheduler::sub<StartFrame>(name, [&](const auto &e){ start_frame_(e); });
   Scheduler::sub<EndFrame>(name, {ModuleInfo<Application>::name}, [&](const auto &e){ end_frame_(e); });
 
@@ -101,11 +104,14 @@ void Window::initialize_(const Initialize &e) {
   });
 }
 
+void Window::update_(double dt) {
+  glfwPollEvents();
+}
+
 void Window::start_frame_(const StartFrame &e) {}
 
 void Window::end_frame_(const EndFrame &e) {
   swap();
-  glfwPollEvents();
 }
 
 void Window::close_callback_(const GlfwWindowClose &e) {

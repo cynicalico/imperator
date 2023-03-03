@@ -1,5 +1,6 @@
 set(MYCO_SRC_FILES ${MYCO_SRC_FILES}
         src/myco/core/modules/application.cpp
+        src/myco/core/modules/input.cpp
         src/myco/core/modules/module.cpp
         src/myco/core/modules/window.cpp
 
@@ -12,6 +13,7 @@ set(MYCO_SRC_FILES ${MYCO_SRC_FILES}
         src/myco/gfx/dear.cpp
 
         src/myco/util/averagers.cpp
+        src/myco/util/helpers.cpp
         src/myco/util/log.cpp
         src/myco/util/rnd.cpp
         src/myco/util/time.cpp)

@@ -3,6 +3,7 @@
 #include "myco/util/log.hpp"
 
 #include "myco/core/modules/application.hpp"
+#include "myco/core/modules/input.hpp"
 #include "myco/core/modules/module.hpp"
 #include "myco/core/modules/window.hpp"
 #include "myco/util/time.hpp"
@@ -13,6 +14,8 @@ namespace myco {
 
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
+  FrameCounter frame_counter{};
+
   Engine();
   ~Engine();
 
@@ -52,18 +55,20 @@ std::shared_ptr<T> Engine::get_module() const {
 template<class T> requires std::derived_from<T, Application>
 void Engine::run() {
   add_module<Window>();
+  add_module<Input>();
   add_module_<Application, T>();
 
   Scheduler::send_nowait<Initialize>(shared_from_this());
 
-  auto ticker = Ticker();
+  frame_counter.reset();
   while (!received_shutdown_) {
-    ticker.tick();
-    Scheduler::send_nowait<Update>(ticker.dt_sec());
+    Scheduler::send_nowait<Update>(frame_counter.dt());
 
     Scheduler::send_nowait<StartFrame>();
     Scheduler::send_nowait<Draw>();
     Scheduler::send_nowait<EndFrame>();
+
+    frame_counter.update();
   }
 
   Scheduler::send_nowait<ReleaseEngine>();

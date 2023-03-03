@@ -1,5 +1,6 @@
 set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
         include/myco/core/modules/application.hpp
+        include/myco/core/modules/input.hpp
         include/myco/core/modules/module.hpp
         include/myco/core/modules/window.hpp
 
@@ -20,4 +21,5 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
         include/myco/util/rnd.hpp
         include/myco/util/time.hpp
 
-        include/myco/myco.hpp)
+        include/myco/myco.hpp
+        include/myco/myco_imconfig.hpp)

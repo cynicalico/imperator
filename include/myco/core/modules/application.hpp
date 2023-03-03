@@ -1,6 +1,7 @@
 #pragma once
 
 #include "myco/core/modules/module.hpp"
+#include "myco/core/modules/input.hpp"
 #include "myco/core/modules/window.hpp"
 
 #include "myco/gfx/context2d.hpp"
@@ -13,17 +14,17 @@ namespace myco {
 class Application : public Module<Application> {
 public:
   std::shared_ptr<Window> window{nullptr};
+  std::shared_ptr<Input> input{nullptr};
 
   std::shared_ptr<Context2D> ctx{nullptr};
   std::unique_ptr<Dear> dear{nullptr};
 
   Application() : Module<Application>({
-    ModuleInfo<Window>::name
+    ModuleInfo<Window>::name,
+    ModuleInfo<Input>::name
   }) {}
 
-  ~Application() override {
-    MYCO_LOG_DEBUG("Application destroyed");
-  }
+  ~Application() override = default;
 
 protected:
   virtual void initialize();
@@ -37,7 +38,6 @@ protected:
 private:
   struct {
     bool active{false};
-    FrameCounter fps{};
   } debug_overlay_{};
 
   void draw_debug_overlay_();

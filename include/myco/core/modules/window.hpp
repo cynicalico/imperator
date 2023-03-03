@@ -46,9 +46,7 @@ public:
 
   Window() : Module<Window>() {}
 
-  ~Window() override {
-    MYCO_LOG_DEBUG("Window destroyed");
-  }
+  ~Window() override = default;
 
   void open(const WindowOpenParams &params);
   WindowOpenParams get_open_params() const;
@@ -74,6 +72,7 @@ private:
   WindowOpenParams open_params_{};
 
   void initialize_(const Initialize &e) override;
+  void update_(double dt);
   void start_frame_(const StartFrame &e);
   void end_frame_(const EndFrame &e);
 

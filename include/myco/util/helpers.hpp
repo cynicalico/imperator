@@ -38,4 +38,8 @@ constexpr auto enumerate(T &&iterable) {
   return iterable_wrapper{std::forward<T>(iterable)};
 }
 
+double lerp(double t, double min, double max);
+
+double normalize(double x, double min, double max);
+
 } // namespace myco

@@ -19,7 +19,7 @@ include(src/CMakeLists.txt)
 add_library(myco STATIC ${MYCO_INCLUDE_FILES} ${MYCO_SRC_FILES})
 
 target_compile_definitions(myco PUBLIC
-#        IMGUI_USER_CONFIG="capra/capra_imconfig.hpp"
+        IMGUI_USER_CONFIG="myco/myco_imconfig.hpp"
         SPDLOG_ACTIVE_LEVEL=${MYCO_SPDLOG_LEVEL})
 
 target_include_directories(myco PUBLIC include)

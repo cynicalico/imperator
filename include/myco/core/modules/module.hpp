@@ -40,7 +40,9 @@ public:
     MYCO_LOG_DEBUG("Initialized {}", name);
   }
 
-  ~Module() override = default;
+  ~Module() override {
+    MYCO_LOG_DEBUG("{} destroyed", name);
+  }
 
 protected:
   virtual void initialize_(const Initialize &e);
