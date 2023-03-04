@@ -62,14 +62,23 @@ void Application::draw_debug_overlay_() {
 void Application::initialize_(const Initialize &e) {
   Module<Application>::initialize_(e);
 
-  Scheduler::sub<Update>(name, {ModuleInfo<Input>::name, ModuleInfo<Window>::name}, [&](const auto &e){ update(e.dt); });
+  Scheduler::sub<Update>(
+      name,
+      {
+          ModuleInfo<InputMgr>::name,
+          ModuleInfo<TimerMgr>::name,
+          ModuleInfo<Window>::name,
+      },
+      [&](const auto &e){ update(e.dt); }
+  );
 
   Scheduler::sub<StartFrame>(name, [&](const auto &){ start_frame_(); });
   Scheduler::sub<Draw>(name, [&](const auto &){ draw(); });
   Scheduler::sub<EndFrame>(name, [&](const auto &){ end_frame_(); });
 
   window = engine->get_module<Window>();
-  input = engine->get_module<Input>();
+  input = engine->get_module<InputMgr>();
+  timer = engine->get_module<TimerMgr>();
 
   initialize();
 }

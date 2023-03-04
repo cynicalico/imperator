@@ -1,7 +1,8 @@
 set(MYCO_SRC_FILES ${MYCO_SRC_FILES}
         src/myco/core/modules/application.cpp
-        src/myco/core/modules/input.cpp
+        src/myco/core/modules/input_mgr.cpp
         src/myco/core/modules/module.cpp
+        src/myco/core/modules/timer_mgr.cpp
         src/myco/core/modules/window.cpp
 
         src/myco/core/engine.cpp

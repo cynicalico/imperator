@@ -1,7 +1,8 @@
 set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
         include/myco/core/modules/application.hpp
-        include/myco/core/modules/input.hpp
+        include/myco/core/modules/input_mgr.hpp
         include/myco/core/modules/module.hpp
+        include/myco/core/modules/timer_mgr.hpp
         include/myco/core/modules/window.hpp
 
         include/myco/core/engine.hpp
@@ -16,6 +17,7 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
         include/myco/util/averagers.hpp
         include/myco/util/enum_bitops.hpp
         include/myco/util/helpers.hpp
+        include/myco/util/io.hpp
         include/myco/util/log.hpp
         include/myco/util/platform.hpp
         include/myco/util/rnd.hpp

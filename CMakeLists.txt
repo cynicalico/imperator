@@ -8,7 +8,7 @@ option(MYCO_BUILD_EXAMPLES "Build example programs" ON)
 set(MYCO_SPDLOG_LEVEL "SPDLOG_LEVEL_DEBUG" CACHE STRING "spdlog log level")
 
 if(MSVC)
-    set(CMAKE_CXX_STANDARD 23)
+    set(CMAKE_CXX_STANDARD 26)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 else()
     set(CMAKE_CXX_STANDARD 20)

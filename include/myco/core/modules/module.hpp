@@ -65,7 +65,7 @@ void Module<T>::release_engine_() {
 
 } // namespace myco
 
-#define DECLARE_MYCO_MODULE(module)             \
+#define MYCO_DECLARE_MODULE(module)             \
   template<> struct myco::ModuleInfo<module> {  \
     static constexpr auto name = #module;       \
   }

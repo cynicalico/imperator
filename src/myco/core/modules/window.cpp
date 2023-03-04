@@ -1,16 +1,26 @@
 #include "myco/util/log.hpp"
 
-#include "myco/core/modules/input.hpp"
+#include "myco/core/modules/input_mgr.hpp"
 #include "myco/core/modules/window.hpp"
 #include "myco/core/engine.hpp"
-
 #include "myco/core/glfw_callbacks.hpp"
+
+#include "myco/util/io.hpp"
 #include "myco/util/platform.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#include <set>
 
 #if defined(MYCO_PLATFORM_WINDOWS)
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"
 #include <dwmapi.h>
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
 #endif
 
 namespace myco {
@@ -50,6 +60,8 @@ void Window::open(const WindowOpenParams &params) {
   set_win32_titlebar_color_(win32_hwnd_);
 #endif
 
+  set_icon_dir(DATA / "icon");
+
   if (!set(params.flags, WindowFlags::fullscreen) &&
       !set(params.flags, WindowFlags::borderless) &&
       !set(params.flags, WindowFlags::hidden))
@@ -58,6 +70,39 @@ void Window::open(const WindowOpenParams &params) {
 
 WindowOpenParams Window::get_open_params() const {
   return open_params_;
+}
+
+void Window::set_icon_dir(const std::filesystem::path &dir) {
+  // This is the list of formats that stb_image can support
+  static std::set<std::string> valid_extensions = {
+      ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"};
+
+  std::vector<std::filesystem::path> icon_paths{};
+  for (const auto &p: std::filesystem::directory_iterator(dir))
+    if (p.is_regular_file() && valid_extensions.contains(p.path().extension().string()))
+      icon_paths.emplace_back(p.path());
+
+  if (icon_paths.empty())
+    MYCO_LOG_WARN("No valid icon images found in '{}'", dir.string());
+
+  set_icon(icon_paths);
+}
+
+void Window::set_icon(const std::vector<std::filesystem::path> &paths) {
+  std::vector<GLFWimage> images{};
+  for (const auto &p : paths) {
+    images.emplace_back();
+    images.back().pixels = stbi_load(p.string().c_str(), &images.back().width, &images.back().height, 0, 4);
+  }
+  glfwSetWindowIcon(glfw_handle, images.size(), &images[0]);
+
+  for (auto &i : images)
+    stbi_image_free(i.pixels);
+}
+
+void Window::set_icon(const std::filesystem::path &path) {
+  std::vector<std::filesystem::path> paths = {path};
+  set_icon(paths);
 }
 
 void Window::set_x(int xpos) {
@@ -110,7 +155,7 @@ void Window::swap() const {
 void Window::initialize_(const Initialize &e) {
   Module::initialize_(e);
 
-  Scheduler::sub<Update>(name, {ModuleInfo<Input>::name}, [&](const auto &e) { update_(e.dt); });
+  Scheduler::sub<Update>(name, {ModuleInfo<InputMgr>::name}, [&](const auto &e) { update_(e.dt); });
 
   Scheduler::sub<StartFrame>(name, [&](const auto &e) { start_frame_(e); });
   Scheduler::sub<EndFrame>(name, {ModuleInfo<Application>::name}, [&](const auto &e) { end_frame_(e); });
@@ -276,15 +321,16 @@ void Window::open_windowed_(const WindowOpenParams &params) {
 
 /*******************************************************************************
  * This code is specifically for setting the titlebar to the dark mode in
- * Windows. It is based on some currently undocumented behavior including
- * a magic constant (I gave it a name that seems to be common online. This
- * does seem to be consistent and stable, so I'm okay relying on it for now
- * even though using behavior that is totally undocumented is a little sketch
+ * Windows. This seems to work on both Windows 10 and 11, thought the documentation
+ * on this page is specific to Windows 11.
+ *
+ * https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/apply-windows-themes
+ *
+ * I would assume there are some older versions of Windows 10 that this does not work on,
+ * if anyone ever uses this and has a problem then it can be adjusted
  */
 #if defined(MYCO_PLATFORM_WINDOWS)
 void Window::set_win32_titlebar_color_(HWND hwnd) {
-  const int DWM_USE_IMMERSIVE_DARK_MODE = 20;
-
   auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
   DWORD should_use_light_theme{};
@@ -299,17 +345,17 @@ void Window::set_win32_titlebar_color_(HWND hwnd) {
       &should_use_light_theme_size
   );
 
-  if (code != ERROR_SUCCESS)
-    throw std::runtime_error(fmt::format("Cannot read DWORD from registry. {}", code));
+  if (code != ERROR_SUCCESS) {
+    MYCO_LOG_WARN("Failed to read Windows app theme from registry, error code {}", code);
+    return;
+  }
 
-  // Incredibly cursed undocumented Win32 API bullshit
-  // https://stackoverflow.com/questions/57124243/winforms-dark-title-bar-on-windows-10
   if ((should_use_light_theme || window->win32_force_light_mode_) && !window->win32_force_dark_mode_) {
     const BOOL use_light_mode = 0;
-    DwmSetWindowAttribute(hwnd, DWM_USE_IMMERSIVE_DARK_MODE, &use_light_mode, sizeof(use_light_mode));
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_light_mode, sizeof(use_light_mode));
   } else if ((!should_use_light_theme || window->win32_force_dark_mode_) && !window->win32_force_light_mode_) {
     const BOOL use_dark_mode = 1;
-    DwmSetWindowAttribute(hwnd, DWM_USE_IMMERSIVE_DARK_MODE, &use_dark_mode, sizeof(use_dark_mode));
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_dark_mode, sizeof(use_dark_mode));
   }
   UpdateWindow(window->win32_hwnd_);
 }
@@ -317,10 +363,11 @@ void Window::set_win32_titlebar_color_(HWND hwnd) {
 LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
   auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
-  if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_) {
-    MYCO_LOG_INFO("Updating win32 titlebar color");
+  // TODO: Make this check more specific, this goes off at times where the
+  //  titlebar didn't change at all, but other style elements *did* change
+  if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_)
     set_win32_titlebar_color_(hwnd);
-  }
+
 
   return CallWindowProc(window->win32_saved_WndProc_, hwnd, message, wParam, lParam);
 }

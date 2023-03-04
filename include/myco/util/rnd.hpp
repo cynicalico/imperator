@@ -141,6 +141,12 @@ void partial_shuffle(R &&r, double percentage) {
   }
 }
 
+template<std::ranges::random_access_range R>
+auto choose(R &&r) {
+  auto n = get(std::ranges::size(r) - 1);
+  return  *(std::ranges::begin(r) + n);
+}
+
 std::string base58(std::size_t length);
 
 std::string uuidv4();

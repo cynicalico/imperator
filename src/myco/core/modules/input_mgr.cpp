@@ -1,12 +1,12 @@
 #include "myco/util/log.hpp"
 
-#include "myco/core/modules/input.hpp"
+#include "myco/core/modules/input_mgr.hpp"
 
 namespace myco {
 
-Input::Input() = default;
+InputMgr::InputMgr() = default;
 
-void Input::update(double dt) {
+void InputMgr::update(double dt) {
   for (const auto &p : state_)
     prev_state_[p.first] = p.second;
 
@@ -38,19 +38,19 @@ void Input::update(double dt) {
   }
 }
 
-void Input::bind(const std::string &action, const std::string &binding) {
+void InputMgr::bind(const std::string &action, const std::string &binding) {
   bindings_[binding] = action;
 }
 
-void Input::unbind(const std::string &binding) {
+void InputMgr::unbind(const std::string &binding) {
   bindings_.erase(binding);
 }
 
-void Input::bind_func(const std::string &action, const std::function<void(void)> &f) {
+void InputMgr::bind_func(const std::string &action, const std::function<void(void)> &f) {
   func_bindings_[action] = f;
 }
 
-bool Input::pressed(const std::string &binding) {
+bool InputMgr::pressed(const std::string &binding) {
   if (bindings_.contains(binding)) {
     const auto action = bindings_[binding];
     if (state_[action] && !prev_state_[action])
@@ -60,7 +60,7 @@ bool Input::pressed(const std::string &binding) {
   return false;
 }
 
-bool Input::released(const std::string &binding) {
+bool InputMgr::released(const std::string &binding) {
   if (bindings_.contains(binding)) {
     const auto action = bindings_[binding];
     if (!state_[action] && prev_state_[action])
@@ -70,7 +70,7 @@ bool Input::released(const std::string &binding) {
   return false;
 }
 
-bool Input::down(const std::string &binding, double interval, double delay) {
+bool InputMgr::down(const std::string &binding, double interval, double delay) {
   if (bindings_.contains(binding)) {
     const auto action = bindings_[binding];
 
@@ -102,8 +102,8 @@ bool Input::down(const std::string &binding, double interval, double delay) {
   return false;
 }
 
-void Input::initialize_(const Initialize &e) {
-  Module<Input>::initialize_(e);
+void InputMgr::initialize_(const Initialize &e) {
+  Module<InputMgr>::initialize_(e);
 
   Scheduler::sub<Update>(name, [&](const auto &e){ update(e.dt); });
 
@@ -117,7 +117,7 @@ void Input::initialize_(const Initialize &e) {
     bind(action, action);  // default bindings
 }
 
-void Input::glfw_key_(const GlfwKey &e) {
+void InputMgr::glfw_key_(const GlfwKey &e) {
   auto key_str = glfw_key_to_str_(e.key);
   if (e.action == GLFW_PRESS) {
     state_[key_str] = true;
@@ -130,7 +130,7 @@ void Input::glfw_key_(const GlfwKey &e) {
   }
 }
 
-void Input::glfw_cursor_pos_(const GlfwCursorPos &e) {
+void InputMgr::glfw_cursor_pos_(const GlfwCursorPos &e) {
   mouse.dx += e.xpos - mouse.x;
   mouse.dy += e.ypos - mouse.y;
   mouse.x = e.xpos;
@@ -144,11 +144,11 @@ void Input::glfw_cursor_pos_(const GlfwCursorPos &e) {
   }
 }
 
-void Input::glfw_cursor_enter_(const GlfwCursorEnter &e) {
+void InputMgr::glfw_cursor_enter_(const GlfwCursorEnter &e) {
   mouse.entered = e.entered == 1;
 }
 
-void Input::glfw_mouse_button_(const GlfwMouseButton &e) {
+void InputMgr::glfw_mouse_button_(const GlfwMouseButton &e) {
   auto button_str = glfw_button_to_str_(e.button);
   if (e.action == GLFW_PRESS) {
     state_[button_str] = true;
@@ -161,12 +161,12 @@ void Input::glfw_mouse_button_(const GlfwMouseButton &e) {
   }
 }
 
-void Input::glfw_scroll_(const GlfwScroll &e) {
+void InputMgr::glfw_scroll_(const GlfwScroll &e) {
   mouse.sx += e.xoffset;
   mouse.sy += e.yoffset;
 }
 
-std::string Input::glfw_key_to_str_(int key) {
+std::string InputMgr::glfw_key_to_str_(int key) {
   static std::unordered_map<int, std::string> mapping{
       {GLFW_KEY_UNKNOWN,       "unknown"},
       {GLFW_KEY_SPACE,         "space"},
@@ -294,7 +294,7 @@ std::string Input::glfw_key_to_str_(int key) {
   return mapping[key];
 }
 
-std::string Input::glfw_button_to_str_(int button) {
+std::string InputMgr::glfw_button_to_str_(int button) {
   static std::unordered_map<int, std::string> mapping{
       {GLFW_MOUSE_BUTTON_1, "mb_left"},
       {GLFW_MOUSE_BUTTON_2, "mb_right"},
@@ -309,7 +309,7 @@ std::string Input::glfw_button_to_str_(int button) {
   return mapping[button];
 }
 
-const std::unordered_set<std::string> &Input::all_actions_() {
+const std::unordered_set<std::string> &InputMgr::all_actions_() {
   static std::unordered_set<std::string> actions = {
       "unknown", "space", "apostrophe", "comma", "minus", "period", "slash", "0", "1", "2", "3", "4", "5", "6", "7",
       "8", "9", "semicolon", "equal", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",

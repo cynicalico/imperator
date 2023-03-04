@@ -7,7 +7,7 @@
 
 namespace myco {
 
-class Input : public Module<Input> {
+class InputMgr : public Module<InputMgr> {
 public:
   struct {
     double x{0.0};
@@ -26,7 +26,7 @@ public:
     bool got_first_event{false};
   } mouse{};
 
-  Input();
+  InputMgr();
 
   void update(double dt);
 
@@ -69,4 +69,4 @@ private:
 
 } // namespace myco
 
-DECLARE_MYCO_MODULE(myco::Input);
+MYCO_DECLARE_MODULE(myco::InputMgr);

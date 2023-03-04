@@ -3,8 +3,9 @@
 #include "myco/util/log.hpp"
 
 #include "myco/core/modules/application.hpp"
-#include "myco/core/modules/input.hpp"
+#include "myco/core/modules/input_mgr.hpp"
 #include "myco/core/modules/module.hpp"
+#include "myco/core/modules/timer_mgr.hpp"
 #include "myco/core/modules/window.hpp"
 #include "myco/util/time.hpp"
 
@@ -55,7 +56,8 @@ std::shared_ptr<T> Engine::get_module() const {
 template<class T> requires std::derived_from<T, Application>
 void Engine::run() {
   add_module<Window>();
-  add_module<Input>();
+  add_module<InputMgr>();
+  add_module<TimerMgr>();
   add_module_<Application, T>();
 
   Scheduler::send_nowait<Initialize>(shared_from_this());

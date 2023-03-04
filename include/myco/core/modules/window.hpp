@@ -6,8 +6,8 @@
 #include "myco/util/platform.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/vec2.hpp"
+#include <filesystem>
 #include <string>
-
 
 #if defined(MYCO_PLATFORM_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
@@ -61,6 +61,10 @@ public:
   void open(const WindowOpenParams &params);
   WindowOpenParams get_open_params() const;
 
+  void set_icon_dir(const std::filesystem::path &dir);
+  void set_icon(const std::vector<std::filesystem::path> &paths);
+  void set_icon(const std::filesystem::path &path);
+
   void set_x(int xpos);
   void set_y(int ypos);
 
@@ -81,16 +85,6 @@ private:
 
   WindowOpenParams open_params_{};
 
-#if defined(MYCO_PLATFORM_WINDOWS)
-  HWND win32_hwnd_{nullptr};
-  WNDPROC win32_saved_WndProc_{nullptr};
-  bool win32_force_light_mode_{false};
-  bool win32_force_dark_mode_{false};
-
-  static void set_win32_titlebar_color_(HWND hwnd);
-  static LRESULT CALLBACK WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-#endif
-
   void initialize_(const Initialize &e) override;
   void update_(double dt);
   void start_frame_(const StartFrame &e);
@@ -101,9 +95,19 @@ private:
   GLFWmonitor *get_monitor_(int monitor_num);
   void open_fullscreen_(const WindowOpenParams &params);
   void open_windowed_(const WindowOpenParams &params);
+
+#if defined(MYCO_PLATFORM_WINDOWS)
+  HWND win32_hwnd_{nullptr};
+  WNDPROC win32_saved_WndProc_{nullptr};
+  bool win32_force_light_mode_{false};
+  bool win32_force_dark_mode_{false};
+
+  static void set_win32_titlebar_color_(HWND hwnd);
+  static LRESULT CALLBACK WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+#endif
 };
 
 } // namespace myco
 
-DECLARE_MYCO_MODULE(myco::Window);
+MYCO_DECLARE_MODULE(myco::Window);
 ENABLE_BITOPS(myco::WindowFlags);
