@@ -1,11 +1,18 @@
 #pragma once
 
+#define GLFW_INCLUDE_NONE
 #include "myco/core/modules/module.hpp"
 #include "myco/util/enum_bitops.hpp"
-#define GLFW_INCLUDE_NONE
+#include "myco/util/platform.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/vec2.hpp"
 #include <string>
+
+
+#if defined(MYCO_PLATFORM_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 namespace myco {
 
@@ -31,6 +38,9 @@ struct WindowOpenParams {
   WindowFlags flags{WindowFlags::none};
 
   glm::ivec2 backend_version{3, 3};
+
+  bool win32_force_light_mode{false};
+  bool win32_force_dark_mode{false};
 };
 
 class Window : public Module<Window> {
@@ -70,6 +80,16 @@ private:
   static std::once_flag initialized_glfw_;
 
   WindowOpenParams open_params_{};
+
+#if defined(MYCO_PLATFORM_WINDOWS)
+  HWND win32_hwnd_{nullptr};
+  WNDPROC win32_saved_WndProc_{nullptr};
+  bool win32_force_light_mode_{false};
+  bool win32_force_dark_mode_{false};
+
+  static void set_win32_titlebar_color_(HWND hwnd);
+  static LRESULT CALLBACK WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+#endif
 
   void initialize_(const Initialize &e) override;
   void update_(double dt);

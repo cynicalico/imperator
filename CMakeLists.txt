@@ -27,6 +27,12 @@ target_include_directories(myco PUBLIC include)
 include(external/CMakeLists.txt)
 target_link_libraries(myco PUBLIC myco_externals)
 
+# We need this for linking ImGui properly and to set the title bar color
+# to match the current windows theme
+if(WIN32)
+    target_link_libraries(myco PUBLIC imm32.lib Dwmapi.lib)
+endif(WIN32)
+
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(myco PUBLIC OpenMP::OpenMP_CXX)

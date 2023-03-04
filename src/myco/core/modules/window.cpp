@@ -7,6 +7,12 @@
 #include "myco/core/glfw_callbacks.hpp"
 #include "myco/util/platform.hpp"
 
+#if defined(MYCO_PLATFORM_WINDOWS)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
+#include <dwmapi.h>
+#endif
+
 namespace myco {
 
 std::once_flag Window::initialized_glfw_;
@@ -31,6 +37,19 @@ void Window::open(const WindowOpenParams &params) {
   vsync = set(params.flags, myco::WindowFlags::vsync);
   glfwSwapInterval(vsync ? 1 : 0);
 
+#if defined(MYCO_PLATFORM_WINDOWS)
+  win32_hwnd_ = glfwGetWin32Window(glfw_handle);
+  win32_saved_WndProc_ = (WNDPROC)GetWindowLongPtr(win32_hwnd_, GWLP_WNDPROC);
+  win32_force_light_mode_ = params.win32_force_light_mode;
+  win32_force_dark_mode_ = params.win32_force_dark_mode;
+
+  // Set up our Win32 pointers for callbacks
+  SetWindowLongPtr(win32_hwnd_, GWLP_USERDATA, (LONG_PTR)this);
+  SetWindowLongPtr(win32_hwnd_, GWLP_WNDPROC, (LONG_PTR)WndProc_);
+
+  set_win32_titlebar_color_(win32_hwnd_);
+#endif
+
   if (!set(params.flags, WindowFlags::fullscreen) &&
       !set(params.flags, WindowFlags::borderless) &&
       !set(params.flags, WindowFlags::hidden))
@@ -42,18 +61,22 @@ WindowOpenParams Window::get_open_params() const {
 }
 
 void Window::set_x(int xpos) {
+  x = xpos;
   glfwSetWindowPos(glfw_handle, xpos, y);
 }
 
 void Window::set_y(int ypos) {
+  y = ypos;
   glfwSetWindowPos(glfw_handle, x, ypos);
 }
 
 void Window::set_w(int width) {
+  w = width;
   glfwSetWindowSize(glfw_handle, width, h);
 }
 
 void Window::set_h(int height) {
+  h = height;
   glfwSetWindowSize(glfw_handle, w, height);
 }
 
@@ -87,14 +110,14 @@ void Window::swap() const {
 void Window::initialize_(const Initialize &e) {
   Module::initialize_(e);
 
-  Scheduler::sub<Update>(name, {ModuleInfo<Input>::name}, [&](const auto &e){ update_(e.dt); });
+  Scheduler::sub<Update>(name, {ModuleInfo<Input>::name}, [&](const auto &e) { update_(e.dt); });
 
-  Scheduler::sub<StartFrame>(name, [&](const auto &e){ start_frame_(e); });
-  Scheduler::sub<EndFrame>(name, {ModuleInfo<Application>::name}, [&](const auto &e){ end_frame_(e); });
+  Scheduler::sub<StartFrame>(name, [&](const auto &e) { start_frame_(e); });
+  Scheduler::sub<EndFrame>(name, {ModuleInfo<Application>::name}, [&](const auto &e) { end_frame_(e); });
 
-  Scheduler::sub<GlfwWindowClose>(name, [&](const auto &e){ close_callback_(e); });
+  Scheduler::sub<GlfwWindowClose>(name, [&](const auto &e) { close_callback_(e); });
 
-  std::call_once(initialized_glfw_, [&](){
+  std::call_once(initialized_glfw_, [&]() {
     if (glfwInit() == GLFW_FALSE)
       std::exit(EXIT_FAILURE);
 
@@ -112,6 +135,10 @@ void Window::start_frame_(const StartFrame &e) {}
 
 void Window::end_frame_(const EndFrame &e) {
   swap();
+
+  // Check if the user closed the window without the close button
+  if (should_close())
+    Scheduler::send_nowait<GlfwWindowClose>(glfw_handle);
 }
 
 void Window::close_callback_(const GlfwWindowClose &e) {
@@ -123,7 +150,8 @@ GLFWmonitor *Window::get_monitor_(int monitor_num) {
   auto monitors = glfwGetMonitors(&monitor_count);
 
   if (monitor_num >= monitor_count) {
-    MYCO_LOG_WARN("Monitor {} out of range (only {} monitors available); defaulting to primary", monitor_num, monitor_count);
+    MYCO_LOG_WARN("Monitor {} out of range (only {} monitors available); defaulting to primary", monitor_num,
+                  monitor_count);
     return monitors[0];
   }
   return monitors[monitor_num];
@@ -245,5 +273,57 @@ void Window::open_windowed_(const WindowOpenParams &params) {
         base_y + params.pos.y
     );
 }
+
+/*******************************************************************************
+ * This code is specifically for setting the titlebar to the dark mode in
+ * Windows. It is based on some currently undocumented behavior including
+ * a magic constant (I gave it a name that seems to be common online. This
+ * does seem to be consistent and stable, so I'm okay relying on it for now
+ * even though using behavior that is totally undocumented is a little sketch
+ */
+#if defined(MYCO_PLATFORM_WINDOWS)
+void Window::set_win32_titlebar_color_(HWND hwnd) {
+  const int DWM_USE_IMMERSIVE_DARK_MODE = 20;
+
+  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+  DWORD should_use_light_theme{};
+  DWORD should_use_light_theme_size = sizeof(should_use_light_theme);
+  LONG code = RegGetValue(
+      HKEY_CURRENT_USER,
+      R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
+      "AppsUseLightTheme",
+      RRF_RT_REG_DWORD,
+      nullptr,
+      &should_use_light_theme,
+      &should_use_light_theme_size
+  );
+
+  if (code != ERROR_SUCCESS)
+    throw std::runtime_error(fmt::format("Cannot read DWORD from registry. {}", code));
+
+  // Incredibly cursed undocumented Win32 API bullshit
+  // https://stackoverflow.com/questions/57124243/winforms-dark-title-bar-on-windows-10
+  if ((should_use_light_theme || window->win32_force_light_mode_) && !window->win32_force_dark_mode_) {
+    const BOOL use_light_mode = 0;
+    DwmSetWindowAttribute(hwnd, DWM_USE_IMMERSIVE_DARK_MODE, &use_light_mode, sizeof(use_light_mode));
+  } else if ((!should_use_light_theme || window->win32_force_dark_mode_) && !window->win32_force_light_mode_) {
+    const BOOL use_dark_mode = 1;
+    DwmSetWindowAttribute(hwnd, DWM_USE_IMMERSIVE_DARK_MODE, &use_dark_mode, sizeof(use_dark_mode));
+  }
+  UpdateWindow(window->win32_hwnd_);
+}
+
+LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+  if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_) {
+    MYCO_LOG_INFO("Updating win32 titlebar color");
+    set_win32_titlebar_color_(hwnd);
+  }
+
+  return CallWindowProc(window->win32_saved_WndProc_, hwnd, message, wParam, lParam);
+}
+#endif
 
 } // namespace myco
