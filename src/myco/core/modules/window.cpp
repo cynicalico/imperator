@@ -162,7 +162,7 @@ void Window::initialize_(const Initialize &e) {
 
   Scheduler::sub<GlfwWindowClose>(name, [&](const auto &e) { close_callback_(e); });
 
-  std::call_once(initialized_glfw_, [&]() {
+  std::call_once(initialized_glfw_, []() {
     if (glfwInit() == GLFW_FALSE)
       std::exit(EXIT_FAILURE);
 

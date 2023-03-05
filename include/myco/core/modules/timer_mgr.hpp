@@ -87,7 +87,8 @@ private:
   template<AfterFunc F>
   class AfterTimer_ : public Timer_ {
   public:
-    AfterTimer_(double delay, F &&f) : Timer_(delay), f_(f) {}
+    AfterTimer_(double delay, const F &&f) : Timer_(delay), f_(f) {}
+    ~AfterTimer_() override = default;
 
     bool update(double dt) override {
       acc_ += dt;
@@ -108,6 +109,7 @@ private:
   public:
     EveryTimer_(std::vector<double> &&intervals, int count, F &&f)
         : Timer_(choose(intervals)), intervals_(intervals), max_count(count), f_(f) {}
+    ~EveryTimer_() override = default;
 
     bool update(double dt) override {
       acc_ += dt;
@@ -138,6 +140,7 @@ private:
   public:
     DuringTimer_(double interval, Fd &&fd, Fa &&fa)
         : Timer_(interval), fd_(fd), fa_(fa) {}
+    ~DuringTimer_() override = default;
 
     bool update(double dt) override {
       fire_dt = dt;

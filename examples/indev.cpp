@@ -7,9 +7,9 @@ public:
 
   void initialize() override {
     window->open({
-      .title = "Indev",
-      .size = {500, 500},
-      .flags = myco::WindowFlags::centered
+        .title = "Indev",
+        .size = {500, 500},
+        .flags = myco::WindowFlags::centered
     });
     ctx = std::make_shared<myco::Context2D>(*window);
     dear = std::make_unique<myco::Dear>(*window, *ctx);
