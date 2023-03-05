@@ -1,13 +1,9 @@
 #include "myco/myco.hpp"
 #include "myco/util/io.hpp"
 
-void say_hello() {
-  MYCO_LOG_INFO("Hello!");
-}
-
 class Indev : public myco::Application {
 public:
-  std::string every_tag;
+  myco::HSV clear_color = myco::hsv("red");
 
   void initialize() override {
     window->open({
@@ -19,20 +15,15 @@ public:
     dear = std::make_unique<myco::Dear>(*window, *ctx);
 
     application_show_debug_overlay();
-
-    every_tag = timer->every(1.0, say_hello);
   }
 
   void update(double dt) override {
     if (input->pressed("escape"))
       window->set_should_close(true);
-
-    if (input->pressed("1"))
-      timer->cancel(every_tag);
   }
 
   void draw() override {
-    ctx->clear(myco::rgb("black"));
+    ctx->clear(clear_color.to_rgb());
   }
 };
 
