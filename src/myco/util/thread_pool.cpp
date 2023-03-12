@@ -82,18 +82,17 @@ void ThreadPool::process_jobs_(std::size_t i) {
     }
 
     // FIXME: I'm not a huge fan of using exceptions in any of this code
-    //   because generally exceptions are "slow", but I genuinely can't think
-    //   of any better way to do this. I'd like to not impose the user having
-    //   to put an explicit return in the job functions that are being passed.
+    //  because generally exceptions are "slow", but I genuinely can't think
+    //  of any better way to do this. I'd like to not impose the user having
+    //  to put an explicit return in the job functions that are being passed.
     try {
       using namespace std::chrono;
 
-      duration<double> adjustment{0};
       j.second(std::move([&](double wait_time) {
-        // FIXME: This has a really coarse resolution, and shouldn't be relied on for anything precise
-        //   The `every` timers are much more precise if you need good timing set up
-
-        auto target_time = steady_clock::now() + (duration<double>(wait_time) - adjustment);
+        // FIXME: This has a really coarse resolution, especially when compiled with MSVC,
+        //  and shouldn't be relied on for anything precise
+        //  The `every` timers are much more precise if you need good timing set up
+        auto target_time = steady_clock::now() + duration<double>(wait_time);
 
         std::unique_lock<std::mutex> lock(cancel_mutexes_[i]);
         cancel_cvs_[i].wait_until(lock, target_time, [&] {
@@ -102,8 +101,6 @@ void ThreadPool::process_jobs_(std::size_t i) {
 
         if (should_cancel_[i])
           throw JobCancelledException();
-
-        adjustment = steady_clock::now() - target_time;
       }));
     } catch (JobCancelledException &) { /* do nothing */ }
 
