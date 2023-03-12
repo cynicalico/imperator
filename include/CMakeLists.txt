@@ -19,6 +19,7 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
         include/myco/util/helpers.hpp
         include/myco/util/io.hpp
         include/myco/util/log.hpp
+        include/myco/util/memusage.hpp
         include/myco/util/platform.hpp
         include/myco/util/rnd.hpp
         include/myco/util/thread_pool.hpp

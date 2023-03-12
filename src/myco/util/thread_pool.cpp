@@ -86,14 +86,25 @@ void ThreadPool::process_jobs_(std::size_t i) {
     //   of any better way to do this. I'd like to not impose the user having
     //   to put an explicit return in the job functions that are being passed.
     try {
-      j.second([&](double wait_time) {
+      using namespace std::chrono;
+
+      duration<double> adjustment{0};
+      j.second(std::move([&](double wait_time) {
+        // FIXME: This has a really coarse resolution, and shouldn't be relied on for anything precise
+        //   The `every` timers are much more precise if you need good timing set up
+
+        auto target_time = steady_clock::now() + (duration<double>(wait_time) - adjustment);
+
         std::unique_lock<std::mutex> lock(cancel_mutexes_[i]);
-        cancel_cvs_[i].wait_for(lock, std::chrono::duration<double, std::ratio<1>>(wait_time), [&] {
+        cancel_cvs_[i].wait_until(lock, target_time, [&] {
           return should_cancel_[i];
         });
+
         if (should_cancel_[i])
           throw JobCancelledException();
-      });
+
+        adjustment = steady_clock::now() - target_time;
+      }));
     } catch (JobCancelledException &) { /* do nothing */ }
 
     {

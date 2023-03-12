@@ -24,16 +24,22 @@ public:
     if (input->pressed("escape"))
       window->set_should_close(true);
 
-    if (input->pressed("1"))
-      pool->add_job([&](auto wait){
-        MYCO_LOG_INFO("Tick!");
-        wait(1);
-        MYCO_LOG_INFO("Tock!");
-        wait(1);
-        MYCO_LOG_INFO("Tick!");
-        wait(1);
-        MYCO_LOG_INFO("Tock!");
+    if (input->pressed("1")) {
+      pool->add_job([&](auto wait) {
+        while (true) {
+          wait(1);
+          MYCO_LOG_INFO("- Tick");
+          wait(1);
+          MYCO_LOG_INFO("- Tock");
+        }
       });
+
+      timer->every(1.0, [&]() {
+        static bool v = true;
+        MYCO_LOG_INFO(v ? "-- Tick" : "-- Tock");
+        v = !v;
+      });
+    }
   }
 
   void draw() override {

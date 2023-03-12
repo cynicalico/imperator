@@ -57,7 +57,7 @@ private:
   bool terminate_pool_{false};
 
   std::size_t thread_count_{0};
-  std::vector<std::thread> threads_{};
+  std::vector<std::jthread> threads_{};
 
   void initialize_pool_();
 

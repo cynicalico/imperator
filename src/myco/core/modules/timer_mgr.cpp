@@ -20,6 +20,7 @@ void TimerMgr::update_(double dt) {
 
     if (it->second->expired)
       it = timers_.erase(it);
+
     else
       it++;
   }

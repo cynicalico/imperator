@@ -2,6 +2,7 @@
 
 #include "myco/core/modules/application.hpp"
 #include "myco/core/engine.hpp"
+#include "myco/util/memusage.hpp"
 
 namespace myco {
 
@@ -54,6 +55,8 @@ void Application::draw_debug_overlay_() {
       ImPlot::PopStyleColor(2);
       ImPlot::PopStyleVar();
     }
+
+    ImGui::Text("%s", fmt::format("Mem: {:.2f} MB", memusage_mb()).c_str());
   }
   ImGui::End();
   ImGui::PopStyleVar(5);
