@@ -27,7 +27,7 @@ public:
   std::shared_ptr<T> get_module() const;
 
   template<class T> requires std::derived_from<T, Application>
-  void run();
+  void run(const WindowOpenParams &window_open_params);
 
 private:
   bool received_shutdown_{false};
@@ -54,13 +54,14 @@ std::shared_ptr<T> Engine::get_module() const {
 }
 
 template<class T> requires std::derived_from<T, Application>
-void Engine::run() {
+void Engine::run(const WindowOpenParams &window_open_params) {
   add_module<Window>();
   add_module<InputMgr>();
   add_module<TimerMgr>();
   add_module_<Application, T>();
-
   Scheduler::send_nowait<Initialize>(shared_from_this());
+
+  Scheduler::send_nowait<StartApplication>(window_open_params);
 
   frame_counter.reset();
   while (!received_shutdown_) {

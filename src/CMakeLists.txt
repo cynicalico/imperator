@@ -7,6 +7,7 @@ set(MYCO_SRC_FILES ${MYCO_SRC_FILES}
 
         src/myco/core/engine.cpp
         src/myco/core/glfw_callbacks.cpp
+        src/myco/core/msgs.cpp
         src/myco/core/scheduler.cpp
 
         src/myco/gfx/color.cpp

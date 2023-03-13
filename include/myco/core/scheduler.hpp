@@ -49,11 +49,11 @@ public:
 
   std::string debug_stringify() const;
 
-  std::vector<ListItem_>::iterator begin() { return order_.begin(); }
-  std::vector<ListItem_>::iterator end() { return order_.end(); }
+  typename std::vector<ListItem_>::iterator begin() { return order_.begin(); }
+  typename std::vector<ListItem_>::iterator end() { return order_.end(); }
 
-  std::vector<ListItem_>::const_iterator cbegin() { return order_.cbegin(); }
-  std::vector<ListItem_>::const_iterator cend() { return order_.cend(); }
+  typename std::vector<ListItem_>::const_iterator cbegin() { return order_.cbegin(); }
+  typename std::vector<ListItem_>::const_iterator cend() { return order_.cend(); }
 
 private:
   std::unordered_map<std::string, std::size_t> s_to_id_{};

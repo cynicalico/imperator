@@ -6,6 +6,7 @@
 
 namespace myco {
 
+// Forward declare the engine (parent)
 class Engine;
 
 template<typename T>

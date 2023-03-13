@@ -32,6 +32,12 @@ add_library(myco_externals STATIC
         external/stb/stb_image_resize.h
         external/stb/stb_image_write.h)
 
+# Glad 2 downloads khrplatform.h with a Mac format,
+# and the warning pops up everywhere
+if(MSVC)
+    target_compile_options(myco_externals PUBLIC /wd4335)
+endif(MSVC)
+
 add_subdirectory(external/fmt)
 
 add_subdirectory(external/glad/cmake)

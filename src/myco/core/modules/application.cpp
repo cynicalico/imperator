@@ -65,6 +65,8 @@ void Application::draw_debug_overlay_() {
 void Application::initialize_(const Initialize &e) {
   Module<Application>::initialize_(e);
 
+  Scheduler::sub<StartApplication>(name, [&](const auto &p){ start_(p); });
+
   Scheduler::sub<Update>(
       name,
       {
@@ -82,6 +84,12 @@ void Application::initialize_(const Initialize &e) {
   window = engine->get_module<Window>();
   input = engine->get_module<InputMgr>();
   timer = engine->get_module<TimerMgr>();
+}
+
+void Application::start_(const StartApplication &e) {
+  window->open(e.window_open_params);
+  ctx = std::make_shared<myco::Context2D>(*window);
+  dear = std::make_unique<myco::Dear>(*window, *ctx);
 
   initialize();
 }

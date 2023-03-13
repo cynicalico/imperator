@@ -1,12 +1,15 @@
 #pragma once
 
-//#include "myco/core/engine.hpp"
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
+#include <memory>
 
 namespace myco {
 
+// Forward declaration of objects needed for the messages
+// Cannot include the files directly because it causes circular dependencies
 class Engine;
+struct WindowOpenParams;
 
 /* MYCO EVENTS */
 
@@ -17,6 +20,10 @@ struct Initialize {
 struct ReleaseEngine {};
 
 struct Shutdown {};
+
+struct StartApplication {
+  const WindowOpenParams &window_open_params;
+};
 
 struct Update {
   double dt;

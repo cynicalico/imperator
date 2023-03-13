@@ -47,6 +47,8 @@ private:
 
   void initialize_(const Initialize &e) override;
 
+  void start_(const StartApplication &e);
+
   void start_frame_();
   void end_frame_();
 };
