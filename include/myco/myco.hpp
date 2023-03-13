@@ -1,8 +1,6 @@
 #pragma once
 
 #include "myco/core/modules/application.hpp"
-#include "myco/core/modules/module.hpp"
-#include "myco/core/modules/window.hpp"
 
 #include "myco/core/engine.hpp"
 #include "myco/core/scheduler.hpp"

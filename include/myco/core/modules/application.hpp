@@ -10,7 +10,24 @@
 
 #include "myco/util/time.hpp"
 
+#include <map>
+#include <utility>
+
 namespace myco {
+
+class Sticky {
+public:
+  std::string category;
+  std::string label;
+  std::function<std::string()> f;
+
+  Sticky(std::string category, std::string label, std::function<std::string()> f)
+      : category(std::move(category)), label(std::move(label)), f(std::move(f)) {}
+
+  std::string string() const {
+    return fmt::format("{}: {}", label, f());
+  }
+};
 
 class Application : public Module<Application> {
 public:
@@ -38,19 +55,25 @@ protected:
   void application_hide_debug_overlay();
   void application_toggle_debug_overlay();
 
+  void application_sticky(const std::string &label, std::function<std::string()> &&f);
+
 private:
+  std::map<std::string, std::vector<Sticky>> stickies_{};
+
   struct {
     bool active{false};
   } debug_overlay_{};
 
+  void draw_stickies_();
   void draw_debug_overlay_();
 
   void initialize_(const Initialize &e) override;
-
   void start_(const StartApplication &e);
 
   void start_frame_();
   void end_frame_();
+
+  void sticky_create_(const StickyCreate &e);
 };
 
 } // namespace myco

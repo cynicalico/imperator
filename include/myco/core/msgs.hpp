@@ -2,7 +2,9 @@
 
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
+#include <functional>
 #include <memory>
+#include <optional>
 
 namespace myco {
 
@@ -34,6 +36,19 @@ struct StartFrame {};
 struct Draw {};
 
 struct EndFrame {};
+
+/* STICKIES */
+
+struct StickyCreate {
+  std::optional<std::string> category{std::nullopt};
+  std::string label;
+  std::function<std::string()> f;
+};
+
+struct StickyDelete {
+  std::optional<std::string> category{std::nullopt};
+  std::string label;
+};
 
 /* GLFW CALLBACKS */
 

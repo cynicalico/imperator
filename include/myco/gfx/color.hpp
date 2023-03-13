@@ -6,7 +6,7 @@
 #undef RGB
 
 #include "glm/glm.hpp"
-#include "fmt/ostream.h"
+#include "fmt/format.h"
 
 #include <cstdint>
 #include <string>
@@ -45,8 +45,6 @@ public:
   friend RGB rgba(int r, int g, int b, int a);
   friend RGB rgba(std::uint64_t hex);
   friend RGB rgba(const std::string &css_color, int a);
-
-  friend std::ostream &operator<<(std::ostream &os, const RGB &c);
 
   RGB get_inverse();
   void invert();
@@ -87,8 +85,6 @@ public:
   friend HSV hsva(double h, double s, double v, int a);
   friend HSV hsva(const std::string &css_color, int a);
 
-  friend std::ostream &operator<<(std::ostream &os, const HSV &c);
-
   HSV get_inverse();
   void invert();
 
@@ -124,8 +120,6 @@ public:
 
   friend HSL hsla(double h, double s, double l, int a);
   friend HSL hsla(const std::string &css_color, int a);
-
-  friend std::ostream &operator<<(std::ostream &os, const HSL &c);
 
   HSL get_inverse();
   void invert();
@@ -163,8 +157,6 @@ public:
   friend XYZ xyza(double x, double y, double z, int a);
   friend XYZ xyza(const std::string &css_color, int a);
 
-  friend std::ostream &operator<<(std::ostream &os, const XYZ &c);
-
   RGB to_rgb() const;
   HSV to_hsv() const;
   HSL to_hsl() const;
@@ -199,8 +191,6 @@ public:
   friend CIELab laba(double l, double a, double b, int alpha);
   friend CIELab laba(const std::string &css_color, int alpha);
 
-  friend std::ostream &operator<<(std::ostream &os, const CIELab &c);
-
   RGB to_rgb() const;
   HSV to_hsv() const;
   HSL to_hsl() const;
@@ -234,8 +224,6 @@ public:
   friend CIELCh lcha(double l, double c, double h, int a);
   friend CIELCh lcha(const std::string &css_color, int a);
 
-  friend std::ostream &operator<<(std::ostream &os, const CIELCh &c);
-
   RGB to_rgb() const;
   HSV to_hsv() const;
   HSL to_hsl() const;
@@ -247,3 +235,10 @@ private:
 };
 
 } // namespace myco
+
+template<> struct fmt::formatter<myco::HSV>: formatter<string_view> {
+  template <typename FormatContext>
+  auto format(myco::HSV c, FormatContext& ctx) const {
+    return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.v, c.a);
+  }
+};

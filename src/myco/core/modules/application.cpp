@@ -25,6 +25,47 @@ void Application::application_toggle_debug_overlay() {
     application_show_debug_overlay();
 }
 
+void Application::application_sticky(const std::string &label, std::function<std::string()> &&f) {
+  Scheduler::send_nowait<StickyCreate>(std::nullopt, label, std::forward<std::function<std::string()>>(f));
+}
+
+void Application::draw_stickies_() {
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+  ImGui::SetNextWindowSize({static_cast<float>(window->w), static_cast<float>(window->h)}, ImGuiCond_Always);
+  ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
+  if (ImGui::Begin("Stickies", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs)) {
+    auto dl = ImGui::GetWindowDrawList();
+
+    glm::vec2 pos{window->w, 0};
+
+    for (const auto &[category, ss]: stickies_) {
+//    TODO:  if (category != "__none__")
+
+      for (const auto &s : ss) {
+        auto text = s.string();
+        auto size = ImGui::CalcTextSize(text.c_str());
+
+        dl->AddRectFilled(
+            {pos.x - size.x - 2, pos.y - 1},
+            {pos.x, pos.y + size.y + 2},
+            ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_WindowBg))
+        );
+        dl->AddText(
+            {pos.x - size.x - 1, pos.y},
+            ImGui::GetColorU32(ImGui::GetStyleColorVec4(ImGuiCol_Text)),
+            text.c_str()
+        );
+
+        pos.y += size.y + 1;
+      }
+    }
+  }
+  ImGui::End();
+  ImGui::PopStyleVar(3);
+}
+
 void Application::draw_debug_overlay_() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -81,6 +122,9 @@ void Application::initialize_(const Initialize &e) {
   Scheduler::sub<Draw>(name, [&](const auto &){ draw(); });
   Scheduler::sub<EndFrame>(name, [&](const auto &){ end_frame_(); });
 
+  stickies_["__none__"] = {};
+  Scheduler::sub<StickyCreate>(name, [&](const auto &p) { sticky_create_(p); });
+
   window = engine->get_module<Window>();
   input = engine->get_module<InputMgr>();
   timer = engine->get_module<TimerMgr>();
@@ -100,11 +144,21 @@ void Application::start_frame_() {
 }
 
 void Application::end_frame_() {
+  draw_stickies_();
+
   if (debug_overlay_.active)
     draw_debug_overlay_();
 
   if (dear)
     dear->render();
+}
+
+void Application::sticky_create_(const StickyCreate &e) {
+  std::string category = "__none__";
+  if (e.category.has_value())
+    category = e.category.value();
+
+  stickies_[category].emplace_back(category, e.label, e.f);
 }
 
 } // namespace myco

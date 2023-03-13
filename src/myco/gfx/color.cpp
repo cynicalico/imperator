@@ -258,10 +258,6 @@ RGB rgba(const std::string &css_color, int a) {
   return {c[0], c[1], c[2], a};
 }
 
-std::ostream &operator<<(std::ostream &os, const RGB &c) {
-  return os << fmt::format("RGB({},{},{},{})", c.r, c.g, c.b, c.a);
-}
-
 RGB RGB::get_inverse() {
   return {255 - r, 255 - g, 255 - b, a};
 }
@@ -357,10 +353,6 @@ HSV hsva(const std::string &css_color, int a) {
   return internal::rgba_to_hsv(c[0], c[1], c[2], a);
 }
 
-std::ostream &operator<<(std::ostream &os, const HSV &c) {
-  return os << fmt::format("HSV({:.3f},{:.3f},{:.3f},{})", c.h, c.s, c.v, c.a);
-}
-
 HSV HSV::get_inverse() {
   return {std::fmod(h + 180.0, 360.0), s, v, a};
 }
@@ -430,10 +422,6 @@ HSL hsla(double h, double s, double l, int a) {
 HSL hsla(const std::string &css_color, int a) {
   auto c = get_css_color(css_color);
   return internal::rgba_to_hsl(c[0], c[1], c[2], a);
-}
-
-std::ostream &operator<<(std::ostream &os, const HSL &c) {
-  return os << fmt::format("HSL({:.3f},{:.3f},{:.3f},{})", c.h, c.s, c.l, c.a);
 }
 
 HSL HSL::get_inverse() {
@@ -506,10 +494,6 @@ XYZ xyza(double x, double y, double z, int a) {
 XYZ xyza(const std::string &css_color, int a) {
   auto c = get_css_color(css_color);
   return rgba(c[0], c[1], c[2], a).to_xyz();
-}
-
-std::ostream &operator<<(std::ostream &os, const XYZ &c) {
-  return os << fmt::format("XYZ({:.3f},{:.3f},{:.3f},{})", c.x, c.y, c.z, c.a);
 }
 
 RGB XYZ::to_rgb() const {
@@ -604,10 +588,6 @@ CIELab laba(const std::string &css_color, int alpha) {
   return rgba(c[0], c[1], c[2], alpha).to_lab();
 }
 
-std::ostream &operator<<(std::ostream &os, const CIELab &c) {
-  return os << fmt::format("L*ab({:.3f},{:.3f},{:.3f},{})", c.l, c.a, c.b, c.alpha);
-}
-
 RGB CIELab::to_rgb() const {
   return to_xyz().to_rgb();
 }
@@ -685,10 +665,6 @@ CIELCh lcha(double l, double c, double h, int a) {
 CIELCh lcha(const std::string &css_color, int a) {
   auto c = get_css_color(css_color);
   return rgba(c[0], c[1], c[2], a).to_lch();
-}
-
-std::ostream &operator<<(std::ostream &os, const CIELCh &c) {
-  return os << fmt::format("L*Ch°({:.3f},{:.3f},{:.3f},{})", c.l, c.c, c.h, c.a);
 }
 
 RGB CIELCh::to_rgb() const {
