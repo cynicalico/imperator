@@ -3,6 +3,7 @@
 #include "myco/util/rnd.hpp"
 
 #include <condition_variable>
+#include <future>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -13,7 +14,55 @@
 namespace myco {
 
 typedef std::function<void(double)> WaitFunc;
-typedef std::function<void(WaitFunc)> Job;
+//typedef std::function<void(WaitFunc)> Job;
+
+template<typename T>
+concept JobFunc = std::invocable<T, WaitFunc>;
+
+class Job {
+public:
+  Job() = default;
+  virtual ~Job() = default;
+
+  virtual void run(WaitFunc wait) = 0;
+};
+
+template<JobFunc F>
+class JobWrap : public Job {
+public:
+  std::packaged_task<std::invoke_result_t<F, WaitFunc>(WaitFunc)> task_;
+
+  JobWrap() : task_([](){}) {}
+
+  explicit JobWrap(F &&f) : task_(std::forward<F>(f)) {}
+
+  auto get_future() {
+    return task_.get_future();
+  }
+
+  void run(WaitFunc wait) override {
+    task_(wait);
+  }
+};
+
+template<typename T>
+struct JobRes {
+  std::string tag;
+  std::future<T> f;
+
+  bool avail() const {
+    if (f.valid()) {
+      auto status = f.wait_for(std::chrono::seconds(0));
+      if (status == std::future_status::ready)
+        return true;
+    }
+    return false;
+  }
+
+  T get() {
+    return f.get();
+  }
+};
 
 struct JobCancelledException : public std::exception {};
 
@@ -30,11 +79,13 @@ public:
   ThreadPool(ThreadPool &&other) = delete;
   ThreadPool &operator=(ThreadPool &&other) = delete;
 
-  template<typename T>
-  std::string add_job(T &&f);
+  template<JobFunc F>
+  JobRes<std::invoke_result_t<F, WaitFunc>>
+  add_job(F &&f);
 
-  template<typename T>
-  std::string add_job(const std::string &tag, T &&f);
+  template<JobFunc F>
+  JobRes<std::invoke_result_t<F, WaitFunc>>
+  add_job(const std::string &tag, F &&f);
 
   void cancel_job(const std::string &tag);
   void cancel_all();
@@ -42,7 +93,7 @@ public:
   void shutdown();
 
 private:
-  std::queue<std::pair<std::string, Job>> jobs_{};
+  std::queue<std::pair<std::string, std::unique_ptr<Job>>> jobs_{};
 
   std::mutex queue_mutex_;
   std::condition_variable take_a_job_;
@@ -64,20 +115,23 @@ private:
   void process_jobs_(std::size_t i);
 };
 
-template<typename T>
-std::string ThreadPool::add_job(T &&f) {
-  return add_job(base58(11), std::forward<T>(f));
+template<JobFunc F>
+JobRes<std::invoke_result_t<F, WaitFunc>>
+ThreadPool::add_job(F &&f) {
+  return add_job(base58(11), std::forward<F>(f));
 }
 
-template<typename T>
-std::string ThreadPool::add_job(const std::string &tag, T &&f) {
-  {
-    std::unique_lock<std::mutex> lock(queue_mutex_);
-    jobs_.emplace(tag, std::forward<T>(f));
-  }
+template<JobFunc F>
+JobRes<std::invoke_result_t<F, WaitFunc>>
+ThreadPool::add_job(const std::string &tag, F &&f) {
+  std::unique_lock<std::mutex> lock(queue_mutex_);
+  auto jw = std::make_unique<JobWrap<F>>(std::forward<F>(f));
+  auto fu = jw->get_future();
+  jobs_.emplace(tag, std::move(jw));
+  lock.unlock();
   take_a_job_.notify_one();
 
-  return tag;
+  return {tag, std::move(fu)};
 }
 
 } // namespace myco

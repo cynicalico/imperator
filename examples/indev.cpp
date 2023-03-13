@@ -1,10 +1,14 @@
 #include "myco/myco.hpp"
 #include "myco/util/thread_pool.hpp"
 
+using namespace std::chrono_literals;
+
 class Indev : public myco::Application {
 public:
   myco::HSV clear_color = myco::hsv("red");
+
   std::unique_ptr<myco::ThreadPool> pool;
+  myco::JobRes<int> res;
 
   void initialize() override {
     window->open({
@@ -18,28 +22,24 @@ public:
     application_show_debug_overlay();
 
     pool = std::make_unique<myco::ThreadPool>(4);
+    res = pool->add_job([&](auto wait) -> int {
+      int n = 0;
+      wait(1.0);
+      n++;
+      wait(1.0);
+      n++;
+      wait(1.0);
+      n++;
+      return n;
+    });
   }
 
   void update(double dt) override {
     if (input->pressed("escape"))
       window->set_should_close(true);
 
-    if (input->pressed("1")) {
-      pool->add_job([&](auto wait) {
-        while (true) {
-          wait(1);
-          MYCO_LOG_INFO("- Tick");
-          wait(1);
-          MYCO_LOG_INFO("- Tock");
-        }
-      });
-
-      timer->every(1.0, [&]() {
-        static bool v = true;
-        MYCO_LOG_INFO(v ? "-- Tick" : "-- Tock");
-        v = !v;
-      });
-    }
+    if (res.avail())
+      MYCO_LOG_INFO("Calc finished, n={}", res.get());
   }
 
   void draw() override {

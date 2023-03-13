@@ -57,7 +57,7 @@ void ThreadPool::initialize_pool_() {
 
 void ThreadPool::process_jobs_(std::size_t i) {
   while (true) {
-    std::pair<std::string, Job> j;
+    std::pair<std::string, std::unique_ptr<Job>> j;
     {
       std::unique_lock<std::mutex> lock(queue_mutex_);
 
@@ -67,7 +67,7 @@ void ThreadPool::process_jobs_(std::size_t i) {
       if (terminate_pool_)
         break;
 
-      j = jobs_.front();
+      j = std::move(jobs_.front());
       jobs_.pop();
     }
     {
@@ -88,7 +88,7 @@ void ThreadPool::process_jobs_(std::size_t i) {
     try {
       using namespace std::chrono;
 
-      j.second(std::move([&](double wait_time) {
+      j.second->run([&](double wait_time) {
         // FIXME: This has a really coarse resolution, especially when compiled with MSVC,
         //  and shouldn't be relied on for anything precise
         //  The `every` timers are much more precise if you need good timing set up
@@ -101,7 +101,7 @@ void ThreadPool::process_jobs_(std::size_t i) {
 
         if (should_cancel_[i])
           throw JobCancelledException();
-      }));
+      });
     } catch (JobCancelledException &) { /* do nothing */ }
 
     {
