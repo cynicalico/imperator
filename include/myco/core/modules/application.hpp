@@ -55,6 +55,12 @@ protected:
   void application_hide_debug_overlay();
   void application_toggle_debug_overlay();
 
+  template<typename S, typename T> requires (!std::invocable<T>)
+  void application_sticky(const std::string &label, const S &format, T &&v);
+
+  template<typename T> requires (!std::invocable<T>)
+  void application_sticky(const std::string &label, T &&v);
+
   void application_sticky(const std::string &label, std::function<std::string()> &&f);
 
 private:
@@ -75,6 +81,16 @@ private:
 
   void sticky_create_(const StickyCreate &e);
 };
+
+template<typename S, typename T> requires (!std::invocable<T>)
+void Application::application_sticky(const std::string &label, const S &format, T &&v) {
+  application_sticky(label, [&]() { return fmt::vformat(format, fmt::make_format_args(std::forward<T&>(v))); });
+}
+
+template<typename T> requires (!std::invocable<T>)
+void Application::application_sticky(const std::string &label, T &&v) {
+  application_sticky(label, [&]() { return fmt::format("{}", std::forward<T&>(v)); });
+}
 
 } // namespace myco
 

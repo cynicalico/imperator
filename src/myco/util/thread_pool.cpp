@@ -91,7 +91,7 @@ void ThreadPool::process_jobs_(std::size_t i) {
       j.second->run([&](double wait_time) {
         // FIXME: This has a really coarse resolution, especially when compiled with MSVC,
         //  and shouldn't be relied on for anything precise
-        //  The `every` timers are much more precise if you need good timing set up
+        //  The `every` timers are much more precise if you need good repeat timing set up
         auto target_time = steady_clock::now() + duration<double>(wait_time);
 
         std::unique_lock<std::mutex> lock(cancel_mutexes_[i]);

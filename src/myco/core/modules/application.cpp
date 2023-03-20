@@ -41,7 +41,8 @@ void Application::draw_stickies_() {
     glm::vec2 pos{window->w, 0};
 
     for (const auto &[category, ss]: stickies_) {
-//    TODO:  if (category != "__none__")
+      if (category != "__none__")
+        pos.y += ImGui::GetTextLineHeight();
 
       for (const auto &s : ss) {
         auto text = s.string();
