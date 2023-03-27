@@ -1,13 +1,42 @@
+#define MYCO_INCLUDE_GL_WRAPPERS
+
 #include "myco/myco.hpp"
 
 class Indev : public myco::Application {
 public:
+  std::unique_ptr<myco::gl::Shader> shader{nullptr};
   myco::HSV clear_color = myco::hsv(0, 1, 1);
 
   void initialize() override {
     application_sticky("cc", clear_color);
     application_sticky("mx", input->mouse.x);
     application_sticky("my", "{:10}", input->mouse.y);
+
+    shader = std::make_unique<myco::gl::Shader>(ctx, myco::gl::ShaderSrc{
+        .name = "test",
+        .vertex = R"(
+#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec4 color;
+
+out vec4 frag_color;
+
+void main() {
+    frag_color = color;
+    gl_Position = vec4(pos, 1.0);
+}
+)",
+        .fragment = R"(
+#version 330 core
+in vec4 frag_color;
+
+out vec4 FragColor;
+
+void main() {
+    FragColor = frag_color;
+}
+)"
+    });
   }
 
   void update(double dt) override {

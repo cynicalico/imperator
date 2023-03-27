@@ -7,7 +7,7 @@ layout (location = 1) in vec4 color;
 
 out vec4 frag_color;
 
-int main() {
+void main() {
     frag_color = color;
     gl_Position = vec4(pos, 1.0);
 }
@@ -18,6 +18,6 @@ in vec4 frag_color;
 
 out vec4 FragColor;
 
-int main() {
+void main() {
     FragColor = frag_color;
 }

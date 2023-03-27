@@ -51,12 +51,8 @@ struct JobRes {
   std::future<T> f;
 
   bool avail() const {
-    if (f.valid()) {
-      auto status = f.wait_for(std::chrono::seconds(0));
-      if (status == std::future_status::ready)
-        return true;
-    }
-    return false;
+    if (!f.valid()) return false;
+    return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
   }
 
   T get() {

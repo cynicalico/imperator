@@ -10,6 +10,7 @@ set(MYCO_SRC_FILES ${MYCO_SRC_FILES}
         src/myco/core/msgs.cpp
         src/myco/core/scheduler.cpp
 
+        src/myco/gfx/gl/shader.cpp
         src/myco/gfx/color.cpp
         src/myco/gfx/context2d.cpp
         src/myco/gfx/dear.cpp

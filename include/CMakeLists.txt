@@ -10,6 +10,7 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
         include/myco/core/msgs.hpp
         include/myco/core/scheduler.hpp
 
+        include/myco/gfx/gl/shader.hpp
         include/myco/gfx/color.hpp
         include/myco/gfx/context2d.hpp
         include/myco/gfx/dear.hpp
