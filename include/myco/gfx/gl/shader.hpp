@@ -14,6 +14,9 @@ struct ShaderSrc {
   std::optional<std::string> name;
   std::optional<std::string> vertex;
   std::optional<std::string> fragment;
+
+  static ShaderSrc parse_src(const std::string &src);
+  static ShaderSrc parse_file(const std::filesystem::path &path);
 };
 
 class Shader {

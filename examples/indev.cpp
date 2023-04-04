@@ -1,5 +1,4 @@
 #define MYCO_INCLUDE_GL_WRAPPERS
-
 #include "myco/myco.hpp"
 
 class Indev : public myco::Application {
@@ -12,9 +11,10 @@ public:
     application_sticky("mx", input->mouse.x);
     application_sticky("my", "{:10}", input->mouse.y);
 
-    shader = std::make_unique<myco::gl::Shader>(ctx, myco::gl::ShaderSrc{
-        .name = "test",
-        .vertex = R"(
+    shader = std::make_unique<myco::gl::Shader>(ctx, myco::gl::ShaderSrc::parse_src(R"(
+#pragma name(test)
+
+#pragma vertex
 #version 330 core
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec4 color;
@@ -25,8 +25,8 @@ void main() {
     frag_color = color;
     gl_Position = vec4(pos, 1.0);
 }
-)",
-        .fragment = R"(
+
+#pragma fragment
 #version 330 core
 in vec4 frag_color;
 
@@ -35,8 +35,9 @@ out vec4 FragColor;
 void main() {
     FragColor = frag_color;
 }
-)"
-    });
+)"));
+
+    application_show_debug_overlay();
   }
 
   void update(double dt) override {

@@ -8,6 +8,7 @@
 #include "myco/gfx/context2d.hpp"
 
 #include "myco/util/helpers.hpp"
+#include "myco/util/io.hpp"
 #include "myco/util/log.hpp"
 #include "myco/util/platform.hpp"
 #include "myco/util/rnd.hpp"

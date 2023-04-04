@@ -1,6 +1,106 @@
 #include "myco/gfx/gl/shader.hpp"
+#include "myco/util/io.hpp"
+#include "myco/util/sops.hpp"
+#include "re2/re2.h"
+#include <sstream>
 
 namespace myco::gl {
+
+ShaderSrc ShaderSrc::parse_src(const std::string &src) {
+  enum class BufferDst {vertex, fragment};
+
+  // Match things of the form
+  //   #pragma <name>(<args>)<bad>\n
+  // Captures what is after the parens to emit warnings
+  static RE2 pragma_w_args(R"(#pragma (.+)\((.+)\)(.*))");
+  assert(pragma_w_args.ok());
+
+  // Match things of the form
+  //   #pragma <name>\n
+  // Should reject parens
+  static RE2 pragma_no_args(R"(#pragma ([^()\n]+))");
+  assert(pragma_no_args.ok());
+
+  ShaderSrc s{};
+  // Intermediate storage control
+  std::string buffer;
+  bool read_non_pragma_line = false;
+  BufferDst buffer_dst{BufferDst::vertex};
+
+  auto try_set_shader_part = [&](){
+    if (!read_non_pragma_line) {
+      buffer.clear();
+      return;
+    }
+
+    switch (buffer_dst) {
+      using enum BufferDst;
+      case vertex:
+        if (!s.vertex)
+          s.vertex = buffer;
+        break;
+
+      case fragment:
+        if (!s.fragment)
+          s.fragment = buffer;
+        break;
+    }
+    buffer.clear();
+  };
+
+  // Variables to store regex match captures
+  std::string pragma_name;
+  std::string pragma_args;
+  std::string pragma_extra;
+
+  std::istringstream iss(src);
+  std::size_t line_no = 1;
+  for (std::string line; std::getline(iss, line); ++line_no) {
+    myco::rtrim(line);
+    if (line.empty())
+      continue;
+
+    if (RE2::FullMatch(line, pragma_w_args, &pragma_name, &pragma_args, &pragma_extra)) {
+      if (pragma_name == "name")
+        s.name = pragma_args;
+
+      else
+        MYCO_LOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+
+      if (!pragma_extra.empty())
+        MYCO_LOG_WARN("Trailing characters on pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+
+    } else if (RE2::FullMatch(line, pragma_no_args, &pragma_name)) {
+      if (pragma_name == "vertex") {
+        if (s.vertex)
+          MYCO_LOG_WARN("Duplicate vertex pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
+        try_set_shader_part();
+        buffer_dst = BufferDst::vertex;
+
+      } else if (pragma_name == "fragment") {
+        if (s.fragment)
+          MYCO_LOG_WARN("Duplicate fragment pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
+        try_set_shader_part();
+        buffer_dst = BufferDst::fragment;
+
+      } else
+        MYCO_LOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+
+    } else {
+      read_non_pragma_line = true;
+      buffer.append(line + '\n');
+    }
+  }
+
+  if (!buffer.empty())
+    try_set_shader_part();
+
+  return s;
+}
+
+ShaderSrc ShaderSrc::parse_file(const std::filesystem::path &path) {
+  return parse_src(read_file_to_string(path));
+}
 
 Shader::~Shader() {
   del_id_();
