@@ -32,6 +32,12 @@ add_library(myco_externals STATIC
         external/stb/stb_image_resize.h
         external/stb/stb_image_write.h)
 
+# Glad 2 downloads khrplatform.h with a Mac format,
+# and the warning pops up everywhere
+if(MSVC)
+    target_compile_options(myco_externals PUBLIC /wd4335)
+endif(MSVC)
+
 add_subdirectory(external/fmt)
 
 add_subdirectory(external/glad/cmake)
@@ -58,6 +64,8 @@ set(ALSOFT_INSTALL_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ALSOFT_INSTALL_UTILS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/openal-soft)
 
+add_subdirectory(external/rapidcsv)
+
 set(RE2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/re2)
 
@@ -83,6 +91,7 @@ target_link_libraries(myco_externals PUBLIC
         glm::glm
         libnyquist
         OpenAL::OpenAL
+        rapidcsv
         re2::re2
         spdlog::spdlog_header_only
         stduuid)
