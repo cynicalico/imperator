@@ -11,7 +11,7 @@ public:
     application_sticky("mx", input->mouse.x);
     application_sticky("my", "{:10}", input->mouse.y);
 
-    shader = std::make_unique<myco::gl::Shader>(ctx, myco::gl::ShaderSrc::parse_src(R"(
+    shader = std::make_unique<myco::gl::Shader>(ctx, myco::gl::ShaderSrc::parse_src(R"glsl(
 #pragma name(test)
 
 #pragma vertex
@@ -35,7 +35,7 @@ out vec4 FragColor;
 void main() {
     FragColor = frag_color;
 }
-)"));
+)glsl"));
 
     application_show_debug_overlay();
   }
