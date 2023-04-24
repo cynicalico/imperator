@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
+#include <ranges>
 #include <string>
 
 auto HERE = std::filesystem::path(__FILE__).parent_path();
@@ -62,12 +63,17 @@ struct ShaderSrc {
     std::optional<std::string> fragment{};
 };
 
-std::optional<std::string> read_file_process_includes(const std::filesystem::path &path) {
+std::optional<std::string> read_file_process_includes(
+        const std::filesystem::path &path,
+        std::vector<std::filesystem::path> &included_paths
+) {
     const static RE2 spaces_pat{R"((\s+))"};
     assert(spaces_pat.ok());
 
     const static RE2 path_pat{R"("(.+)\")"};
     assert(path_pat.ok());
+
+    included_paths.emplace_back(path);
 
     std::ifstream ifs(path.string());
     if (!ifs.is_open()) {
@@ -88,7 +94,10 @@ std::optional<std::string> read_file_process_includes(const std::filesystem::pat
             }
 
             auto include_path = path.parent_path() / include;
-            auto include_file = read_file_process_includes(include_path);
+            if (std::ranges::contains(included_paths, include_path))
+                continue;  // Don't try and include a file twice
+
+            auto include_file = read_file_process_includes(include_path, included_paths);
             if (!include_file)
                 return {};
 
@@ -102,7 +111,8 @@ std::optional<std::string> read_file_process_includes(const std::filesystem::pat
 }
 
 ShaderSrc read_shader_src(const std::filesystem::path &path) {
-    auto str = read_file_process_includes(path);
+    std::vector<std::filesystem::path> included_paths{};
+    auto str = read_file_process_includes(path, included_paths);
     fmt::println("#####\n{}#####", str.value_or("Failed to read file"));
 
     ShaderSrc s{};
