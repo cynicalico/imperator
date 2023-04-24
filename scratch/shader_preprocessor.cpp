@@ -34,7 +34,7 @@ std::optional<std::string> read_file_process_includes(
     std::ifstream ifs(path.string());
     if (!ifs.is_open()) {
         MYCO_LOG_ERROR("Failed to open file: '{}'", path.string());
-        return {};
+        return std::nullopt;
     }
 
     std::string s;
@@ -48,7 +48,7 @@ std::optional<std::string> read_file_process_includes(
             std::string include;
             if (tokens.size() < 2 || !RE2::FullMatch(tokens[1], path_pat, &include)) {
                 MYCO_LOG_ERROR("Failed to parse include in file {}:{}: '{}'", path.string(), line_no, line);
-                return {};
+                return std::nullopt;
             }
 
             auto include_path = path.parent_path() / include;
@@ -57,7 +57,7 @@ std::optional<std::string> read_file_process_includes(
 
             auto include_file = read_file_process_includes(include_path, included_paths);
             if (!include_file)
-                return {};
+                return std::nullopt;
 
             s += *include_file + '\n';
 
@@ -168,7 +168,7 @@ std::optional<ShaderSrc> parse_shader_src(const std::filesystem::path &path) {
     std::vector<std::filesystem::path> included_paths{};
     auto src = read_file_process_includes(path, included_paths);
     if (!src)
-        return {};
+        return std::nullopt;
 
     return try_parse_shader_src(*src);
 }
