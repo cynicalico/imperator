@@ -1,64 +1,20 @@
+#include "myco/util/sops.h"
+#include "myco/util/log.h"
+#include "myco/util/time.h"
 #include "fmt/format.h"
 #include "fmt/ranges.h"
-#include "spdlog/spdlog.h"
 #include "re2/re2.h"
 #include <filesystem>
 #include <fstream>
 #include <optional>
 #include <ranges>
 #include <string>
+#include <sstream>
 
 auto HERE = std::filesystem::path(__FILE__).parent_path();
 
-std::vector<std::string> split(const std::string &s, const std::string &delim) {
-    std::vector<std::string> res{};
-
-    std::size_t pos_start = 0, pos_end, delim_len = delim.length();
-    std::string token;
-    while ((pos_end = s.find(delim, pos_start)) != std::string::npos) {
-        res.emplace_back(s.substr(pos_start, pos_end - pos_start));
-        pos_start = pos_end + delim_len;
-    }
-    res.emplace_back(s.substr(pos_start));
-
-    return res;
-}
-
-/**
- * Split a given string on a regular expression
- * regexp must be a regular expression of the form (...), where ... can be any valid re
- * If regexp does not have a match pattern, this will return an empty vector
- *
- * FIXME: This is likely very fragile and almost certainly will not work with anything but ASCII
- *  text--it is probably possible to make it work with generic UTF-8 but I'm already pushing the
- *  limits on how re2 works here
- *
- * @param s the string to split
- * @param regexp the regular expression to split on
- * @return a vector of substrings of s split on regexp
- */
-std::vector<std::string> split(const std::string &s, const RE2 &regexp) {
-    std::vector<std::string> res;
-
-    re2::StringPiece sp(s);
-    auto last_match_it = sp.begin();
-    std::size_t pos = 0;
-
-    std::string match;
-    while (RE2::FindAndConsume(&sp, regexp, &match)) {
-        auto len = std::distance(last_match_it, sp.begin()) - match.size();
-        res.emplace_back(s.substr(pos, len));
-        pos += std::distance(last_match_it, sp.begin());
-
-        last_match_it = sp.begin();
-    }
-    res.emplace_back(s.substr(pos));
-
-    return res;
-}
-
 struct ShaderSrc {
-    std::string name{"noname"};
+    std::optional<std::string> name{};
     std::optional<std::string> vertex{};
     std::optional<std::string> fragment{};
 };
@@ -77,19 +33,21 @@ std::optional<std::string> read_file_process_includes(
 
     std::ifstream ifs(path.string());
     if (!ifs.is_open()) {
-        SPDLOG_ERROR("Failed to open file: '{}'", path.string());
+        MYCO_LOG_ERROR("Failed to open file: '{}'", path.string());
         return {};
     }
 
     std::string s;
-    std::string line;
-    while (std::getline(ifs, line)) {
+    std::size_t line_no = 1;
+    for (std::string line; std::getline(ifs, line); ++line_no) {
+        myco::rtrim(line);
+
         if (line.starts_with("#include")) {
-            auto tokens = split(line, spaces_pat);
+            auto tokens = myco::split(line, spaces_pat);
 
             std::string include;
             if (tokens.size() < 2 || !RE2::FullMatch(tokens[1], path_pat, &include)) {
-                SPDLOG_ERROR("Failed to parse include: '{}'", line);
+                MYCO_LOG_ERROR("Failed to parse include in file {}:{}: '{}'", path.string(), line_no, line);
                 return {};
             }
 
@@ -101,7 +59,7 @@ std::optional<std::string> read_file_process_includes(
             if (!include_file)
                 return {};
 
-            s += include_file.value() + '\n';
+            s += *include_file + '\n';
 
         } else
             s += line + '\n';
@@ -110,15 +68,120 @@ std::optional<std::string> read_file_process_includes(
     return s;
 }
 
-ShaderSrc read_shader_src(const std::filesystem::path &path) {
-    std::vector<std::filesystem::path> included_paths{};
-    auto str = read_file_process_includes(path, included_paths);
-    fmt::println("#####\n{}#####", str.value_or("Failed to read file"));
+std::optional<ShaderSrc> try_parse_shader_src(const std::string &src) {
+    enum class BufferDst {vertex, fragment};
+
+    // Match things of the form
+    //   #pragma <name>(<args>)<bad>\n
+    // Captures what is after the parens to emit warnings
+    const static RE2 pragma_w_args(R"(#pragma (.+)\((.+)\)(.*))");
+    assert(pragma_w_args.ok());
+
+    // Match things of the form
+    //   #pragma <name>\n
+    // Should reject parens
+    const static RE2 pragma_no_args(R"(#pragma ([^()\n]+))");
+    assert(pragma_no_args.ok());
 
     ShaderSrc s{};
+    // Intermediate storage control
+    std::string buffer;
+    bool read_non_pragma_line = false;
+    BufferDst buffer_dst{BufferDst::vertex};
+
+    auto try_set_shader_part = [&](){
+        if (!read_non_pragma_line) {
+            buffer.clear();
+            return;
+        }
+
+        switch (buffer_dst) {
+            using enum BufferDst;
+            case vertex:
+                if (!s.vertex)
+                    s.vertex = buffer;
+                break;
+
+            case fragment:
+                if (!s.fragment)
+                    s.fragment = buffer;
+                break;
+        }
+
+        buffer.clear();
+    };
+
+    // Variables to store regex match captures
+    std::string pragma_name;
+    std::string pragma_args;
+    std::string pragma_extra;
+
+    std::istringstream iss{src};
+    std::size_t line_no = 1;
+    for (std::string line; std::getline(iss, line); ++line_no) {
+        myco::rtrim(line);
+
+        if (line.empty()) {
+            if (!buffer.empty())
+                buffer.append("\n");
+            continue;
+        }
+
+        if (RE2::FullMatch(line, pragma_w_args, &pragma_name, &pragma_args, &pragma_extra)) {
+            if (pragma_name == "name")
+                s.name = pragma_args;
+            else
+                SPDLOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+
+            if (!pragma_extra.empty())
+                SPDLOG_WARN("Trailing characters on pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+
+        } else if (RE2::FullMatch(line, pragma_no_args, &pragma_name)) {
+            if (pragma_name == "vertex") {
+                if (s.vertex)
+                    SPDLOG_WARN("Duplicate vertex pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
+                try_set_shader_part();
+                buffer_dst = BufferDst::vertex;
+
+            } else if (pragma_name == "fragment") {
+                if (s.fragment)
+                    SPDLOG_WARN("Duplicate fragment pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
+                try_set_shader_part();
+                buffer_dst = BufferDst::fragment;
+
+            } else
+                SPDLOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+
+        } else {
+            read_non_pragma_line = true;
+            buffer.append(line + '\n');
+        }
+    }
+
+    if (!buffer.empty())
+        try_set_shader_part();
+
     return s;
 }
 
+std::optional<ShaderSrc> parse_shader_src(const std::filesystem::path &path) {
+    std::vector<std::filesystem::path> included_paths{};
+    auto src = read_file_process_includes(path, included_paths);
+    if (!src)
+        return {};
+
+    return try_parse_shader_src(*src);
+}
+
+std::optional<ShaderSrc> parse_shader_src(const std::string &src) {
+    return try_parse_shader_src(src);
+}
+
 int main() {
-    auto s = read_shader_src(HERE / "shader" / "basic.shader");
+    MYCO_LOG_INFO("{}", myco::timestamp());
+    auto s = parse_shader_src(HERE / "shader" / "basic.shader");
+
+    fmt::println("Name: {}", *s->name);
+    fmt::println("Vertex shader:\n#####\n{}#####", *s->vertex);
+    fmt::println("Fragment shader:\n#####\n{}#####", *s->fragment);
 }
