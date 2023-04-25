@@ -11,7 +11,7 @@ if (MSVC)
     set(CMAKE_CXX_STANDARD 23)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else ()
-    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 23)
 endif ()
 
 include(include/CMakeLists.txt)
