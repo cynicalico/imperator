@@ -6,18 +6,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    steps:
+    steps:          
     - uses: actions/checkout@v3
+    
+    - name: Set up cache
+      id: cache-cpm
+      uses: actions/cache@v2
+      with:
+        path: ~/cpm-cache
+        key: ${{ runner.os }}-cpm-${{ hashFiles('**/') }}
+        restore-keys: |
+          ${{ runner.os }}-cpm-
+    
     - name: Set up GCC
       uses: egor-tensin/setup-gcc@v1
       with:
         version: 12
         platform: x64
+    
     - name: xorg-dev
       run: sudo apt update && sudo apt install xorg-dev
+    
     - name: mkdir
       run: mkdir build
+    
     - name: cmake build
-      run: cmake -Bbuild -H.
+      run: cmake -Bbuild -H. -DCPM_SOURCE_CACHE=~/cpm-cache
+    
     - name: cmake make
       run: cmake --build build/ --target all --parallel 4
