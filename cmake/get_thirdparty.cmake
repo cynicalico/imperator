@@ -10,7 +10,7 @@ CPMAddPackage(
     GIT_TAG v2.0.4
     DOWNLOAD_ONLY YES
 )
-add_subdirectory(${glad2_SOURCE_DIR}/cmake)
+add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
 glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3)
 
 CPMAddPackage(
