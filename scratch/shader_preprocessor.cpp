@@ -52,7 +52,7 @@ std::optional<std::string> read_file_process_includes(
             }
 
             auto include_path = path.parent_path() / include;
-            if (std::ranges::contains(included_paths, include_path))
+            if (std::ranges::find(included_paths, include_path) != included_paths.end())
                 continue;  // Don't try and include a file twice
 
             auto include_file = read_file_process_includes(include_path, included_paths);
