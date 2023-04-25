@@ -71,5 +71,5 @@ jobs:
     - name: Build with CMake
       run: |
         mkdir build
-        cmake -Bbuild -H. -DUSE_CCACHE=YES -DCPM_SOURCE_CACHE=~/cpm-cache
+        cmake -Bbuild -S. -DUSE_CCACHE=YES -DCPM_SOURCE_CACHE=~/cpm-cache
         cmake --build build/ --target all --parallel 2
