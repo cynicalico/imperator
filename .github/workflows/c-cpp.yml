@@ -11,7 +11,7 @@ jobs:
     - name: Set up GCC
       uses: egor-tensin/setup-gcc@v1
       with:
-        version: 11
+        version: 12
         platform: x64
     - name: xorg-dev
       run: sudo apt update && sudo apt install xorg-dev
