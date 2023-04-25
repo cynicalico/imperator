@@ -3,9 +3,6 @@ project(myco VERSION 0.1
         DESCRIPTION "WIP"
         LANGUAGES CXX C)
 
-if (NOT DEFINED ${CPM_SOURCE_CACHE})
-    set(CPM_SOURCE_CACHE .cache/CPM)
-endif ()
 include(cmake/get_cpm.cmake)
 include(cmake/setup_ccache.cmake)
 
