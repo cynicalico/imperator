@@ -179,8 +179,8 @@ std::optional<ShaderSrc> parse_shader_src(const std::string &src) {
 
 int main() {
     MYCO_LOG_INFO("{}", myco::timestamp());
-    auto s = parse_shader_src(HERE / "shader" / "basic.shader");
 
+    auto s = parse_shader_src(HERE / "shader" / "basic.shader");
     fmt::println("Name: {}", *s->name);
     fmt::println("Vertex shader:\n#####\n{}#####", *s->vertex);
     fmt::println("Fragment shader:\n#####\n{}#####", *s->fragment);

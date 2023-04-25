@@ -2,6 +2,8 @@
 #define MYCO_UTIL_TIME_H
 
 #include "myco/util/averagers.h"
+#include "fmt/chrono.h"
+#include "fmt/format.h"
 #include <chrono>
 #include <cstddef>
 #include <ctime>
@@ -13,7 +15,16 @@
 
 namespace myco {
 
-std::string timestamp(const std::string &format="%Y-%m-%d_%H-%M-%S");
+template<typename S>
+std::string timestamp(const S &format) {
+    auto t = std::time(nullptr);
+    auto lt = fmt::localtime(t);
+    auto args = fmt::make_format_args(lt);
+
+    return fmt::vformat(format, args);
+}
+
+std::string timestamp();
 
 template<typename T = std::uint64_t>
 T time_nsec() {

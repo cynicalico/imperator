@@ -2,19 +2,8 @@
 
 namespace myco {
 
-std::string timestamp(const std::string &format) {
-    auto current_time = std::time(nullptr);
-
-    tm time_info{};
-    const auto local_time_error = localtime_s(&time_info, &current_time);
-
-    if (local_time_error != 0)
-        throw std::runtime_error("localtime_s() failed: " + std::to_string(local_time_error));
-
-    std::ostringstream oss;
-    oss << std::put_time(&time_info, format.c_str());
-
-    return oss.str();
+std::string timestamp() {
+    return timestamp("{:%Y-%m-%d_%H-%M-%S}");
 }
 
 Stopwatch::Stopwatch() {
