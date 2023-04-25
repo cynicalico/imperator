@@ -68,8 +68,8 @@ jobs:
         restore-keys: |
           ${{ matrix.config.name }}-ccache-
     
-    - name: Build CMake
+    - name: Build with CMake
       run: |
-        mkdir build && cd build
-        cmake -DCPM_SOURCE_CACHE=~/cpm-cache ..
-        make -j2
+        mkdir build
+        cmake -Bbuild -H. -DUSE_CCACHE=YES -DCPM_SOURCE_CACHE=~/cpm-cache
+        cmake --build build/ --target all --parallel 2
