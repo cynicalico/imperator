@@ -56,7 +56,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY gabime/spdlog
     GIT_TAG 0ca574ae168820da0268b3ec7607ca7b33024d05
     OPTIONS
-    "SPDLOG_FMT_EXTERNAL ON"
+        "SPDLOG_FMT_EXTERNAL ON"
 )
 
 CPMAddPackage(
