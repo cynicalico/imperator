@@ -11,7 +11,7 @@ jobs:
     
     - name: Set up cache
       id: cache-cpm
-      uses: actions/cache@v2
+      uses: actions/cache@v2.1.8
       with:
         path: ~/cpm-cache
         key: ${{ runner.os }}-cpm-${{ hashFiles('**/') }}
@@ -34,4 +34,4 @@ jobs:
       run: cmake -Bbuild -H. -DCPM_SOURCE_CACHE=~/cpm-cache
     
     - name: cmake make
-      run: cmake --build build/ --target all --parallel 4
+      run: cmake --build build/ --target all --parallel 8
