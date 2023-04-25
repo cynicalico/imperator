@@ -72,4 +72,4 @@ jobs:
       run: |
         mkdir build
         cmake -Bbuild -S. -DUSE_CCACHE=YES -DCPM_SOURCE_CACHE=~/cpm-cache
-        cmake --build build/ --target all --parallel 2
+        cmake --build build/ --parallel 2
