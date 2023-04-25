@@ -40,6 +40,9 @@ jobs:
     - name: Install build dependencies
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt update && sudo apt install xorg-dev
+      
+    - name: Install required Python packages
+      run: pip install -U Jinja2
           
     - name: Download ccache
       id: ccache
