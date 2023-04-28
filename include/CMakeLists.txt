@@ -1,6 +1,11 @@
 set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
+    include/myco/core/engine.h
     include/myco/core/event_bus.h
+    include/myco/core/glfw_callbacks.h
+    include/myco/core/module.h
+    include/myco/core/msgs.h
     include/myco/core/prio_list.h
+    include/myco/core/modules/window.h
     include/myco/util/averagers.h
     include/myco/util/helpers.h
     include/myco/util/io.h
@@ -8,4 +13,5 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
     include/myco/util/rnd.h
     include/myco/util/sops.h
     include/myco/util/time.h
-    include/myco/util/type_id.h)
+    include/myco/util/type_id.h
+    include/myco/myco.h)
