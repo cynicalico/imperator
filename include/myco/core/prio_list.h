@@ -3,6 +3,7 @@
 
 #include "myco/util/helpers.h"
 #include "myco/util/log.h"
+#include <algorithm>
 #include <limits>
 #include <cstdint>
 #include <ranges>
