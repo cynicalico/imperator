@@ -7,9 +7,11 @@ set(MYCO_INCLUDE_FILES ${MYCO_INCLUDE_FILES}
     include/myco/core/prio_list.h
     include/myco/core/modules/window.h
     include/myco/util/averagers.h
+    include/myco/util/enum_bitops.h
     include/myco/util/helpers.h
     include/myco/util/io.h
     include/myco/util/log.h
+    include/myco/util/platform.h
     include/myco/util/rnd.h
     include/myco/util/sops.h
     include/myco/util/time.h

@@ -4,10 +4,10 @@
 #include "myco/core/module.h"
 #include "myco/core/modules/application.h"
 #include "myco/core/modules/window.h"
-
 #include "myco/core/event_bus.h"
 #include "myco/core/msgs.h"
 #include "myco/util/log.h"
+#include "myco/util/time.h"
 
 #include <memory>
 #include <mutex>
@@ -19,6 +19,8 @@ namespace myco {
 
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
+    FrameCounter frame_counter{};
+
     Engine();
     ~Engine();
 
@@ -60,21 +62,21 @@ void Engine::run(const WindowOpenParams &window_open_params) {
     add_module<Window>();
 //    add_module<InputMgr>();
 //    add_module<TimerMgr>();
-//    add_module_<Application, T>();
+    add_module_<Application, T>();
     EventBus::send_nowait<Initialize>(shared_from_this());
 
-//    Scheduler::send_nowait<StartApplication>(window_open_params);
+    EventBus::send_nowait<StartApplication>(window_open_params);
 
-//    frame_counter.reset();
-//    while (!received_shutdown_) {
-//        Scheduler::send_nowait<Update>(frame_counter.dt());
+    frame_counter.reset();
+    while (!received_shutdown_) {
+        EventBus::send_nowait<Update>(frame_counter.dt());
 
-//        Scheduler::send_nowait<StartFrame>();
-//        Scheduler::send_nowait<Draw>();
-//        Scheduler::send_nowait<EndFrame>();
+        EventBus::send_nowait<StartFrame>();
+        EventBus::send_nowait<Draw>();
+        EventBus::send_nowait<EndFrame>();
 
-//        frame_counter.update();
-//    }
+        frame_counter.update();
+    }
 
     EventBus::send_nowait<ReleaseEngine>();
 }

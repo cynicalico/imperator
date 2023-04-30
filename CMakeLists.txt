@@ -17,6 +17,10 @@ include(include/CMakeLists.txt)
 include(src/CMakeLists.txt)
 add_library(myco STATIC ${MYCO_INCLUDE_FILES} ${MYCO_SRC_FILES})
 
+if (MSVC)
+    target_compile_definitions(myco PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+endif ()
+
 target_include_directories(myco PUBLIC include)
 
 include(cmake/get_thirdparty.cmake)

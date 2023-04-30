@@ -8,15 +8,34 @@
 
 namespace myco {
 
+// Forward declaration of objects needed for the messages
+// Cannot include the files directly because it causes circular dependencies
 class Engine;
+struct WindowOpenParams;
+
+/* MYCO EVENTS */
 
 struct Initialize {
     const std::shared_ptr<Engine> &engine;
 };
 
+struct ReleaseEngine {};
+
 struct Shutdown {};
 
-struct ReleaseEngine {};
+struct StartApplication {
+    const WindowOpenParams &window_open_params;
+};
+
+struct Update {
+    double dt;
+};
+
+struct StartFrame {};
+
+struct Draw {};
+
+struct EndFrame {};
 
 /* GLFW CALLBACKS */
 

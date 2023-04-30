@@ -1,7 +1,16 @@
 #ifndef MYCO_UTIL_RND_H
 #define MYCO_UTIL_RND_H
 
+// These two macros cause pcg_random to not import properly, something
+// is not including windows with WIN32_LEAN_AND_MEAN defined...
+//#ifdef min
+//#undef min
+//#endif
+//#ifdef max
+//#undef max
+//#endif
 #include "pcg_random.hpp"
+
 #include "uuid.h"
 #include <cstdint>
 #include <concepts>

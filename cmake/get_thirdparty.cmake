@@ -60,16 +60,19 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+    NAME stb
+    GITHUB_REPOSITORY nothings/stb
+    GIT_TAG 5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+    DOWNLOAD_ONLY YES
+)
+
+CPMAddPackage(
     NAME stduuid
     GITHUB_REPOSITORY mariusbancila/stduuid
     GIT_TAG 3afe7193facd5d674de709fccc44d5055e144d7a
 )
 
 add_library(myco_thirdparty STATIC
-    ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
-    ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
-    ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
-
     ${imgui_SOURCE_DIR}/imconfig.h
     ${imgui_SOURCE_DIR}/imgui.h
     ${imgui_SOURCE_DIR}/imgui_internal.h
@@ -85,12 +88,25 @@ add_library(myco_thirdparty STATIC
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
     ${imgui_SOURCE_DIR}/imgui_widgets.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp)
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+
+    ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
+    ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
+    ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
+
+    ${stb_SOURCE_DIR}/stb_image.h
+    ${stb_SOURCE_DIR}/stb_image_write.h
+    ${stb_SOURCE_DIR}/stb_image_resize.h)
+
+if (MSVC)
+    target_compile_definitions(myco_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+endif ()
 
 target_include_directories(myco_thirdparty PUBLIC
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
-    ${pcg-cpp_SOURCE_DIR}/include)
+    ${pcg-cpp_SOURCE_DIR}/include
+    ${stb_SOURCE_DIR})
 
 target_link_libraries(myco_thirdparty PUBLIC
     fmt::fmt
