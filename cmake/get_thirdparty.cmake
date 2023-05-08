@@ -1,4 +1,12 @@
 CPMAddPackage(
+    NAME abseil
+    GITHUB_REPOSITORY abseil/abseil-cpp
+    GIT_TAG 419b54d4870e31ae2442b7f453c7b8d5b8c08026
+    OPTIONS
+        "ABSL_PROPAGATE_CXX_STD ON"
+)
+
+CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY fmtlib/fmt
     GIT_TAG 0de789cf294ae59582e7372884bbdb7158e90b8d
@@ -41,6 +49,12 @@ CPMAddPackage(
     GITHUB_REPOSITORY imneme/pcg-cpp
     GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
     DOWNLOAD_ONLY YES
+)
+
+CPMAddPackage(
+    NAME rapidcsv
+    GITHUB_REPOSITORY d99kris/rapidcsv
+    GIT_TAG 19946a86c255d430c4af84d3bfece36cf008feef
 )
 
 CPMAddPackage(
@@ -109,10 +123,13 @@ target_include_directories(myco_thirdparty PUBLIC
     ${stb_SOURCE_DIR})
 
 target_link_libraries(myco_thirdparty PUBLIC
+    absl::flat_hash_map
+    absl::hash
     fmt::fmt
     glad_gl_core_mx_33
     glfw
     glm::glm
+    rapidcsv
     re2::re2
     spdlog::spdlog
     stduuid)
