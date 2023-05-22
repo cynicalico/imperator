@@ -15,6 +15,7 @@ Primarily a passion project/fun side project to work on.
   - [ ] User callbacks for events
 - [ ] Timers
 - [ ] [Tweens](https://easings.net/) 
+- [ ] Thread pool
 - [ ] Refactor out circular dependency on engine
   - [ ] Static module storage, maybe? Drawbacks but arguably better than circ dep
 - [ ] User input
