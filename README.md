@@ -1,5 +1,7 @@
 # myco
 
+![Build](https://github.com/bo-fey/myco/actions/workflows/main.yml/badge.svg)
+
 Myco is a WIP 2D graphics engine for C++ built on top of OpenGL.<br>
 Primarily a passion project/fun side project to work on.
 
