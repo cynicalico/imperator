@@ -30,7 +30,7 @@ Primarily a passion project/fun side project to work on.
     - [ ] FPS stats (1%/95%/99%)
     - [ ] Memusage
     - [ ] GPU usage (?)
-  - [ ] In-window informatikon
+  - [ ] In-window information
     - [ ] Log 
     - [ ] Stickies (track variables)
   - [ ] Shader editor/recompiler
