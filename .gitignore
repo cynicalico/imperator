@@ -1,3 +1,9 @@
 .idea/
 .vscode/
+
+.build/
 build/
+
+.cache/
+
+data/log/
