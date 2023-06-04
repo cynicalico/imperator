@@ -1,5 +1,7 @@
 set(baphomet_INCLUDE_FILES ${baphomet_INCLUDE_FILES}
+        include/baphy/core/module/module.hpp
         include/baphy/core/event_bus.hpp
+        include/baphy/core/msgs.hpp
         include/baphy/core/prio_list.hpp
         include/baphy/util/averagers.hpp
         include/baphy/util/enum_bitops.hpp

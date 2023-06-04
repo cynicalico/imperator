@@ -20,6 +20,7 @@ add_library(baphomet STATIC ${baphomet_INCLUDE_FILES} ${baphomet_SRC_FILES})
 if (MSVC)
     target_compile_definitions(baphomet PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
+target_compile_definitions(baphomet PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 
 target_include_directories(baphomet PUBLIC include)
 
