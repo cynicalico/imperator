@@ -86,7 +86,7 @@ CPMAddPackage(
         GIT_TAG 3afe7193facd5d674de709fccc44d5055e144d7a
 )
 
-add_library(baphomet_thirdparty STATIC
+add_library(baphy_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imconfig.h
         ${imgui_SOURCE_DIR}/imgui.h
         ${imgui_SOURCE_DIR}/imgui_internal.h
@@ -113,16 +113,16 @@ add_library(baphomet_thirdparty STATIC
         ${stb_SOURCE_DIR}/stb_image_resize.h)
 
 if (MSVC)
-    target_compile_definitions(baphomet_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(baphy_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
 
-target_include_directories(baphomet_thirdparty PUBLIC
+target_include_directories(baphy_thirdparty PUBLIC
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
         ${pcg-cpp_SOURCE_DIR}/include
         ${stb_SOURCE_DIR})
 
-target_link_libraries(baphomet_thirdparty PUBLIC
+target_link_libraries(baphy_thirdparty PUBLIC
         absl::flat_hash_map
         absl::hash
         fmt::fmt

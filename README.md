@@ -8,10 +8,10 @@ Primarily a passion project/fun side project to work on.
 ### Task list
 - [x] EventBus
     - [x] PrioList
-- [ ] Engine
+- [x] Engine
 - [ ] Windowing
     - [ ] Position
-    - [ ] Size
+    - [x] Size
     - [ ] Decoration
     - [ ] Icon
     - [ ] vsync

@@ -7,9 +7,6 @@
 
 namespace baphy {
 
-template<typename T>
-struct ModuleInfo;
-
 class ModuleI;
 
 template<typename T>
@@ -57,8 +54,10 @@ public:
   ~Module() override;
 
 protected:
-  virtual void initialize_(const EInitialize &e);
-  virtual void shutdown_(const EShutdown &e);
+  bool received_shutdown_{false};
+
+  virtual void e_initialize_(const EInitialize &e);
+  virtual void e_shutdown_(const EShutdown &e);
 
 private:
   std::once_flag is_initialized_;
@@ -67,8 +66,8 @@ private:
 template<class T, class TR, typename... Args>
 requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
 void ModuleMgr::create(const Args &&...args) {
-  modules_[ModuleInfo<T>::name] = std::shared_ptr<ModuleI>(new TR(std::forward<Args>(args)...));
-  modules_[ModuleInfo<T>::name]->set_module_mgr_(shared_from_this());
+  modules_[EPI<T>::name] = std::shared_ptr<ModuleI>(new TR(std::forward<Args>(args)...));
+  modules_[EPI<T>::name]->set_module_mgr_(shared_from_this());
 }
 
 template<typename T, typename... Args>
@@ -80,20 +79,22 @@ void ModuleMgr::create(const Args &&...args) {
 template<typename T>
 requires std::derived_from<T, ModuleI>
 std::shared_ptr<T> ModuleMgr::get() const {
-  return std::dynamic_pointer_cast<T>(modules_.at(ModuleInfo<T>::name));
+  return std::dynamic_pointer_cast<T>(modules_.at(EPI<T>::name));
 }
 
 template<typename T>
 Module<T>::Module(std::vector<std::string> &&dependencies) : ModuleI() {
-  module_name = ModuleInfo<T>::name;
+  module_name = EPI<T>::name;
   EventBus::sub<EInitialize>(
       module_name,
       std::forward<std::vector<std::string>>(dependencies),
       [&](const auto &e) {
-        std::call_once(is_initialized_, [&]() { initialize_(e); });
+        std::call_once(is_initialized_, [&]() { e_initialize_(e); });
       }
   );
-  EventBus::sub<EShutdown>(module_name, [&](const auto &e) { shutdown_(e); });
+  EventBus::sub<EShutdown>(module_name, [&](const auto &e) { e_shutdown_(e); });
+
+  BAPHY_LOG_DEBUG("{} created", module_name);
 }
 
 template<typename T>
@@ -102,23 +103,19 @@ Module<T>::~Module() {
 }
 
 template<typename T>
-void Module<T>::initialize_(const EInitialize &e) {
+void Module<T>::e_initialize_(const EInitialize &e) {
   BAPHY_LOG_DEBUG("Initialized {}", module_name);
 }
 
 template<typename T>
-void Module<T>::shutdown_(const EShutdown &e) {
+void Module<T>::e_shutdown_(const EShutdown &e) {
   // Release the module manager so it can be freed
   module_mgr = nullptr;
 
+  received_shutdown_ = true;
   BAPHY_LOG_DEBUG("{} shutdown", module_name);
 }
 
 } // namespace baphy
-
-#define BAPHY_DECLARE_MODULE(module)            \
-  template<> struct baphy::ModuleInfo<module> { \
-    static constexpr auto name = #module;       \
-  }
 
 #endif //BAPHY_MODULE_HPP

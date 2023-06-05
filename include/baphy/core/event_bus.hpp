@@ -12,6 +12,9 @@
 namespace baphy {
 
 template<typename T>
+struct EPI;
+
+template<typename T>
 using Receiver = std::function<void(const T &)>;
 
 class ReceiverI {
@@ -87,5 +90,10 @@ private:
 };
 
 } // namespace baphy
+
+#define BAPHY_REGISTER_ENDPOINT(module)   \
+  template<> struct baphy::EPI<module> {  \
+    static constexpr auto name = #module; \
+  }
 
 #endif//BAPHY_CORE_EVENT_BUS_H

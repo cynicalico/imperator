@@ -11,7 +11,7 @@ public:
   std::shared_ptr<Window> window{nullptr};
 
   Application() : Module<Application>({
-      ModuleInfo<Window>::name
+                                          EPI<Window>::name
   }) {}
 
   ~Application() override = default;
@@ -22,12 +22,18 @@ protected:
   virtual void draw();
 
 private:
-  void initialize_(const EInitialize &e) override;
-  void shutdown_(const EShutdown &e) override;
+  void e_initialize_(const EInitialize &e) override;
+  void e_shutdown_(const EShutdown &e) override;
+
+  void e_start_application_(const EStartApplication &e);
+  void e_update_(const EUpdate &e);
+  void e_start_frame_(const EStartFrame &e);
+  void e_draw_(const EDraw &e);
+  void e_end_frame_(const EEndFrame &e);
 };
 
 } // namespace baphy
 
-BAPHY_DECLARE_MODULE(baphy::Application);
+BAPHY_REGISTER_ENDPOINT(baphy::Application);
 
 #endif//BAPHY_CORE_MODULE_APPLICATION_HPP
