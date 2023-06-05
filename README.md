@@ -1,6 +1,6 @@
-# baphomet
+# baphy
 
-Baphomet is a WIP 2D graphics engine for C++ built on top of OpenGL.<br>
+Baphy is a WIP 2D graphics engine for C++ built on top of OpenGL.<br>
 Primarily a passion project/fun side project to work on.
 
 ### Task list
