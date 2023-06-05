@@ -1,5 +1,10 @@
 set(baphomet_SRC_FILES ${baphomet_SRC_FILES}
+        src/baphy/core/module/application.cpp
+        src/baphy/core/module/window.cpp
+
+        src/baphy/core/engine.cpp
         src/baphy/core/event_bus.cpp
+
         src/baphy/util/averagers.cpp
         src/baphy/util/helpers.cpp
         src/baphy/util/log.cpp

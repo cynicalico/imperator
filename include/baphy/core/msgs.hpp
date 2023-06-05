@@ -5,11 +5,7 @@
 
 namespace baphy {
 
-class ModuleMgr;
-
-struct EInitialize {
-  const std::shared_ptr<ModuleMgr> &module_mgr;
-};
+struct EInitialize {};
 
 struct EShutdown {};
 
