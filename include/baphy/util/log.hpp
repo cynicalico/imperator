@@ -2,7 +2,11 @@
 #define BAPHY_UTIL_LOG_H
 
 #if !defined(SPDLOG_ACTIVE_LEVEL)
+#if defined(NDEBUG)
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO
+#else
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
+#endif
 #endif
 
 #include "fmt/ranges.h"  // Allow logging ranges (vector, etc.)

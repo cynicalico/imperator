@@ -20,7 +20,6 @@ public:
 
   GLFWwindow *handle();
 
-  void open(const WindowOpenParams &params);
   WindowOpenParams open_params() const;
 
   int w() const;
@@ -42,6 +41,7 @@ private:
   GLFWwindow *glfw_handle_{nullptr};
   WindowOpenParams open_params_{};
 
+  void open_(const WindowOpenParams &params);
   GLFWmonitor *get_monitor_(int monitor_num);
   void open_fullscreen_(const WindowOpenParams &params);
   void open_windowed_(const WindowOpenParams &params);

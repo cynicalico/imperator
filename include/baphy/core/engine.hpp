@@ -2,6 +2,8 @@
 #define BAPHY_CORE_ENGINE_HPP
 
 #include "baphy/core/module/application.hpp"
+#include "baphy/core/module/dear_imgui.hpp"
+#include "baphy/core/module/gfx_context.hpp"
 #include "baphy/core/module/module.hpp"
 #include "baphy/core/module/window.hpp"
 #include "baphy/util/time.hpp"
@@ -27,15 +29,19 @@ private:
 template<typename T>
 requires std::derived_from<T, Application>
 void Engine::run_application(const WindowOpenParams &window_open_params) {
-  module_mgr_->create<Window>();
   module_mgr_->create<Application, T>();
+  module_mgr_->create<DearImgui>();
+  module_mgr_->create<GfxContext>();
+  module_mgr_->create<Window>();
 
-  EventBus::send_nowait<EInitialize>();
-  EventBus::send_nowait<EStartApplication>(window_open_params);
+  EventBus::send_nowait<EInitialize>(window_open_params);
+  EventBus::send_nowait<EStartApplication>();
 
   framecounter_.reset();
   while (!received_shutdown_) {
     EventBus::send_nowait<EUpdate>(framecounter_.dt());
+    if (received_shutdown_)
+      break;
 
     EventBus::send_nowait<EStartFrame>();
     EventBus::send_nowait<EDraw>();

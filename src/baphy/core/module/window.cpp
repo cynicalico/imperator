@@ -22,7 +22,7 @@ GLFWwindow *Window::handle() {
   return glfw_handle_;
 }
 
-void Window::open(const baphy::WindowOpenParams &params) {
+void Window::open_(const baphy::WindowOpenParams &params) {
   open_params_ = params;
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, params.backend_version.x);
@@ -247,6 +247,8 @@ void Window::e_initialize_(const baphy::EInitialize &e) {
     BAPHY_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
   });
 
+  open_(e.window_open_params);
+
   Module::e_initialize_(e);
 }
 
@@ -258,16 +260,12 @@ void Window::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void Window::e_update_(const EUpdate &e) {
-  if (received_shutdown_) return;
-
   glfwPollEvents();
 }
 
 void Window::e_start_frame_(const EStartFrame &e) {}
 
 void Window::e_end_frame_(const EEndFrame &e) {
-  if (received_shutdown_) return;
-
   swap();
 
   if (should_close())

@@ -8,13 +8,13 @@
 
 namespace baphy {
 
-struct EInitialize {};
+struct EInitialize {
+  const WindowOpenParams window_open_params;
+};
 
 struct EShutdown {};
 
-struct EStartApplication {
-  const WindowOpenParams window_open_params;
-};
+struct EStartApplication {};
 
 struct EUpdate {
   double dt;

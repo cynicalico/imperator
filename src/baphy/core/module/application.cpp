@@ -16,6 +16,8 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EEndFrame>(module_name, [&](const auto &e) { e_end_frame_(e); });
 
   window = module_mgr->get<Window>();
+  gfx = module_mgr->get<GfxContext>();
+  dear = module_mgr->get<DearImgui>();
 
   Module::e_initialize_(e);
 }
@@ -25,8 +27,6 @@ void Application::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void Application::e_start_application_(const baphy::EStartApplication &e) {
-  window->open(e.window_open_params);
-
   initialize();
 }
 

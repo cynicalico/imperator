@@ -20,7 +20,6 @@ add_library(baphy STATIC ${baphy_INCLUDE_FILES} ${baphy_SRC_FILES})
 if (MSVC)
     target_compile_definitions(baphy PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
-target_compile_definitions(baphy PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 
 target_include_directories(baphy PUBLIC include)
 
