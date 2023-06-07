@@ -1,0 +1,43 @@
+#include "baphy/util/platform.hpp"
+
+#include "baphy/util/log.hpp"
+
+namespace baphy {
+
+void log_platform() {
+#define STRINGIFY(x) #x
+  BAPHY_LOG_DEBUG("Platform(s) detected");
+#if defined(BAPHY_PLATFORM_WINDOWS)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_WINDOWS));
+#endif
+#if defined(BAPHY_PLATFORM_WINDOWS32)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_WINDOWS32));
+#endif
+#if defined(BAPHY_PLATFORM_WINDOWS64)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_WINDOWS64));
+#endif
+#if defined(BAPHY_PLATFORM_APPLE_IOS_SIMULATOR)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_APPLE_IOS_SIMULATOR));
+#endif
+#if defined(BAPHY_PLATFORM_APPLE_CATALYST)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_APPLE_CATALYST));
+#endif
+#if defined(BAPHY_PLATFORM_APPLE_IOS)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_APPLE_IOS));
+#endif
+#if defined(BAPHY_PLATFORM_APPLE)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_APPLE));
+#endif
+#if defined(BAPHY_PLATFORM_LINUX)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_LINUX));
+#endif
+#if defined(BAPHY_PLATFORM_UNIX)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_UNIX));
+#endif
+#if defined(BAPHY_PLATFORM_POSIX)
+  BAPHY_LOG_DEBUG("=> {}", STRINGIFY(BAPHY_PLATFORM_POSIX));
+#endif
+#undef STRINGIFY
+}
+
+} // namespace baphy

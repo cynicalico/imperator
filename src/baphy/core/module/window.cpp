@@ -16,7 +16,6 @@
 namespace baphy {
 
 std::once_flag Window::initialize_glfw_;
-std::once_flag Window::terminate_glfw_;
 
 GLFWwindow *Window::handle() {
   return glfw_handle_;
@@ -36,10 +35,6 @@ void Window::open_(const baphy::WindowOpenParams &params) {
     open_windowed_(params);
 
   register_glfw_callbacks(glfw_handle_);
-
-  glfwMakeContextCurrent(glfw_handle_);
-
-  glfwSwapInterval(set(params.flags, WindowFlags::vsync) ? 1 : 0);
 
 #if defined(BAPHY_PLATFORM_WINDOWS)
   win32_hwnd_ = glfwGetWin32Window(glfw_handle_);
@@ -64,6 +59,10 @@ WindowOpenParams Window::open_params() const {
   return open_params_;
 }
 
+void Window::make_context_current() {
+  glfwMakeContextCurrent(glfw_handle_);
+}
+
 int Window::w() const {
   int w;
   glfwGetWindowSize(glfw_handle_, &w, nullptr);
@@ -85,6 +84,38 @@ glm::ivec2 Window::size() const {
   return {w, h};
 }
 
+bool Window::is_minimized() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_ICONIFIED) == GLFW_TRUE;
+}
+
+bool Window::is_maximized() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_MAXIMIZED) == GLFW_TRUE;
+}
+
+bool Window::is_visible() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_VISIBLE) == GLFW_TRUE;
+}
+
+bool Window::is_resizable() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_RESIZABLE) == GLFW_TRUE;
+}
+
+bool Window::is_decorated() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_DECORATED) == GLFW_TRUE;
+}
+
+bool Window::is_auto_iconify() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_AUTO_ICONIFY) == GLFW_TRUE;
+}
+
+bool Window::is_floating() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_FLOATING) == GLFW_TRUE;
+}
+
+bool Window::is_focus_on_show() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_FOCUS_ON_SHOW) == GLFW_TRUE;
+}
+
 bool Window::should_close() const {
   return glfwWindowShouldClose(glfw_handle_) == GLFW_TRUE;
 }
@@ -99,6 +130,46 @@ void Window::set_h(int h) {
 
 void Window::set_size(int w, int h) {
   glfwSetWindowSize(glfw_handle_, w, h);
+}
+
+void Window::minimize() {
+  glfwIconifyWindow(glfw_handle_);
+}
+
+void Window::maximize() {
+  glfwMaximizeWindow(glfw_handle_);
+}
+
+void Window::restore() {
+  glfwRestoreWindow(glfw_handle_);
+}
+
+void Window::show() {
+  glfwShowWindow(glfw_handle_);
+}
+
+void Window::hide() {
+  glfwHideWindow(glfw_handle_);
+}
+
+void Window::set_resizable(bool v) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_RESIZABLE, v ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_decorated(bool v) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_DECORATED, v ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_auto_iconify(bool v) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_AUTO_ICONIFY, v ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_floating(bool v) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_FLOATING, v ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_focus_on_show(bool v) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_FOCUS_ON_SHOW, v ? GLFW_TRUE : GLFW_FALSE);
 }
 
 void Window::set_should_close(bool v) {
@@ -288,33 +359,33 @@ void Window::e_glfw_window_close_(const EGlfwWindowClose &e) {
  */
 #if defined(BAPHY_PLATFORM_WINDOWS)
 void Window::set_win32_titlebar_color_(HWND hwnd) {
-    auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
-    DWORD should_use_light_theme{};
-    DWORD should_use_light_theme_size = sizeof(should_use_light_theme);
-    LONG code = RegGetValue(
-        HKEY_CURRENT_USER,
-        R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
-        "AppsUseLightTheme",
-        RRF_RT_REG_DWORD,
-        nullptr,
-        &should_use_light_theme,
-        &should_use_light_theme_size
-    );
+  DWORD should_use_light_theme{};
+  DWORD should_use_light_theme_size = sizeof(should_use_light_theme);
+  LONG code = RegGetValue(
+      HKEY_CURRENT_USER,
+      R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
+      "AppsUseLightTheme",
+      RRF_RT_REG_DWORD,
+      nullptr,
+      &should_use_light_theme,
+      &should_use_light_theme_size
+  );
 
-    if (code != ERROR_SUCCESS) {
-      BAPHY_LOG_WARN("Failed to read Windows app theme from registry, error code {}", code);
-      return;
-    }
+  if (code != ERROR_SUCCESS) {
+    BAPHY_LOG_WARN("Failed to read Windows app theme from registry, error code {}", code);
+    return;
+  }
 
-    if ((should_use_light_theme || window->win32_force_light_mode_) && !window->win32_force_dark_mode_) {
-      const BOOL use_light_mode = 0;
-      DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_light_mode, sizeof(use_light_mode));
-    } else if ((!should_use_light_theme || window->win32_force_dark_mode_) && !window->win32_force_light_mode_) {
-      const BOOL use_dark_mode = 1;
-      DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_dark_mode, sizeof(use_dark_mode));
-    }
-    UpdateWindow(window->win32_hwnd_);
+  if ((should_use_light_theme || window->win32_force_light_mode_) && !window->win32_force_dark_mode_) {
+    const BOOL use_light_mode = 0;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_light_mode, sizeof(use_light_mode));
+  } else if ((!should_use_light_theme || window->win32_force_dark_mode_) && !window->win32_force_light_mode_) {
+    const BOOL use_dark_mode = 1;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_dark_mode, sizeof(use_dark_mode));
+  }
+  UpdateWindow(window->win32_hwnd_);
 }
 
 LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -323,7 +394,7 @@ LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM
   // TODO: Make this check more specific, this goes off at times where the
   //  titlebar didn't change at all, but other style elements *did* change
   if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_)
-      set_win32_titlebar_color_(hwnd);
+    set_win32_titlebar_color_(hwnd);
 
 
   return CallWindowProc(window->win32_saved_WndProc_, hwnd, message, wParam, lParam);

@@ -1,8 +1,24 @@
 #include "baphy/core/module/gfx_context.hpp"
 
 #include "baphy/util/log.hpp"
+#include "baphy/util/platform.hpp"
+#include "GLFW/glfw3.h"
+#if defined(BAPHY_PLATFORM_WINDOWS)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+#define GLFW_NATIVE_INCLUDE_NONE
+#include "GLFW/glfw3native.h"
+#endif
 
 namespace baphy {
+
+bool GfxContext::is_vsync() const {
+  return platform_is_vsync_();
+}
+
+void GfxContext::set_vsync(bool v) {
+  platform_set_vsync_(v);
+}
 
 void GfxContext::clear(const RGB &color, const ClearBit &bit) {
   gl->ClearColor(
@@ -13,7 +29,54 @@ void GfxContext::clear(const RGB &color, const ClearBit &bit) {
   gl->Clear(unwrap(bit));
 }
 
+#if defined(BAPHY_PLATFORM_WINDOWS)
+void GfxContext::initialize_platform_extensions_() {
+  auto window = module_mgr->get<Window>();
+
+  HDC dc = GetDC(glfwGetWin32Window(window->handle()));
+  auto wgl_version = gladLoadWGL(dc, glfwGetProcAddress);
+  if (wgl_version == 0) {
+    BAPHY_LOG_WARN("Failed to initialize WGL");
+    return;
+  }
+
+  auto version_major = GLAD_VERSION_MAJOR(wgl_version);
+  auto version_minor = GLAD_VERSION_MINOR(wgl_version);
+  BAPHY_LOG_DEBUG("Initialized WGL");
+  BAPHY_LOG_DEBUG("=> Version: {}.{}", version_major, version_minor);
+
+  wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+  if (!wglSwapIntervalEXT)
+    BAPHY_LOG_WARN("Failed to load extension wglSwapIntervalEXT");
+
+  wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
+  if (!wglGetSwapIntervalEXT)
+    BAPHY_LOG_WARN("Failed to load extension wglGetSwapIntervalEXT");
+}
+
+bool GfxContext::platform_is_vsync_() const {
+  if (wglGetSwapIntervalEXT)
+    return wglGetSwapIntervalEXT();
+  return false;
+}
+
+void GfxContext::platform_set_vsync_(bool v) {
+  if (wglSwapIntervalEXT)
+    wglSwapIntervalEXT(v ? 1 : 0);
+  else
+    glfwSwapInterval(v ? 1 : 0);
+}
+
+#else
+void GfxContext::initialize_platform_extensions_() {}
+bool GfxContext::platform_is_vsync_() const { return false; }
+void GfxContext::platform_set_vsync_(bool v) { glfwSwapInterval(v ? 1 : 0); }
+#endif
+
 void GfxContext::e_initialize_(const baphy::EInitialize &e) {
+  auto window = module_mgr->get<Window>();
+  window->make_context_current();
+
   gl = std::make_unique<GladGLContext>();
   auto glad_version = gladLoadGLContext(gl.get(), glfwGetProcAddress);
   if (glad_version == 0) {
@@ -28,9 +91,11 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
   BAPHY_LOG_DEBUG("=> Vendor: {}", (char *)gl->GetString(GL_VENDOR));
   BAPHY_LOG_DEBUG("=> Renderer: {}", (char *)gl->GetString(GL_RENDERER));
 
-  auto open_params = module_mgr->get<Window>()->open_params();
+  auto open_params = window->open_params();
   if (version.x != open_params.backend_version.x || version.y != open_params.backend_version.y)
     BAPHY_LOG_WARN("Requested OpenGL v{}.{}", open_params.backend_version.x, open_params.backend_version.y);
+
+  initialize_platform_extensions_();
 
 #if !defined(NDEBUG)
   gl->Enable(GL_DEBUG_OUTPUT);

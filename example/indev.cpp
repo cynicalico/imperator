@@ -4,7 +4,9 @@ class Indev : public baphy::Application {
 public:
   baphy::EMA fps{0.5};
 
-  void initialize() override {}
+  void initialize() override {
+
+  }
 
   void update(double dt) override {
     if (dt != 0)
@@ -15,8 +17,9 @@ public:
     gfx->clear(baphy::rgb(0xff0000));
 
     dear->new_frame();
-    ImGui::Begin("test");
-    ImGui::Text("%s", fmt::format("{:.2f} fps", fps.value()).c_str());
+    if (ImGui::Begin("test")) {
+      ImGui::Text("%s", fmt::format("{:.2f} fps", fps.value()).c_str());
+    }
     ImGui::End();
     dear->render();
   }
@@ -27,6 +30,6 @@ int main(int, char *[]) {
   e->run_application<Indev>({
       .title = "Indev",
       .size = {1280, 960},
-      .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync
+      .flags = baphy::WindowFlags::centered
   });
 }

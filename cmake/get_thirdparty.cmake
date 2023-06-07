@@ -19,7 +19,7 @@ CPMAddPackage(
         DOWNLOAD_ONLY YES
 )
 add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
-glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3)
+glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
 
 CPMAddPackage(
         NAME glfw
@@ -127,6 +127,7 @@ target_link_libraries(baphy_thirdparty PUBLIC
         absl::hash
         fmt::fmt
         glad_gl_core_mx_33
+        glfw
         glfw
         glm::glm
         rapidcsv

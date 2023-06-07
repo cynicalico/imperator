@@ -31,4 +31,10 @@
 #   error "Unknown compiler"
 #endif
 
+namespace baphy {
+
+void log_platform();
+
+} // namespace baphy
+
 #endif//BAPHY_UTIL_PLATFORM_H

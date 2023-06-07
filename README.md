@@ -12,10 +12,19 @@ Primarily a passion project/fun side project to work on.
 - [ ] Windowing
     - [ ] Position
     - [x] Size
-    - [ ] Decoration
+    - [x] Minimize
+    - [x] Maximize
+    - [x] Restore
+    - [x] Resize
+    - [x] Decoration
+    - [x] Auto iconify
+    - [x] Floating
+    - [ ] Transparent
+    - [x] Focus on show
     - [ ] Icon
-    - [ ] vsync
     - [ ] User callbacks for events
+- [ ] OpenGL context
+  - [ ] vsync
 - [ ] Timers
 - [ ] [Tweens](https://easings.net/)
 - [ ] Thread pool
@@ -28,17 +37,18 @@ Primarily a passion project/fun side project to work on.
     - [ ] Joystick (?)
     - [ ] User callbacks for events (as opposed to polling, which I prefer but isn't universal)
 - [ ] Imgui integration
-    - [ ] Add Implot
-    - [ ] Debug overlay
-        - [ ] FPS graph
-        - [ ] FPS stats (1%/95%/99%)
-        - [ ] Memusage
-        - [ ] GPU usage (?)
-    - [ ] In-window information
-        - [ ] Log
-        - [ ] Stickies (track variables)
-    - [ ] Shader editor/recompiler
-    - [ ] Batcher stats/information
+  - [x] Create module, initialize
+  - [ ] Add Implot
+  - [ ] Debug overlay
+      - [ ] FPS graph
+      - [ ] FPS stats (1%/95%/99%)
+      - [ ] Memusage
+      - [ ] GPU usage (?)
+  - [ ] In-window information
+      - [ ] Log
+      - [ ] Stickies (track variables)
+  - [ ] Shader editor/recompiler
+  - [ ] Batcher stats/information
 - [ ] OpenGL abstraction
     - [ ] Shaders
     - [ ] Vertex buffers

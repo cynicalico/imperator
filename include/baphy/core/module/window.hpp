@@ -22,21 +22,40 @@ public:
 
   WindowOpenParams open_params() const;
 
+  void make_context_current();
+
   int w() const;
   int h() const;
   glm::ivec2 size() const;
+  bool is_minimized() const;
+  bool is_maximized() const;
+  bool is_visible() const;
+  bool is_resizable() const;
+  bool is_decorated() const;
+  bool is_auto_iconify() const;
+  bool is_floating() const;
+  bool is_focus_on_show() const;
   bool should_close() const;
 
   void set_w(int w);
   void set_h(int h);
   void set_size(int w, int h);
+  void minimize();
+  void maximize();
+  void restore();
+  void show();
+  void hide();
+  void set_resizable(bool v);
+  void set_decorated(bool v);
+  void set_auto_iconify(bool v);
+  void set_floating(bool v);
+  void set_focus_on_show(bool v);
   void set_should_close(bool v);
 
   void swap() const;
 
 private:
   static std::once_flag initialize_glfw_;
-  static std::once_flag terminate_glfw_;
 
   GLFWwindow *glfw_handle_{nullptr};
   WindowOpenParams open_params_{};
