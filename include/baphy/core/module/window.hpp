@@ -1,7 +1,7 @@
 #ifndef BAPHY_CORE_MODULE_WINDOW_HPP
 #define BAPHY_CORE_MODULE_WINDOW_HPP
 
-#include "baphy/core/module/module.hpp"
+#include "baphy/core/module.hpp"
 #include "baphy/util/platform.hpp"
 #include "GLFW/glfw3.h"
 #include <mutex>

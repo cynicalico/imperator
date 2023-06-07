@@ -1,15 +1,16 @@
 set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
     include/baphy/core/module/application.hpp
     include/baphy/core/module/dear_imgui.hpp
-    include/baphy/core/module/gfx_context.hpp
-    include/baphy/core/module/module.hpp
     include/baphy/core/module/window.hpp
 
     include/baphy/core/engine.hpp
     include/baphy/core/event_bus.hpp
     include/baphy/core/glfw_callbacks.hpp
+    include/baphy/core/module.hpp
     include/baphy/core/msgs.hpp
     include/baphy/core/prio_list.hpp
+
+    include/baphy/gfx/module/gfx_context.hpp
 
     include/baphy/gfx/color.hpp
     include/baphy/gfx/enum_types.hpp

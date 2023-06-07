@@ -3,9 +3,9 @@
 
 #include "baphy/core/module/application.hpp"
 #include "baphy/core/module/dear_imgui.hpp"
-#include "baphy/core/module/gfx_context.hpp"
-#include "baphy/core/module/module.hpp"
 #include "baphy/core/module/window.hpp"
+#include "baphy/core/module.hpp"
+#include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/util/time.hpp"
 #include <memory>
 

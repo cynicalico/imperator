@@ -1,4 +1,4 @@
-#include "baphy/core/module/gfx_context.hpp"
+#include "baphy/gfx/module/gfx_context.hpp"
 
 #include "baphy/util/log.hpp"
 #include "baphy/util/platform.hpp"
