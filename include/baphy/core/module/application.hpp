@@ -2,19 +2,26 @@
 #define BAPHY_CORE_MODULE_APPLICATION_HPP
 
 #include "baphy/core/module/dear_imgui.hpp"
+#include "baphy/core/module/input_mgr.hpp"
 #include "baphy/core/module/window.hpp"
-#include "baphy/core/module.hpp"
+#include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 
 namespace baphy {
 
 class Application : public Module<Application> {
 public:
+  std::shared_ptr<DearImgui> dear{nullptr};
+  std::shared_ptr<InputMgr> input{nullptr};
   std::shared_ptr<Window> window{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
-  std::shared_ptr<DearImgui> dear{nullptr};
 
-  Application() : Module<Application>({EPI<Window>::name, EPI<GfxContext>::name}) {}
+  Application() : Module<Application>({
+      EPI<DearImgui>::name,
+      EPI<InputMgr>::name,
+      EPI<Window>::name,
+      EPI<GfxContext>::name,
+  }) {}
 
   ~Application() override = default;
 

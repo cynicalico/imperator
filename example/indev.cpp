@@ -15,10 +15,23 @@ public:
     gfx->clear(baphy::rgb(0xff0000));
 
     dear->new_frame();
-    if (ImGui::Begin("test")) {
-      ImGui::Text("%s", fmt::format("{:.2f} fps", fps.value()).c_str());
-    }
-    ImGui::End();
+    dear->begin("info"), [&]{
+      dear->text("FPS: {:.2f}", fps.value());
+      dear->tab_bar("tab_bar"), [&]{
+        dear->tab_item("t1"), [&]{
+          dear->text_colored(baphy::rgba(0xff000088), "tab a");
+        };
+        dear->tab_item("t2"), [&]{
+          dear->text("tab b");
+        };
+        dear->tab_item("t3"), [&]{
+          dear->text("tab c");
+        };
+        dear->tab_item("t4"), [&]{
+          dear->text("tab d");
+        };
+      };
+    };
     dear->render();
   }
 };

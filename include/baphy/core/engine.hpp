@@ -3,8 +3,9 @@
 
 #include "baphy/core/module/application.hpp"
 #include "baphy/core/module/dear_imgui.hpp"
+#include "baphy/core/module/input_mgr.hpp"
 #include "baphy/core/module/window.hpp"
-#include "baphy/core/module.hpp"
+#include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/util/time.hpp"
 #include <memory>
@@ -33,6 +34,7 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
 
   module_mgr_->create<Application, T>();
   module_mgr_->create<DearImgui>();
+  module_mgr_->create<InputMgr>();
   module_mgr_->create<GfxContext>();
   module_mgr_->create<Window>();
 

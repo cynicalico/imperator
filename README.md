@@ -24,7 +24,7 @@ Primarily a passion project/fun side project to work on.
     - [ ] Icon
     - [ ] User callbacks for events
 - [ ] OpenGL context
-  - [ ] vsync
+  - [ ] vsync (~~windows~~, linux)
 - [ ] Timers
 - [ ] [Tweens](https://easings.net/)
 - [ ] Thread pool

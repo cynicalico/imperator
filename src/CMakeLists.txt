@@ -1,6 +1,7 @@
 set(baphy_SRC_FILES ${baphy_SRC_FILES}
     src/baphy/core/module/application.cpp
     src/baphy/core/module/dear_imgui.cpp
+    src/baphy/core/module/input_mgr.cpp
     src/baphy/core/module/window.cpp
 
     src/baphy/core/engine.cpp

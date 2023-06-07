@@ -1,19 +1,22 @@
 set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
+    include/baphy/core/internal/dear_wrapper.hpp
+
     include/baphy/core/module/application.hpp
     include/baphy/core/module/dear_imgui.hpp
+    include/baphy/core/module/input_mgr.hpp
     include/baphy/core/module/window.hpp
 
     include/baphy/core/engine.hpp
     include/baphy/core/event_bus.hpp
     include/baphy/core/glfw_callbacks.hpp
-    include/baphy/core/module.hpp
+    include/baphy/core/module_mgr.hpp
     include/baphy/core/msgs.hpp
     include/baphy/core/prio_list.hpp
 
     include/baphy/gfx/module/gfx_context.hpp
 
     include/baphy/gfx/color.hpp
-    include/baphy/gfx/enum_types.hpp
+    include/baphy/gfx/gfx_enum_types.hpp
 
     include/baphy/util/averagers.hpp
     include/baphy/util/enum_bitops.hpp
@@ -26,4 +29,5 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
     include/baphy/util/time.hpp
     include/baphy/util/type_id.hpp
 
-    include/baphy/baphy.hpp)
+    include/baphy/baphy.hpp
+    include/baphy/baphy_imconfig.hpp)

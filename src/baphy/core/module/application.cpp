@@ -15,9 +15,10 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EDraw>(module_name, [&](const auto &e) { e_draw_(e); });
   EventBus::sub<EEndFrame>(module_name, [&](const auto &e) { e_end_frame_(e); });
 
+  dear = module_mgr->get<DearImgui>();
+  input = module_mgr->get<InputMgr>();
   window = module_mgr->get<Window>();
   gfx = module_mgr->get<GfxContext>();
-  dear = module_mgr->get<DearImgui>();
 
   Module::e_initialize_(e);
 }

@@ -1,5 +1,5 @@
-#ifndef BAPHY_MODULE_HPP
-#define BAPHY_MODULE_HPP
+#ifndef BAPHY_MODULE_MGR_HPP
+#define BAPHY_MODULE_MGR_HPP
 
 #include "baphy/core/event_bus.hpp"
 #include "baphy/core/msgs.hpp"
@@ -118,4 +118,4 @@ void Module<T>::e_shutdown_(const EShutdown &e) {
 
 } // namespace baphy
 
-#endif //BAPHY_MODULE_HPP
+#endif //BAPHY_MODULE_MGR_HPP

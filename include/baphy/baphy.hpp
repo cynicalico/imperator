@@ -2,7 +2,7 @@
 #define BAPHY_BAPHY_HPP
 
 #include "baphy/core/module/application.hpp"
-#include "baphy/core/module.hpp"
+#include "baphy/core/module_mgr.hpp"
 #include "baphy/core/module/window.hpp"
 
 #include "baphy/core/engine.hpp"

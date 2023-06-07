@@ -20,12 +20,12 @@ add_library(baphy STATIC ${baphy_INCLUDE_FILES} ${baphy_SRC_FILES})
 if (MSVC)
     target_compile_definitions(baphy PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
+target_compile_definitions(baphy PUBLIC IMGUI_USER_CONFIG="baphy/baphy_imconfig.hpp")
 
 target_include_directories(baphy PUBLIC include)
 
 include(cmake/get_thirdparty.cmake)
 target_link_libraries(baphy PUBLIC baphy_thirdparty)
-
 if (WIN32)
     # imm32.lib -- IME support for imgui
     # Dwmapi.lib -- Dark mode titlebar

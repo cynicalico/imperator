@@ -2,9 +2,9 @@
 #define BAPHY_CORE_MODULE_GFX_CONTEXT_HPP
 
 #include "baphy/core/module/window.hpp"
-#include "baphy/core/module.hpp"
+#include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/color.hpp"
-#include "baphy/gfx/enum_types.hpp"
+#include "baphy/gfx/gfx_enum_types.hpp"
 #include "baphy/util/platform.hpp"
 #if defined(BAPHY_PLATFORM_WINDOWS)
 #include "glad/wgl.h"
