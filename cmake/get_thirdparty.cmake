@@ -19,7 +19,11 @@ CPMAddPackage(
         DOWNLOAD_ONLY YES
 )
 add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
-glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
+if (WIN32)
+    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
+else ()
+    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3)
+endif ()
 
 CPMAddPackage(
         NAME glfw
@@ -87,50 +91,50 @@ CPMAddPackage(
 )
 
 add_library(baphy_thirdparty STATIC
-        ${imgui_SOURCE_DIR}/imconfig.h
-        ${imgui_SOURCE_DIR}/imgui.h
-        ${imgui_SOURCE_DIR}/imgui_internal.h
-        ${imgui_SOURCE_DIR}/imstb_rectpack.h
-        ${imgui_SOURCE_DIR}/imstb_textedit.h
-        ${imgui_SOURCE_DIR}/imstb_truetype.h
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
+            ${imgui_SOURCE_DIR}/imconfig.h
+            ${imgui_SOURCE_DIR}/imgui.h
+            ${imgui_SOURCE_DIR}/imgui_internal.h
+            ${imgui_SOURCE_DIR}/imstb_rectpack.h
+            ${imgui_SOURCE_DIR}/imstb_textedit.h
+            ${imgui_SOURCE_DIR}/imstb_truetype.h
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
 
-        ${imgui_SOURCE_DIR}/imgui.cpp
-        ${imgui_SOURCE_DIR}/imgui_demo.cpp
-        ${imgui_SOURCE_DIR}/imgui_draw.cpp
-        ${imgui_SOURCE_DIR}/imgui_tables.cpp
-        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+            ${imgui_SOURCE_DIR}/imgui.cpp
+            ${imgui_SOURCE_DIR}/imgui_demo.cpp
+            ${imgui_SOURCE_DIR}/imgui_draw.cpp
+            ${imgui_SOURCE_DIR}/imgui_tables.cpp
+            ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 
-        ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
-        ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
-        ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
+            ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
+            ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
+            ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
 
-        ${stb_SOURCE_DIR}/stb_image.h
-        ${stb_SOURCE_DIR}/stb_image_write.h
-        ${stb_SOURCE_DIR}/stb_image_resize.h)
+            ${stb_SOURCE_DIR}/stb_image.h
+            ${stb_SOURCE_DIR}/stb_image_write.h
+            ${stb_SOURCE_DIR}/stb_image_resize.h)
 
 if (MSVC)
     target_compile_definitions(baphy_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
 
 target_include_directories(baphy_thirdparty PUBLIC
-        ${imgui_SOURCE_DIR}
-        ${imgui_SOURCE_DIR}/backends
-        ${pcg-cpp_SOURCE_DIR}/include
-        ${stb_SOURCE_DIR})
+                           ${imgui_SOURCE_DIR}
+                           ${imgui_SOURCE_DIR}/backends
+                           ${pcg-cpp_SOURCE_DIR}/include
+                           ${stb_SOURCE_DIR})
 
 target_link_libraries(baphy_thirdparty PUBLIC
-        absl::flat_hash_map
-        absl::hash
-        fmt::fmt
-        glad_gl_core_mx_33
-        glfw
-        glfw
-        glm::glm
-        rapidcsv
-        re2::re2
-        spdlog::spdlog
-        stduuid)
+                      absl::flat_hash_map
+                      absl::hash
+                      fmt::fmt
+                      glad_gl_core_mx_33
+                      glfw
+                      glfw
+                      glm::glm
+                      rapidcsv
+                      re2::re2
+                      spdlog::spdlog
+                      stduuid)

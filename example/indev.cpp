@@ -4,9 +4,7 @@ class Indev : public baphy::Application {
 public:
   baphy::EMA fps{0.5};
 
-  void initialize() override {
-
-  }
+  void initialize() override {}
 
   void update(double dt) override {
     if (dt != 0)
