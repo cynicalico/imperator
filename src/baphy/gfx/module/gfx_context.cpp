@@ -57,7 +57,7 @@ void GfxContext::initialize_platform_extensions_() {
 
 bool GfxContext::platform_is_vsync_() const {
   if (wglGetSwapIntervalEXT)
-    return wglGetSwapIntervalEXT();
+    return wglGetSwapIntervalEXT() == 1;
   return false;
 }
 
@@ -97,6 +97,13 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
     BAPHY_LOG_WARN("Requested OpenGL v{}.{}", open_params.backend_version.x, open_params.backend_version.y);
 
   initialize_platform_extensions_();
+
+  // We set to false and then true because wglGetSwapInterval doesn't
+  // seem to return the correct value on an initial call unless we have
+  // explicitly set something beforehand
+  set_vsync(false);
+  if (set(window->open_params().flags, WindowFlags::vsync))
+    set_vsync(true);
 
 #if !defined(NDEBUG)
   gl->Enable(GL_DEBUG_OUTPUT);

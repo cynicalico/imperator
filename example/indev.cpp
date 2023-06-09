@@ -9,6 +9,10 @@ public:
   void update(double dt) override {
     if (dt != 0)
       fps.update(1.0 / dt);
+
+    if (input->pressed("1")) {
+      gfx->set_vsync(!gfx->is_vsync());
+    }
   }
 
   void draw() override {
@@ -41,6 +45,7 @@ int main(int, char *[]) {
   e->run_application<Indev>({
       .title = "Indev",
       .size = {1280, 960},
+      .monitor_num = 2,
       .flags = baphy::WindowFlags::centered
   });
 }

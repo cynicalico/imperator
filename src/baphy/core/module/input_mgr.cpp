@@ -5,28 +5,65 @@
 
 namespace baphy {
 
-double InputMgr::mouse_x() {
-  return 0;
+InputMgr::InputMgr() : Module<InputMgr>({EPI<Window>::name}) {
+  for (const auto &action : all_glfw_actions_())
+    bind(action, action);
 }
 
-double InputMgr::mouse_y() {
-  return 0;
+void InputMgr::bind(const std::string &name, const std::string &action) {
+  auto it = bindings_.find(name);
+  if (it == bindings_.end())
+    bindings_[name] = {};
+
+  bindings_[name].emplace_back(action);
 }
 
-double InputMgr::mouse_px() {
-  return 0;
+void InputMgr::remove_binding(const std::string &name, const std::string &action) {
+
 }
 
-double InputMgr::mouse_py() {
-  return 0;
+double InputMgr::mouse_x() const {
+  return mouse_info_.x;
 }
 
-double InputMgr::mouse_dx() {
-  return 0;
+double InputMgr::mouse_y() const {
+  return mouse_info_.y;
 }
 
-double InputMgr::mouse_dy() {
-  return 0;
+double InputMgr::mouse_px() const {
+  return mouse_info_.px;
+}
+
+double InputMgr::mouse_py() const {
+  return mouse_info_.py;
+}
+
+double InputMgr::mouse_dx() const {
+  return mouse_info_.dx;
+}
+
+double InputMgr::mouse_dy() const {
+  return mouse_info_.dy;
+}
+
+double InputMgr::mouse_sx() const {
+  return mouse_info_.sx;
+}
+
+double InputMgr::mouse_sy() const {
+  return mouse_info_.sy;
+}
+
+bool InputMgr::mouse_moved() const {
+  return mouse_info_.moved;
+}
+
+bool InputMgr::mouse_entered() const {
+  return mouse_info_.entered;
+}
+
+bool InputMgr::mouse_got_first_event() const {
+  return mouse_info_.got_first_event;
 }
 
 bool InputMgr::pressed(const std::string &binding) {
@@ -224,27 +261,69 @@ void InputMgr::e_shutdown_(const EShutdown &e) {
 }
 
 void InputMgr::e_update_(const EUpdate &e) {
+  // Store the previous state before updating current
+  for (auto &s : state_)
+    s.second.last_pressed = s.second.pressed;
 
+  mouse_info_.px = mouse_info_.x;
+  mouse_info_.py = mouse_info_.y;
+  mouse_info_.dx = 0.0;
+  mouse_info_.dy = 0.0;
+  mouse_info_.sx = 0.0;
+  mouse_info_.sy = 0.0;
+  mouse_info_.moved = false;
+
+  // Process events that occurred since last update
+  while (!action_queue_.empty()) {
+    auto a = action_queue_.front();
+    action_queue_.pop();
+
+    state_[a.action].pressed = a.pressed;
+    state_[a.action].time = a.time;
+  }
 }
 
 void InputMgr::e_glfw_key_(const EGlfwKey &e) {
+  auto action = glfw_key_to_str_(e.key);
 
+  if (e.action == GLFW_PRESS) {
+    action_queue_.emplace(action, true, time_nsec());
+  } else if (e.action == GLFW_RELEASE) {
+    action_queue_.emplace(action, false, time_nsec());
+  }
 }
 
 void InputMgr::e_glfw_cursor_pos_(const EGlfwCursorPos &e) {
+  mouse_info_.dx += e.xpos - mouse_info_.x;
+  mouse_info_.dy += e.ypos - mouse_info_.y;
+  mouse_info_.x = e.xpos;
+  mouse_info_.y = e.ypos;
+  mouse_info_.moved = true;
 
+  if (!mouse_info_.got_first_event) {
+    mouse_info_.got_first_event = true;
+    mouse_info_.dx = 0;
+    mouse_info_.dy = 0;
+  }
 }
 
 void InputMgr::e_glfw_cursor_enter_(const EGlfwCursorEnter &e) {
-
+  mouse_info_.entered = e.entered == 1;
 }
 
 void InputMgr::e_glfw_mouse_button_(const EGlfwMouseButton &e) {
+  auto action = glfw_button_to_str_(e.button);
 
+  if (e.action == GLFW_PRESS) {
+    action_queue_.emplace(action, true, time_nsec());
+  } else if (e.action == GLFW_RELEASE) {
+    action_queue_.emplace(action, false, time_nsec());
+  }
 }
 
 void InputMgr::e_glfw_scroll_(const EGlfwScroll &e) {
-
+  mouse_info_.sx += e.xoffset;
+  mouse_info_.sy += e.yoffset;
 }
 
 } // namespace baphy
