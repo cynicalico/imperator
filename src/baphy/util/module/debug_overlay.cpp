@@ -17,6 +17,10 @@ void DebugOverlay::update_window_state_() {
   window_tab_.focus_on_show = window->is_focus_on_show();
 }
 
+void DebugOverlay::update_gfx_state_() {
+  gfx_tab_.vsync = gfx->is_vsync();
+}
+
 void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
   EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
@@ -45,6 +49,7 @@ void DebugOverlay::e_update_(const EUpdate &e) {
   }
 
   update_window_state_();
+  update_gfx_state_();
 }
 
 void DebugOverlay::e_draw_(const EDraw &e) {
@@ -55,7 +60,7 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {2.0f, 2.0f});
 
   ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
-  dear->begin(module_name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize), [&]{
+  dear->begin(module_name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize), [&] {
     dear->text("FPS: {:.2f}{}", fps_, gfx->is_vsync() ? " (vsync)" : "");
     dear->text("Mem: {:.2f} MB", memusage_mb());
   };
@@ -63,8 +68,8 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   ImGui::PopStyleVar(5);
 
   ImGui::SetNextWindowPos({static_cast<float>(window->w()), 0}, ImGuiCond_Always, {1, 0});
-  dear->begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize), [&]{
-    dear->tab_bar("tabs"), [&]{
+  dear->begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize), [&] {
+    dear->tab_bar("Control tabs"), [&] {
       dear->tab_item("Window"), [&] {
         ImGui::PushItemWidth(50);
 
@@ -96,6 +101,11 @@ void DebugOverlay::e_draw_(const EDraw &e) {
 
         if (ImGui::Checkbox("Focus on show", &window_tab_.focus_on_show))
           window->set_focus_on_show(window_tab_.focus_on_show);
+      };
+
+      dear->tab_item("Gfx"), [&] {
+        if (ImGui::Checkbox("vsync", &gfx_tab_.vsync))
+          gfx->set_vsync(gfx_tab_.vsync);
       };
     };
   };

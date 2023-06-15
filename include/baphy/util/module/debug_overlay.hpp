@@ -26,10 +26,10 @@ private:
   std::deque<double> dts_{};
 
   struct {
-    int x;
-    int y;
-    int w;
-    int h;
+    int x{};
+    int y{};
+    int w{};
+    int h{};
     bool resizable{false};
     bool decorated{false};
     bool auto_iconify{false};
@@ -37,7 +37,12 @@ private:
     bool focus_on_show{false};
   } window_tab_{};
 
+  struct {
+    bool vsync{false};
+  } gfx_tab_{};
+
   void update_window_state_();
+  void update_gfx_state_();
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;

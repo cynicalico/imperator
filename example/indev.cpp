@@ -4,10 +4,7 @@ class Indev : public baphy::Application {
 public:
   void initialize() override {}
 
-  void update(double dt) override {
-    if (input->pressed("1"))
-      gfx->set_vsync(!gfx->is_vsync());
-  }
+  void update(double dt) override {}
 
   void draw() override {
     gfx->clear(baphy::rgb(0x222244));
