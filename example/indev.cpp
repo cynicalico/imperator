@@ -11,12 +11,9 @@ public:
   }
 };
 
-int main(int, char *[]) {
-  auto e = std::make_unique<baphy::Engine>();
-  e->run_application<Indev>({
-      .title = "Indev",
-      .size = {500, 500},
-      .monitor_num = 0,
-      .flags = baphy::WindowFlags::centered
-  });
-}
+BAPHY_RUN(Indev,
+  .title = "Indev",
+  .size = {500, 500},
+  .monitor_num = 0,
+  .flags = baphy::WindowFlags::centered
+)
