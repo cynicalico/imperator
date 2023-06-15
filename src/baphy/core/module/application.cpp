@@ -35,12 +35,16 @@ void Application::e_update_(const EUpdate &e) {
   update(e.dt);
 }
 
-void Application::e_start_frame_(const EStartFrame &e) {}
+void Application::e_start_frame_(const EStartFrame &e) {
+  dear->new_frame();
+}
 
 void Application::e_draw_(const EDraw &e) {
   draw();
 }
 
-void Application::e_end_frame_(const EEndFrame &e) {}
+void Application::e_end_frame_(const EEndFrame &e) {
+  dear->render();
+}
 
 } // namespace baphy

@@ -102,14 +102,12 @@ public:
   std::uint64_t update();
 
   double fps() const;
+  std::uint64_t ts() const;
   double dt() const;
-
-  std::vector<double> dts_vec() const;
 
 private:
   std::uint64_t start_time_;
   std::deque<std::uint64_t> timestamps_{};
-  std::deque<double> dts_{};
 
   Ticker user_ticker_;
   Ticker ticker_{0.5};

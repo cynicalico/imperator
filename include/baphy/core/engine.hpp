@@ -7,6 +7,7 @@
 #include "baphy/core/module/window.hpp"
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
+#include "baphy/util/module/debug_overlay.hpp"
 #include "baphy/util/time.hpp"
 #include <memory>
 
@@ -35,15 +36,18 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
   module_mgr_->create<Application, T>();
   module_mgr_->create<DearImgui>();
   module_mgr_->create<InputMgr>();
-  module_mgr_->create<GfxContext>();
   module_mgr_->create<Window>();
+
+  module_mgr_->create<GfxContext>();
+
+  module_mgr_->create<DebugOverlay>();
 
   EventBus::send_nowait<EInitialize>(window_open_params);
   EventBus::send_nowait<EStartApplication>();
 
   framecounter_.reset();
   while (!received_shutdown_) {
-    EventBus::send_nowait<EUpdate>(framecounter_.dt());
+    EventBus::send_nowait<EUpdate>(framecounter_.dt(), framecounter_.fps(), framecounter_.ts());
     if (received_shutdown_)
       break;
 

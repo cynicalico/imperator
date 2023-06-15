@@ -4,7 +4,9 @@
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/util/platform.hpp"
 #include "GLFW/glfw3.h"
+#include <filesystem>
 #include <mutex>
+#include <vector>
 
 #if defined(BAPHY_PLATFORM_WINDOWS)
 #include <windows.h>
@@ -24,6 +26,9 @@ public:
 
   void make_context_current();
 
+  int x() const;
+  int y() const;
+  glm::ivec2 pos() const;
   int w() const;
   int h() const;
   glm::ivec2 size() const;
@@ -37,6 +42,12 @@ public:
   bool is_focus_on_show() const;
   bool should_close() const;
 
+  void set_icon_dir(const std::filesystem::path &dir);
+  void set_icon(const std::vector<std::filesystem::path> &paths);
+  void set_icon(const std::filesystem::path &path);
+  void set_x(int x);
+  void set_y(int y);
+  void set_pos(int x, int y);
   void set_w(int w);
   void set_h(int h);
   void set_size(int w, int h);

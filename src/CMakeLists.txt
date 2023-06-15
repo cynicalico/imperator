@@ -12,9 +12,12 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
 
     src/baphy/gfx/color.cpp
 
+    src/baphy/util/module/debug_overlay.cpp
+
     src/baphy/util/averagers.cpp
     src/baphy/util/helpers.cpp
     src/baphy/util/log.cpp
+    src/baphy/util/memusage.cpp
     src/baphy/util/platform.cpp
     src/baphy/util/rnd.cpp
     src/baphy/util/sops.cpp

@@ -19,7 +19,7 @@ std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink() {
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt> file_sink() {
   static auto sink = std::invoke([] {
     auto filename = fmt::format("{}.log", baphy::timestamp());
-    auto path = (BAPHY_DATA / "log" / filename).string();
+    auto path = (DATA_FOLDER / "log" / filename).string();
 
     auto s = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path);
 

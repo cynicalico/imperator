@@ -3,6 +3,7 @@
 #include "baphy/core/event_bus.hpp"
 #include "baphy/core/msgs.hpp"
 #include "baphy/util/log.hpp"
+#include "imgui.h"
 
 namespace baphy {
 
@@ -78,33 +79,33 @@ void window_refresh_callback(GLFWwindow *window) {
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-//  if (!ImGui::GetIO().WantCaptureKeyboard)
-  EventBus::send_nowait<EGlfwKey>(window, key, scancode, action, mods);
+  if (!ImGui::GetIO().WantCaptureKeyboard)
+    EventBus::send_nowait<EGlfwKey>(window, key, scancode, action, mods);
 }
 
 void character_callback(GLFWwindow *window, unsigned int codepoint) {
-//  if (!ImGui::GetIO().WantCaptureKeyboard)
-  EventBus::send_nowait<EGlfwCharacter>(window, codepoint);
+  if (!ImGui::GetIO().WantCaptureKeyboard)
+    EventBus::send_nowait<EGlfwCharacter>(window, codepoint);
 }
 
 void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
-//  if (!ImGui::GetIO().WantCaptureMouse)
-  EventBus::send_nowait<EGlfwCursorPos>(window, xpos, ypos);
+  if (!ImGui::GetIO().WantCaptureMouse)
+    EventBus::send_nowait<EGlfwCursorPos>(window, xpos, ypos);
 }
 
 void cursor_enter_callback(GLFWwindow *window, int entered) {
-//  if (!ImGui::GetIO().WantCaptureMouse)
-  EventBus::send_nowait<EGlfwCursorEnter>(window, entered);
+  if (!ImGui::GetIO().WantCaptureMouse)
+    EventBus::send_nowait<EGlfwCursorEnter>(window, entered);
 }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-//  if (!ImGui::GetIO().WantCaptureMouse)
-  EventBus::send_nowait<EGlfwMouseButton>(window, button, action, mods);
+  if (!ImGui::GetIO().WantCaptureMouse)
+    EventBus::send_nowait<EGlfwMouseButton>(window, button, action, mods);
 }
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-//  if (!ImGui::GetIO().WantCaptureMouse)
-  EventBus::send_nowait<EGlfwScroll>(window, xoffset, yoffset);
+  if (!ImGui::GetIO().WantCaptureMouse)
+    EventBus::send_nowait<EGlfwScroll>(window, xoffset, yoffset);
 }
 
 void joystick_callback(int jid, int event) {

@@ -18,11 +18,14 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
     include/baphy/gfx/color.hpp
     include/baphy/gfx/gfx_enum_types.hpp
 
+    include/baphy/util/module/debug_overlay.hpp
+
     include/baphy/util/averagers.hpp
     include/baphy/util/enum_bitops.hpp
     include/baphy/util/helpers.hpp
     include/baphy/util/io.hpp
     include/baphy/util/log.hpp
+    include/baphy/util/memusage.hpp
     include/baphy/util/platform.hpp
     include/baphy/util/rnd.hpp
     include/baphy/util/sops.hpp

@@ -6,11 +6,14 @@ Baphy is a WIP 2D graphics engine for C++ built on top of OpenGL.<br>
 Primarily a passion project/fun side project to work on.
 
 ### Task list
+
 - [x] EventBus
     - [x] PrioList
 - [x] Engine
 - [ ] Windowing
     - [ ] Position
+        - [x] Base impl
+        - [ ] Handle different monitors
     - [x] Size
     - [x] Minimize
     - [x] Maximize
@@ -21,10 +24,11 @@ Primarily a passion project/fun side project to work on.
     - [x] Floating
     - [ ] Transparent
     - [x] Focus on show
-    - [ ] Icon
+    - [x] Icon
     - [ ] User callbacks for events
 - [ ] OpenGL context
-  - [ ] vsync (~~windows~~, linux)
+    - [x] Creation
+    - [ ] vsync (~~windows~~, linux)
 - [ ] Timers
 - [ ] [Tweens](https://easings.net/)
 - [ ] Thread pool
@@ -32,23 +36,27 @@ Primarily a passion project/fun side project to work on.
     - [x] ~~Static module storage, maybe? Drawbacks but arguably better than circ dep~~
     - [x] ModuleMgr!
 - [ ] User input
-    - [ ] Keyboard
-    - [ ] Mouse
+    - [x] Keyboard
+    - [x] Mouse
     - [ ] Joystick (?)
     - [ ] User callbacks for events (as opposed to polling, which I prefer but isn't universal)
 - [ ] Imgui integration
-  - [x] Create module, initialize
-  - [ ] Add Implot
-  - [ ] Debug overlay
-      - [ ] FPS graph
-      - [ ] FPS stats (1%/95%/99%)
-      - [ ] Memusage
-      - [ ] GPU usage (?)
-  - [ ] In-window information
-      - [ ] Log
-      - [ ] Stickies (track variables)
-  - [ ] Shader editor/recompiler
-  - [ ] Batcher stats/information
+    - [x] Create module, initialize
+    - [ ] Add Implot
+    - [ ] Debug overlay
+        - [x] FPS
+        - [ ] FPS graph
+        - [ ] FPS stats (1%/95%/99%)
+        - [x] Memusage
+        - [ ] GPU usage (?)
+        - [ ] Control window
+          - [x] Window
+          - [ ] InputMgr
+    - [ ] In-window information
+        - [ ] Log
+        - [ ] Stickies (track variables)
+    - [ ] Shader editor/recompiler
+    - [ ] Batcher stats/information
 - [ ] OpenGL abstraction
     - [ ] Shaders
     - [ ] Vertex buffers

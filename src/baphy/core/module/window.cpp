@@ -1,7 +1,11 @@
 #include "baphy/core/module/window.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "baphy/core/module/application.hpp"
 #include "baphy/core/glfw_callbacks.hpp"
+#include "baphy/util/io.hpp"
+#include "stb_image.h"
+#include <set>
 
 #if defined(BAPHY_PLATFORM_WINDOWS)
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -49,6 +53,8 @@ void Window::open_(const baphy::WindowOpenParams &params) {
   set_win32_titlebar_color_(win32_hwnd_);
 #endif
 
+  set_icon_dir(DATA_FOLDER / "icon");
+
   if (!set(params.flags, WindowFlags::fullscreen) &&
       !set(params.flags, WindowFlags::borderless) &&
       !set(params.flags, WindowFlags::hidden))
@@ -61,6 +67,30 @@ WindowOpenParams Window::open_params() const {
 
 void Window::make_context_current() {
   glfwMakeContextCurrent(glfw_handle_);
+}
+
+int Window::x() const {
+  // TODO: handle different monitors
+  int x;
+  glfwGetWindowPos(glfw_handle_, &x, nullptr);
+
+  return x;
+}
+
+int Window::y() const {
+  // TODO: handle different monitors
+  int y;
+  glfwGetWindowPos(glfw_handle_, nullptr, &y);
+
+  return y;
+}
+
+glm::ivec2 Window::pos() const {
+  // TODO: handle different monitors
+  int x, y;
+  glfwGetWindowPos(glfw_handle_, &x, &y);
+
+  return {x, y};
 }
 
 int Window::w() const {
@@ -118,6 +148,54 @@ bool Window::is_focus_on_show() const {
 
 bool Window::should_close() const {
   return glfwWindowShouldClose(glfw_handle_) == GLFW_TRUE;
+}
+
+void Window::set_icon_dir(const std::filesystem::path &dir) {
+  // This is the list of formats that stb_image can support
+  static std::set<std::string> valid_extensions = {
+      ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"};
+
+  std::vector<std::filesystem::path> icon_paths{};
+  for (const auto &p: std::filesystem::directory_iterator(dir))
+    if (p.is_regular_file() && valid_extensions.contains(p.path().extension().string()))
+      icon_paths.emplace_back(p.path());
+
+  if (icon_paths.empty())
+    BAPHY_LOG_WARN("No valid icon images found in '{}'", dir.string());
+
+  set_icon(icon_paths);
+}
+
+void Window::set_icon(const std::vector<std::filesystem::path> &paths) {
+  std::vector<GLFWimage> images{};
+  for (const auto &p : paths) {
+    images.emplace_back();
+    images.back().pixels = stbi_load(p.string().c_str(), &images.back().width, &images.back().height, 0, 4);
+  }
+  glfwSetWindowIcon(glfw_handle_, images.size(), &images[0]);
+
+  for (auto &i : images)
+    stbi_image_free(i.pixels);
+}
+
+void Window::set_icon(const std::filesystem::path &path) {
+  std::vector<std::filesystem::path> paths = {path};
+  set_icon(paths);
+}
+
+void Window::set_x(int x) {
+  // TODO: handle different monitors
+  glfwSetWindowPos(glfw_handle_, x, y());
+}
+
+void Window::set_y(int y) {
+  // TODO: handle different monitors
+  glfwSetWindowPos(glfw_handle_, x(), y);
+}
+
+void Window::set_pos(int x, int y) {
+  // TODO: handle different monitors
+  glfwSetWindowPos(glfw_handle_, x, y);
 }
 
 void Window::set_w(int w) {

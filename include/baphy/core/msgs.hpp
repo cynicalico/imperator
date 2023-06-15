@@ -4,6 +4,7 @@
 #define GLFW_INCLUDE_NONE
 #include "baphy/core/msgs_types.hpp"
 #include "GLFW/glfw3.h"
+#include <cstdint>
 #include <memory>
 
 namespace baphy {
@@ -18,6 +19,9 @@ struct EStartApplication {};
 
 struct EUpdate {
   double dt;
+
+  double fps;
+  std::uint64_t timestamp;
 };
 
 struct EStartFrame {};
