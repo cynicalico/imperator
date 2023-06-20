@@ -1,9 +1,17 @@
 #include "baphy/util/log.hpp"
 
+#include "baphy/core/event_bus.hpp"
 #include "baphy/util/io.hpp"
 #include "baphy/util/time.hpp"
 
 namespace baphy {
+
+void MsgSink::sink_it_(const spdlog::details::log_msg &msg) {
+  spdlog::memory_buf_t formatted;
+  spdlog::sinks::base_sink<spdlog::details::null_mutex>::formatter_->format(msg, formatted);
+
+  EventBus::send_nowait<ELogMsg>(fmt::to_string(formatted));
+}
 
 std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink() {
   static auto sink = std::invoke([] {
@@ -29,13 +37,25 @@ std::shared_ptr<spdlog::sinks::basic_file_sink_mt> file_sink() {
   return sink;
 }
 
+std::shared_ptr<MsgSink> msg_sink() {
+  static auto sink = std::invoke([] {
+    auto s = std::make_shared<MsgSink>();
+    s->set_pattern("[%H:%M:%S %t %L] %v");
+
+    return s;
+  });
+
+  return sink;
+}
+
 std::shared_ptr<spdlog::logger> logger() {
   static auto logger = std::invoke([] {
     auto l = std::make_shared<spdlog::logger>(
         "",
         spdlog::sinks_init_list{
             console_sink(),
-            file_sink()
+            file_sink(),
+            msg_sink()
         }
     );
     l->set_level(spdlog::level::trace);

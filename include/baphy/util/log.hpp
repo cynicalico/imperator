@@ -1,5 +1,5 @@
-#ifndef BAPHY_UTIL_LOG_H
-#define BAPHY_UTIL_LOG_H
+#ifndef BAPHY_UTIL_LOG_HPP
+#define BAPHY_UTIL_LOG_HPP
 
 #if !defined(SPDLOG_ACTIVE_LEVEL)
 #if defined(NDEBUG)
@@ -17,8 +17,15 @@
 
 namespace baphy {
 
+class MsgSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex> {
+protected:
+  void sink_it_(const spdlog::details::log_msg &msg) override;
+  void flush_() override { /* do nothing */ }
+};
+
 std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink();
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt> file_sink();
+std::shared_ptr<MsgSink> msg_sink();
 
 std::shared_ptr<spdlog::logger> logger();
 
@@ -31,4 +38,4 @@ std::shared_ptr<spdlog::logger> logger();
 #define BAPHY_LOG_ERROR(...)    SPDLOG_LOGGER_ERROR(baphy::logger(), __VA_ARGS__)
 #define BAPHY_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(baphy::logger(), __VA_ARGS__)
 
-#endif//BAPHY_UTIL_LOG_H
+#endif//BAPHY_UTIL_LOG_HPP

@@ -1,9 +1,78 @@
+#include <utility>
+
 #include "baphy/util/module/debug_overlay.hpp"
 
 #include "baphy/core/module/application.hpp"
 #include "baphy/util/memusage.hpp"
 
 namespace baphy {
+
+void DebugOverlay::log_clear() {
+  log_.buf.clear();
+  log_.line_offsets.clear();
+  log_.line_offsets.push_back(0);
+}
+
+void DebugOverlay::log_add(const char *fmt, ...) {
+  int old_size = log_.buf.size();
+  va_list args;
+    va_start(args, fmt);
+  log_.buf.appendfv(fmt, args);
+    va_end(args);
+  for (int new_size = log_.buf.size(); old_size < new_size; old_size++)
+    if (log_.buf[old_size] == '\n')
+      log_.line_offsets.push_back(old_size + 1);
+}
+
+void DebugOverlay::log_draw(const char *title, bool *p_open) {
+  dear->begin(title, p_open), [&] {
+    dear->popup("Options"), [&] {
+      ImGui::Checkbox("Auto-scroll", &log_.autoscroll);
+    };
+
+    if (ImGui::Button("Options"))
+      ImGui::OpenPopup("Options");
+    ImGui::SameLine();
+    if (ImGui::Button("Clear"))
+      log_clear();
+    ImGui::SameLine();
+    if (ImGui::Button("Copy"))
+      ImGui::LogToClipboard();
+    ImGui::SameLine();
+    log_.filter.Draw("Filter", -100.0f);
+
+    ImGui::Separator();
+
+    dear->child("scrolling", {0, 0}, false, ImGuiWindowFlags_HorizontalScrollbar), [&] {
+      ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+      const char* buf_it = log_.buf.begin();
+      const char* buf_end = log_.buf.end();
+      if (log_.filter.IsActive()) {
+        for (int line_no = 0; line_no < log_.line_offsets.Size; line_no++) {
+          const char* line_start = buf_it + log_.line_offsets[line_no];
+          const char* line_end = (line_no + 1 < log_.line_offsets.Size) ? (buf_it + log_.line_offsets[line_no + 1] - 1) : buf_end;
+          if (log_.filter.PassFilter(line_start, line_end))
+            ImGui::TextUnformatted(line_start, line_end);
+        }
+      } else {
+        ImGuiListClipper clipper;
+        clipper.Begin(log_.line_offsets.Size);
+        while (clipper.Step()) {
+          for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
+            const char* line_start = buf_it + log_.line_offsets[line_no];
+            const char* line_end = (line_no + 1 < log_.line_offsets.Size) ? (buf_it + log_.line_offsets[line_no + 1] - 1) : buf_end;
+            ImGui::TextUnformatted(line_start, line_end);
+          }
+        }
+        clipper.End();
+      }
+      ImGui::PopStyleVar();
+
+      if (log_.autoscroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+        ImGui::SetScrollHereY(1.0f);
+    };
+  };
+}
 
 void DebugOverlay::update_window_state_() {
   window_tab_.x = window->x();
@@ -22,6 +91,7 @@ void DebugOverlay::update_gfx_state_() {
 }
 
 void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
+  EventBus::sub<ELogMsg>(module_name, [&](const auto &e) { e_log_msg_(e); });
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
   EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
 
@@ -34,6 +104,11 @@ void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
 
 void DebugOverlay::e_shutdown_(const baphy::EShutdown &e) {
   Module::e_shutdown_(e);
+}
+
+void DebugOverlay::e_log_msg_(const ELogMsg &e) {
+  if (!received_shutdown_)
+    log_add("%s", e.text.c_str());
 }
 
 void DebugOverlay::e_update_(const EUpdate &e) {
@@ -67,6 +142,7 @@ void DebugOverlay::e_draw_(const EDraw &e) {
 
   ImGui::PopStyleVar(5);
 
+  ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
   ImGui::SetNextWindowPos({static_cast<float>(window->w()), 0}, ImGuiCond_Always, {1, 0});
   dear->begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize), [&] {
     dear->tab_bar("Control tabs"), [&] {
@@ -109,6 +185,11 @@ void DebugOverlay::e_draw_(const EDraw &e) {
       };
     };
   };
+
+  ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+  ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});
+  ImGui::SetNextWindowSize({static_cast<float>(window->w() / 2.0), static_cast<float>(window->h() / 4.0)}, ImGuiCond_Once);
+  log_draw("Log");
 }
 
 } // namespace baphy

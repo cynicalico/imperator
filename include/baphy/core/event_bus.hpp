@@ -1,6 +1,7 @@
 #ifndef BAPHY_CORE_EVENT_BUS_H
 #define BAPHY_CORE_EVENT_BUS_H
 
+#include "baphy/core/msgs.hpp"
 #include "baphy/core/prio_list.hpp"
 #include "baphy/util/type_id.hpp"
 #include <any>

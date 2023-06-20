@@ -13,6 +13,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
     src/baphy/gfx/color.cpp
 
     src/baphy/util/module/debug_overlay.cpp
+    src/baphy/util/module/timer_mgr.cpp
 
     src/baphy/util/averagers.cpp
     src/baphy/util/helpers.cpp

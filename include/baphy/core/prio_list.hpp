@@ -2,7 +2,7 @@
 #define BAPHY_CORE_PRIO_LIST_HPP
 
 #include "baphy/util/helpers.hpp"
-#include "baphy/util/log.hpp"
+#include "fmt/format.h"
 #include <algorithm>
 #include <limits>
 #include <cstdint>
@@ -41,7 +41,7 @@ public:
   PrioList(PrioList &&other) noexcept = default;
   PrioList &operator=(PrioList &&other) noexcept = default;
 
-  void add(const std::string &name, std::vector<std::string> &&deps, T &&v);
+  bool add(const std::string &name, std::vector<std::string> &&deps, T &&v);
 
   std::string name_from_id(std::size_t id);
 
@@ -83,15 +83,13 @@ template<typename T>
 const std::size_t PrioList<T>::MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
 
 template<typename T>
-void PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, T &&v) {
+bool PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, T &&v) {
   std::size_t I;
   std::vector<std::size_t> I_deps{};
   hash_get_i_deps_(name, deps, I, I_deps);
 
-  if (idx_[I] != MAX_SIZE_T) {
-    BAPHY_LOG_WARN("{} already added to PrioList at idx {}", name, idx_[I]);
-    return;
-  }
+  if (idx_[I] != MAX_SIZE_T)
+    return false;
   saved_deps_[I] = I_deps;
 
   std::size_t min_idx = 0;
@@ -114,6 +112,8 @@ void PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, 
   idx_[I] = min_idx;
   for (std::size_t i = min_idx + 1; i < order_.size(); ++i)
     idx_[order_[i].id]++;
+
+  return true;
 }
 
 template<typename T>

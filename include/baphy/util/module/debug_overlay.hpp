@@ -20,10 +20,22 @@ public:
 
   ~DebugOverlay() override = default;
 
+  void log_clear();
+  void log_add(const char *fmt, ...) IM_FMTARGS(2);
+
+  void log_draw(const char *title, bool *p_open = nullptr);
+
 private:
   double fps_{};
   std::deque<std::uint64_t> timestamps_{};
   std::deque<double> dts_{};
+
+  struct {
+    ImGuiTextBuffer buf;
+    ImGuiTextFilter filter;
+    ImVector<int> line_offsets;
+    bool autoscroll{true};
+  } log_{};
 
   struct {
     int x{};
@@ -47,6 +59,7 @@ private:
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
 
+  void e_log_msg_(const ELogMsg &e);
   void e_update_(const EUpdate &e);
   void e_draw_(const EDraw &e);
 };

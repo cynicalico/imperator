@@ -6,6 +6,7 @@
 #include "GLFW/glfw3.h"
 #include <cstdint>
 #include <memory>
+#include <string>
 
 namespace baphy {
 
@@ -29,6 +30,10 @@ struct EStartFrame {};
 struct EDraw {};
 
 struct EEndFrame {};
+
+struct ELogMsg {
+  std::string text;
+};
 
 /* GLFW CALLBACKS */
 

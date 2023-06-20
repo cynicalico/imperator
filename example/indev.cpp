@@ -4,7 +4,11 @@ class Indev : public baphy::Application {
 public:
   void initialize() override {}
 
-  void update(double dt) override {}
+  void update(double dt) override {
+    if (input->pressed("1")) {
+      BAPHY_LOG_INFO("pressed 1");
+    }
+  }
 
   void draw() override {
     gfx->clear(baphy::rgb(0x222244));
@@ -13,7 +17,7 @@ public:
 
 BAPHY_RUN(Indev,
   .title = "Indev",
-  .size = {500, 500},
+  .size = {800, 800},
   .monitor_num = 0,
   .flags = baphy::WindowFlags::centered
 )

@@ -8,6 +8,7 @@
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/util/module/debug_overlay.hpp"
+#include "baphy/util/module/timer_mgr.hpp"
 #include "baphy/util/time.hpp"
 #include <memory>
 
@@ -41,6 +42,7 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
   module_mgr_->create<GfxContext>();
 
   module_mgr_->create<DebugOverlay>();
+  module_mgr_->create<TimerMgr>();
 
   EventBus::send_nowait<EInitialize>(window_open_params);
   EventBus::send_nowait<EStartApplication>();

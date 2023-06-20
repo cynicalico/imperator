@@ -3,6 +3,7 @@
 
 #include "baphy/core/event_bus.hpp"
 #include "baphy/core/msgs.hpp"
+#include "baphy/util/log.hpp"
 #include <memory>
 
 namespace baphy {
