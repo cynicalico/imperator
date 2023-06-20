@@ -11,23 +11,30 @@ void DebugOverlay::log_clear() {
   log_.buf.clear();
   log_.line_offsets.clear();
   log_.line_offsets.push_back(0);
+  log_.line_levels.clear();
+  log_.line_levels.push_back(spdlog::level::info);
 }
 
-void DebugOverlay::log_add(const char *fmt, ...) {
+void DebugOverlay::log_add(spdlog::level::level_enum level, const char *fmt, ...) {
   int old_size = log_.buf.size();
   va_list args;
     va_start(args, fmt);
   log_.buf.appendfv(fmt, args);
     va_end(args);
   for (int new_size = log_.buf.size(); old_size < new_size; old_size++)
-    if (log_.buf[old_size] == '\n')
+    if (log_.buf[old_size] == '\n') {
       log_.line_offsets.push_back(old_size + 1);
+      log_.line_levels[log_.line_levels.size() - 1] = level;
+      log_.line_levels.push_back(level);
+    }
 }
 
 void DebugOverlay::log_draw(const char *title, bool *p_open) {
   dear->begin(title, p_open), [&] {
     dear->popup("Options"), [&] {
       ImGui::Checkbox("Auto-scroll", &log_.autoscroll);
+      ImGui::Checkbox("Wrapping", &log_.wrapping);
+      ImGui::Checkbox("Docked", &log_.docked);
     };
 
     if (ImGui::Button("Options"))
@@ -45,15 +52,24 @@ void DebugOverlay::log_draw(const char *title, bool *p_open) {
 
     dear->child("scrolling", {0, 0}, false, ImGuiWindowFlags_HorizontalScrollbar), [&] {
       ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+      if (log_.wrapping)
+        ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
+
       const char* buf_it = log_.buf.begin();
       const char* buf_end = log_.buf.end();
+
       if (log_.filter.IsActive()) {
         for (int line_no = 0; line_no < log_.line_offsets.Size; line_no++) {
           const char* line_start = buf_it + log_.line_offsets[line_no];
           const char* line_end = (line_no + 1 < log_.line_offsets.Size) ? (buf_it + log_.line_offsets[line_no + 1] - 1) : buf_end;
-          if (log_.filter.PassFilter(line_start, line_end))
+          if (log_.filter.PassFilter(line_start, line_end)) {
+            ImGui::PushStyleColor(ImGuiCol_Text, log_.color_map[log_.line_levels[line_no]]);
             ImGui::TextUnformatted(line_start, line_end);
+            ImGui::PopStyleColor();
+          }
         }
+
       } else {
         ImGuiListClipper clipper;
         clipper.Begin(log_.line_offsets.Size);
@@ -61,11 +77,17 @@ void DebugOverlay::log_draw(const char *title, bool *p_open) {
           for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
             const char* line_start = buf_it + log_.line_offsets[line_no];
             const char* line_end = (line_no + 1 < log_.line_offsets.Size) ? (buf_it + log_.line_offsets[line_no + 1] - 1) : buf_end;
+            ImGui::PushStyleColor(ImGuiCol_Text, log_.color_map[log_.line_levels[line_no]]);
             ImGui::TextUnformatted(line_start, line_end);
+            ImGui::PopStyleColor();
           }
         }
         clipper.End();
       }
+
+      if (log_.wrapping)
+        ImGui::PopTextWrapPos();
+
       ImGui::PopStyleVar();
 
       if (log_.autoscroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -99,6 +121,16 @@ void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
   gfx = module_mgr->get<GfxContext>();
   window = module_mgr->get<Window>();
 
+  log_clear();
+  log_.color_map.insert({
+      {spdlog::level::trace, IM_COL32(198, 208, 245, 255)},
+      {spdlog::level::debug, IM_COL32(140, 170, 238, 255)},
+      {spdlog::level::info, IM_COL32(166, 209, 137, 255)},
+      {spdlog::level::warn, IM_COL32(229, 200, 144, 255)},
+      {spdlog::level::err, IM_COL32(231, 130, 132, 255)},
+      {spdlog::level::critical, IM_COL32(244, 184, 228, 255)}
+  });
+
   Module::e_initialize_(e);
 }
 
@@ -108,7 +140,7 @@ void DebugOverlay::e_shutdown_(const baphy::EShutdown &e) {
 
 void DebugOverlay::e_log_msg_(const ELogMsg &e) {
   if (!received_shutdown_)
-    log_add("%s", e.text.c_str());
+    log_add(e.level, "%s", e.text.c_str());
 }
 
 void DebugOverlay::e_update_(const EUpdate &e) {
@@ -187,8 +219,9 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   };
 
   ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-  ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});
   ImGui::SetNextWindowSize({static_cast<float>(window->w() / 2.0), static_cast<float>(window->h() / 4.0)}, ImGuiCond_Once);
+  if (log_.docked)
+    ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});
   log_draw("Log");
 }
 

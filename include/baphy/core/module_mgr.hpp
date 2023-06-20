@@ -2,7 +2,6 @@
 #define BAPHY_MODULE_MGR_HPP
 
 #include "baphy/core/event_bus.hpp"
-#include "baphy/core/msgs.hpp"
 #include "baphy/util/log.hpp"
 #include <memory>
 

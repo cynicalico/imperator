@@ -21,7 +21,7 @@ public:
   ~DebugOverlay() override = default;
 
   void log_clear();
-  void log_add(const char *fmt, ...) IM_FMTARGS(2);
+  void log_add(spdlog::level::level_enum level, const char *fmt, ...) IM_FMTARGS(2);
 
   void log_draw(const char *title, bool *p_open = nullptr);
 
@@ -34,7 +34,12 @@ private:
     ImGuiTextBuffer buf;
     ImGuiTextFilter filter;
     ImVector<int> line_offsets;
+    ImVector<spdlog::level::level_enum> line_levels;
     bool autoscroll{true};
+    bool wrapping{true};
+    bool docked{true};
+
+    std::unordered_map<spdlog::level::level_enum, ImU32> color_map{};
   } log_{};
 
   struct {

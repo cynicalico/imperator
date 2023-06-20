@@ -4,9 +4,14 @@
 #define GLFW_INCLUDE_NONE
 #include "baphy/core/msgs_types.hpp"
 #include "GLFW/glfw3.h"
+#include "spdlog/common.h"
 #include <cstdint>
 #include <memory>
 #include <string>
+
+// This gets defined when we set the spdlog level, but the intent is for
+// it to get defined in the log.hpp header
+#undef SPDLOG_ACTIVE_LEVEL
 
 namespace baphy {
 
@@ -33,6 +38,7 @@ struct EEndFrame {};
 
 struct ELogMsg {
   std::string text;
+  spdlog::level::level_enum level;
 };
 
 /* GLFW CALLBACKS */

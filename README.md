@@ -53,7 +53,10 @@ Primarily a passion project/fun side project to work on.
           - [x] Window
           - [ ] InputMgr
     - [ ] In-window information
-        - [ ] Log
+        - [x] Log
+          - [x] Color
+          - [ ] All log events (including before creation/registration)
+          - [ ] Configurable dock position (corners)
         - [ ] Stickies (track variables)
     - [ ] Shader editor/recompiler
     - [ ] Batcher stats/information
