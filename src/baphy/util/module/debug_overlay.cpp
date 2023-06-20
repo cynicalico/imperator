@@ -71,10 +71,25 @@ void DebugOverlay::log_draw(const char *title, bool *p_open) {
         }
 
       } else {
-        ImGuiListClipper clipper;
-        clipper.Begin(log_.line_offsets.Size);
-        while (clipper.Step()) {
-          for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
+        // https://github.com/ocornut/imgui/issues/1447
+        // Wrapping is just not compatible with list clipping currently, so we have to turn it off
+        if (!log_.wrapping) {
+          ImGuiListClipper clipper;
+          clipper.Begin(log_.line_offsets.Size);
+          while (clipper.Step()) {
+            for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
+              const char *line_start = buf_it + log_.line_offsets[line_no];
+              const char *line_end = (line_no + 1 < log_.line_offsets.Size) ? (buf_it + log_.line_offsets[line_no + 1] -
+                                                                               1) : buf_end;
+              ImGui::PushStyleColor(ImGuiCol_Text, log_.color_map[log_.line_levels[line_no]]);
+              ImGui::TextUnformatted(line_start, line_end);
+              ImGui::PopStyleColor();
+            }
+          }
+          clipper.End();
+
+        } else {
+          for (int line_no = 0; line_no < log_.line_offsets.Size; line_no++) {
             const char* line_start = buf_it + log_.line_offsets[line_no];
             const char* line_end = (line_no + 1 < log_.line_offsets.Size) ? (buf_it + log_.line_offsets[line_no + 1] - 1) : buf_end;
             ImGui::PushStyleColor(ImGuiCol_Text, log_.color_map[log_.line_levels[line_no]]);
@@ -82,7 +97,6 @@ void DebugOverlay::log_draw(const char *title, bool *p_open) {
             ImGui::PopStyleColor();
           }
         }
-        clipper.End();
       }
 
       if (log_.wrapping)

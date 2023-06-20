@@ -36,7 +36,7 @@ private:
     ImVector<int> line_offsets;
     ImVector<spdlog::level::level_enum> line_levels;
     bool autoscroll{true};
-    bool wrapping{true};
+    bool wrapping{false};
     bool docked{true};
 
     std::unordered_map<spdlog::level::level_enum, ImU32> color_map{};
