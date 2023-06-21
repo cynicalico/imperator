@@ -31,6 +31,8 @@ private:
   std::deque<double> dts_{};
 
   struct {
+    bool show{true};
+
     ImGuiTextBuffer buf;
     ImGuiTextFilter filter;
     ImVector<int> line_offsets;
@@ -41,6 +43,10 @@ private:
 
     std::unordered_map<spdlog::level::level_enum, ImU32> color_map{};
   } log_{};
+
+  struct {
+    bool show{false};
+  } controls_{};
 
   struct {
     int x{};

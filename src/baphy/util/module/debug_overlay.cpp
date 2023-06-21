@@ -183,75 +183,95 @@ void DebugOverlay::e_draw_(const EDraw &e) {
 
   ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
   dear->begin(module_name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize), [&] {
+    if (ImGui::BeginPopupContextWindow()) {
+      ImGui::Checkbox("Log", &log_.show);
+      ImGui::Checkbox("Controls", &controls_.show);
+      ImGui::EndPopup();
+    }
+
     dear->text("FPS: {:.2f}{}", fps_, gfx->is_vsync() ? " (vsync)" : "");
     dear->text("Mem: {:.2f} MB", memusage_mb());
 
     auto dts_v = std::vector<double>{dts_.begin(), dts_.end()};
     auto [dt_min, dt_max] = std::minmax_element(dts_v.begin(), dts_v.end());
-    double mid = (*dt_max + *dt_min) / 2.0;
 
     ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0, 0});
-    if (ImPlot::BeginPlot("##FPS_History", {100, 35}, ImPlotFlags_CanvasOnly | ImPlotFlags_NoFrame | ImPlotFlags_NoInputs)) {
+    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+    ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 1);
+    ImPlot::PushStyleColor(ImPlotCol_Line, {0.0, 1.0, 0.0, 1.0});
+    ImPlot::PushStyleColor(ImPlotCol_Fill, {0.0, 1.0, 0.0, 1.0});
+    ImPlot::PushStyleColor(ImPlotCol_PlotBorder, {1.0, 1.0, 1.0, 1.0});
+
+    auto latency_w = static_cast<float>(floor(window->w() / 8.0));
+    auto latency_h = 40.0f;
+    if (ImPlot::BeginPlot("##FPS_History", {latency_w, latency_h}, ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs)) {
       ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, dts_v.size(), ImPlotCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, mid + 1.5 * (*dt_max - mid), ImPlotCond_Always);
-      ImPlot::PlotLine("History", &dts_v[0], dts_v.size());
+      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, *dt_max + ceil(*dt_max * 0.1), ImPlotCond_Always);
+      ImPlot::PlotShaded("##History_Fill", &dts_v[0], dts_v.size(), -INFINITY);
+      ImPlot::PlotLine("##History", &dts_v[0], dts_v.size());
       ImPlot::EndPlot();
     }
-    ImPlot::PopStyleVar();
+
+    ImPlot::PopStyleColor(3);
+    ImPlot::PopStyleVar(3);
   };
 
   ImGui::PopStyleVar(5);
 
-  ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-  ImGui::SetNextWindowPos({static_cast<float>(window->w()), 0}, ImGuiCond_Always, {1, 0});
-  dear->begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize), [&] {
-    dear->tab_bar("Control tabs"), [&] {
-      dear->tab_item("Window"), [&] {
-        ImGui::PushItemWidth(50);
+  if (controls_.show) {
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+    ImGui::SetNextWindowPos({static_cast<float>(window->w()), 0}, ImGuiCond_Always, {1, 0});
+    dear->begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize), [&] {
+      dear->tab_bar("Control tabs"), [&] {
+        dear->tab_item("Window"), [&] {
+          ImGui::PushItemWidth(50);
 
-        if (ImGui::InputInt("##x", &window_tab_.x, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
-          window->set_x(window_tab_.x);
-        ImGui::SameLine();
-        if (ImGui::InputInt("x/y", &window_tab_.y, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
-          window->set_y(window_tab_.y);
+          if (ImGui::InputInt("##x", &window_tab_.x, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
+            window->set_x(window_tab_.x);
+          ImGui::SameLine();
+          if (ImGui::InputInt("x/y", &window_tab_.y, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
+            window->set_y(window_tab_.y);
 
-        if (ImGui::InputInt("##w", &window_tab_.w, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
-          window->set_w(window_tab_.w);
-        ImGui::SameLine();
-        if (ImGui::InputInt("w/h", &window_tab_.h, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
-          window->set_h(window_tab_.h);
+          if (ImGui::InputInt("##w", &window_tab_.w, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
+            window->set_w(window_tab_.w);
+          ImGui::SameLine();
+          if (ImGui::InputInt("w/h", &window_tab_.h, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue))
+            window->set_h(window_tab_.h);
 
-        ImGui::PopItemWidth();
+          ImGui::PopItemWidth();
 
-        if (ImGui::Checkbox("Resizable", &window_tab_.resizable))
-          window->set_resizable(window_tab_.resizable);
+          if (ImGui::Checkbox("Resizable", &window_tab_.resizable))
+            window->set_resizable(window_tab_.resizable);
 
-        if (ImGui::Checkbox("Decorated", &window_tab_.decorated))
-          window->set_decorated(window_tab_.decorated);
+          if (ImGui::Checkbox("Decorated", &window_tab_.decorated))
+            window->set_decorated(window_tab_.decorated);
 
-        if (ImGui::Checkbox("Auto iconify", &window_tab_.auto_iconify))
-          window->set_auto_iconify(window_tab_.auto_iconify);
+          if (ImGui::Checkbox("Auto iconify", &window_tab_.auto_iconify))
+            window->set_auto_iconify(window_tab_.auto_iconify);
 
-        if (ImGui::Checkbox("Floating", &window_tab_.floating))
-          window->set_floating(window_tab_.floating);
+          if (ImGui::Checkbox("Floating", &window_tab_.floating))
+            window->set_floating(window_tab_.floating);
 
-        if (ImGui::Checkbox("Focus on show", &window_tab_.focus_on_show))
-          window->set_focus_on_show(window_tab_.focus_on_show);
-      };
+          if (ImGui::Checkbox("Focus on show", &window_tab_.focus_on_show))
+            window->set_focus_on_show(window_tab_.focus_on_show);
+        };
 
-      dear->tab_item("Gfx"), [&] {
-        if (ImGui::Checkbox("vsync", &gfx_tab_.vsync))
-          gfx->set_vsync(gfx_tab_.vsync);
+        dear->tab_item("Gfx"), [&] {
+          if (ImGui::Checkbox("vsync", &gfx_tab_.vsync))
+            gfx->set_vsync(gfx_tab_.vsync);
+        };
       };
     };
-  };
+  }
 
-  ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
-  ImGui::SetNextWindowSize({static_cast<float>(window->w() / 2.0), static_cast<float>(window->h() / 4.0)}, ImGuiCond_Once);
-  if (log_.docked)
-    ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});
-  log_draw("Log");
+  if (log_.show) {
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+    ImGui::SetNextWindowSize({static_cast<float>(window->w() / 2.0), static_cast<float>(window->h() / 4.0)}, ImGuiCond_Once);
+    if (log_.docked)
+      ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});
+    log_draw("Log");
+  }
 }
 
 } // namespace baphy
