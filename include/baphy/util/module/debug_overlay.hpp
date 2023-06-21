@@ -21,7 +21,7 @@ public:
   ~DebugOverlay() override = default;
 
   void log_clear();
-  void log_add(spdlog::level::level_enum level, const char *fmt, ...) IM_FMTARGS(2);
+  void log_add(spdlog::level::level_enum level, const std::string &text);
 
   void log_draw(const char *title, bool *p_open = nullptr);
 

@@ -37,12 +37,18 @@ void DearImgui::e_initialize_(const baphy::EInitialize &e) {
     glsl_version = fmt::format("#version {}{}0 core", gfx->version.x, gfx->version.y);
   ImGui_ImplOpenGL3_Init(glsl_version.c_str());
 
+  implot_ctx_ = ImPlot::CreateContext();
+
   Module::e_initialize_(e);
 }
 
 void DearImgui::e_shutdown_(const baphy::EShutdown &e) {
+  ImPlot::DestroyContext(implot_ctx_);
+  implot_ctx_ = nullptr;
+
   (void)io_;
   ImGui::DestroyContext(ctx_);
+  ctx_ = nullptr;
 
   Module::e_shutdown_(e);
 }

@@ -10,7 +10,7 @@ void MsgSink::sink_it_(const spdlog::details::log_msg &msg) {
   spdlog::memory_buf_t formatted;
   spdlog::sinks::base_sink<spdlog::details::null_mutex>::formatter_->format(msg, formatted);
 
-  EventBus::send_nowait<ELogMsg>(fmt::to_string(formatted), msg.level);
+  EventBus::send<ELogMsg>(fmt::to_string(formatted), msg.level);
 }
 
 std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink() {

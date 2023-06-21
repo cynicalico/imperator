@@ -32,6 +32,8 @@ private:
 template<typename T>
 requires std::derived_from<T, Application>
 void Engine::run_application(const WindowOpenParams &window_open_params) {
+  EventBus::presub_for_cache<ELogMsg>(EPI<DebugOverlay>::name);
+
   baphy::log_platform();
 
   module_mgr_->create<Application, T>();

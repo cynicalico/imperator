@@ -4,6 +4,7 @@
 
 #include "baphy/core/module/application.hpp"
 #include "baphy/util/memusage.hpp"
+#include "baphy/util/sops.hpp"
 
 namespace baphy {
 
@@ -15,12 +16,10 @@ void DebugOverlay::log_clear() {
   log_.line_levels.push_back(spdlog::level::info);
 }
 
-void DebugOverlay::log_add(spdlog::level::level_enum level, const char *fmt, ...) {
+void DebugOverlay::log_add(spdlog::level::level_enum level, const std::string &text) {
   int old_size = log_.buf.size();
-  va_list args;
-    va_start(args, fmt);
-  log_.buf.appendfv(fmt, args);
-    va_end(args);
+  log_.buf.append(text.c_str());
+
   for (int new_size = log_.buf.size(); old_size < new_size; old_size++)
     if (log_.buf[old_size] == '\n') {
       log_.line_offsets.push_back(old_size + 1);
@@ -154,7 +153,7 @@ void DebugOverlay::e_shutdown_(const baphy::EShutdown &e) {
 
 void DebugOverlay::e_log_msg_(const ELogMsg &e) {
   if (!received_shutdown_)
-    log_add(e.level, "%s", e.text.c_str());
+    log_add(e.level, e.text);
 }
 
 void DebugOverlay::e_update_(const EUpdate &e) {
@@ -174,6 +173,8 @@ void DebugOverlay::e_update_(const EUpdate &e) {
 }
 
 void DebugOverlay::e_draw_(const EDraw &e) {
+  EventBus::poll<ELogMsg>(module_name);
+
   ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0.0f, 0.0f});
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {2.0f, 2.0f});
@@ -184,6 +185,20 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   dear->begin(module_name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize), [&] {
     dear->text("FPS: {:.2f}{}", fps_, gfx->is_vsync() ? " (vsync)" : "");
     dear->text("Mem: {:.2f} MB", memusage_mb());
+
+    auto dts_v = std::vector<double>{dts_.begin(), dts_.end()};
+    auto [dt_min, dt_max] = std::minmax_element(dts_v.begin(), dts_v.end());
+    double mid = (*dt_max + *dt_min) / 2.0;
+
+    ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0, 0});
+    if (ImPlot::BeginPlot("##FPS_History", {100, 35}, ImPlotFlags_CanvasOnly | ImPlotFlags_NoFrame | ImPlotFlags_NoInputs)) {
+      ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+      ImPlot::SetupAxisLimits(ImAxis_X1, 0, dts_v.size(), ImPlotCond_Always);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, mid + 1.5 * (*dt_max - mid), ImPlotCond_Always);
+      ImPlot::PlotLine("History", &dts_v[0], dts_v.size());
+      ImPlot::EndPlot();
+    }
+    ImPlot::PopStyleVar();
   };
 
   ImGui::PopStyleVar(5);

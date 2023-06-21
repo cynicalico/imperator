@@ -49,6 +49,13 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME implot
+        GITHUB_REPOSITORY epezent/implot
+        GIT_TAG 18758e237e8906a97ddf42de1e75793526f30ce9
+        DOWNLOAD_ONLY
+)
+
+CPMAddPackage(
         NAME pcg-cpp
         GITHUB_REPOSITORY imneme/pcg-cpp
         GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
@@ -108,6 +115,13 @@ add_library(baphy_thirdparty STATIC
             ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
             ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 
+            ${implot_SOURCE_DIR}/implot.h
+            ${implot_SOURCE_DIR}/implot_internal.h
+
+            ${implot_SOURCE_DIR}/implot.cpp
+            ${implot_SOURCE_DIR}/implot_demo.cpp
+            ${implot_SOURCE_DIR}/implot_items.cpp
+
             ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
             ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
             ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
@@ -123,6 +137,7 @@ endif ()
 target_include_directories(baphy_thirdparty PUBLIC
                            ${imgui_SOURCE_DIR}
                            ${imgui_SOURCE_DIR}/backends
+                           ${implot_SOURCE_DIR}
                            ${pcg-cpp_SOURCE_DIR}/include
                            ${stb_SOURCE_DIR})
 

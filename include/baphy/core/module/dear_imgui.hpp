@@ -7,7 +7,7 @@
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/color.hpp"
 #include "imgui.h"
-//#include "implot.h"
+#include "implot.h"
 #include <memory>
 
 namespace baphy {
@@ -145,6 +145,8 @@ public:
 private:
   ImGuiContext *ctx_{nullptr};
   ImGuiIO *io_{nullptr};
+
+  ImPlotContext *implot_ctx_{nullptr};
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;

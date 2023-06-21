@@ -57,13 +57,17 @@ class EventBus {
 public:
   template<typename T>
   static void sub(const std::string &name, std::vector<std::string> &&deps, const Receiver<T> &&recv) {
-    while (type_id<T> >= receivers_.size())
+    auto e_idx = type_id<T>;
+
+    while (e_idx >= receivers_.size())
       receivers_.emplace_back();
-    receivers_[type_id<T>].add(
+    receivers_[e_idx].add(
         name,
         std::forward<std::vector<std::string>>(deps),
         std::make_unique<ReceiverWrap<T>>(std::forward<const Receiver<T>>(recv))
     );
+
+    check_create_buffer_<T>(name);
   }
 
   template<typename T>
@@ -71,23 +75,66 @@ public:
     sub(name, {}, std::forward<const Receiver<T>>(recv));
   }
 
+  template<typename T>
+  static void presub_for_cache(const std::string &name) {
+    check_create_buffer_<T>(name);
+  }
+
+  template<typename T, typename... Args>
+  static void send(Args &&... args) {
+    auto e_idx = type_id<T>;
+
+    if (e_idx < buffers_.size()) {
+      auto pay = std::any(T{std::forward<Args>(args)...});
+      for (auto &p: buffers_[e_idx])
+        p.second.emplace_back(pay);
+    }
+  }
+
   template<typename T, typename... Args>
   static void send_nowait(Args &&... args) {
-    if (type_id<T> < receivers_.size())
+    auto e_idx = type_id<T>;
+
+    if (e_idx < receivers_.size()) {
+      auto pay = std::any(T{std::forward<Args>(args)...});
       for (const auto &p: receivers_[type_id<T>])
-        p.v->call(std::any(T{std::forward<Args>(args)...}));
+        p.v->call(pay);
+    }
+  }
+
+  template<typename T>
+  static void poll(const std::string &name) {
+    auto e_idx = type_id<T>;
+
+    for (const auto &pay: buffers_[e_idx][name])
+      receivers_[e_idx][name]->call(pay);
+    buffers_[e_idx][name].clear();
   }
 
   template<typename T>
   static std::vector<std::string> get_prio() {
+    auto e_idx = type_id<T>;
+
     auto ret = std::vector<std::string>{};
-    for (const auto &p: receivers_[type_id<T>])
-      ret.emplace_back(receivers_[type_id<T>].name_from_id(p.id));
+    for (const auto &p: receivers_[e_idx])
+      ret.emplace_back(receivers_[e_idx].name_from_id(p.id));
     return ret;
   }
 
 private:
+  template<typename T>
+  static void check_create_buffer_(const std::string &name) {
+    auto e_idx = type_id<T>;
+
+    while (e_idx >= buffers_.size())
+      buffers_.emplace_back();
+
+    if (!buffers_[e_idx].contains(name))
+      buffers_[e_idx][name] = std::vector<std::any>{};
+  }
+
   static std::vector<PrioList<std::unique_ptr<ReceiverI>>> receivers_;
+  static std::vector<std::unordered_map<std::string, std::vector<std::any>>> buffers_;
 };
 
 } // namespace baphy

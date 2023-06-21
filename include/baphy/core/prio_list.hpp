@@ -41,6 +41,9 @@ public:
   PrioList(PrioList &&other) noexcept = default;
   PrioList &operator=(PrioList &&other) noexcept = default;
 
+  T &operator [](const std::string &name);
+  const T &operator [](const std::string &name) const;
+
   bool add(const std::string &name, std::vector<std::string> &&deps, T &&v);
 
   std::string name_from_id(std::size_t id);
@@ -81,6 +84,16 @@ private:
 
 template<typename T>
 const std::size_t PrioList<T>::MAX_SIZE_T = std::numeric_limits<std::size_t>::max();
+
+template<typename T>
+T &PrioList<T>::operator [](const std::string &name) {
+  return order_[idx_[s_to_id_[name]]].v;
+}
+
+template<typename T>
+const T &PrioList<T>::operator [](const std::string &name) const {
+  return order_.at(idx_.at(s_to_id_.at(name))).v;
+}
 
 template<typename T>
 bool PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, T &&v) {
