@@ -31,11 +31,11 @@ public:
 
   ~TimerMgr() override = default;
 
-  template<typename AfterFunc>
-  std::string after(const std::string &tag, double delay, AfterFunc &&f);
+  template<AfterFunc T>
+  std::string after(const std::string &tag, double delay, T &&f);
 
-  template<typename AfterFunc>
-  std::string after(double delay, AfterFunc &&f);
+  template<AfterFunc T>
+  std::string after(double delay, T &&f);
 
   template<EveryFunc T>
   std::string every(const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f);
@@ -108,15 +108,15 @@ private:
   void e_update_(const EUpdate &e);
 };
 
-template<typename AfterFunc>
-std::string TimerMgr::after(const std::string &tag, double delay, AfterFunc &&f) {
-  timers_[tag] = std::make_unique<AfterTimer<AfterFunc>>(delay, std::forward<AfterFunc>(f));
+template<AfterFunc T>
+std::string TimerMgr::after(const std::string &tag, double delay, T &&f) {
+  timers_[tag] = std::make_unique<AfterTimer<T>>(delay, std::forward<T>(f));
   return tag;
 }
 
-template<typename AfterFunc>
-std::string TimerMgr::after(double delay, AfterFunc &&f) {
-  return after(base58(11), delay, std::forward<AfterFunc>(f));
+template<AfterFunc T>
+std::string TimerMgr::after(double delay, T &&f) {
+  return after(base58(11), delay, std::forward<T>(f));
 }
 
 template<EveryFunc T>
