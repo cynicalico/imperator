@@ -13,7 +13,23 @@ void TimerMgr::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void TimerMgr::e_update_(const EUpdate &e) {
+  for (auto it = timers_.begin(); it != timers_.end(); ) {
+    auto &t = it->second;
 
+    if (!t->paused) {
+      t->update(e.dt);
+      if (t->should_fire) {
+        t->fire();
+      }
+
+      if (t->expired) {
+        it = timers_.erase(it);
+        continue;
+      }
+    }
+
+    it++;
+  }
 }
 
 } // namespace baphy

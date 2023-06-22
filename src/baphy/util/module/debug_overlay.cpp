@@ -207,7 +207,7 @@ void DebugOverlay::e_draw_(const EDraw &e) {
     if (ImPlot::BeginPlot("##FPS_History", {latency_w, latency_h}, ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs)) {
       ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
       ImPlot::SetupAxisLimits(ImAxis_X1, 0, dts_v.size(), ImPlotCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, *dt_max + ceil(*dt_max * 0.1), ImPlotCond_Always);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, *dt_max + (*dt_max * 0.1), ImPlotCond_Always);
       ImPlot::PlotShaded("##History_Fill", &dts_v[0], dts_v.size(), -INFINITY);
       ImPlot::PlotLine("##History", &dts_v[0], dts_v.size());
       ImPlot::EndPlot();

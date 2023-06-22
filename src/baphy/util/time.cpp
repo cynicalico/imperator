@@ -114,7 +114,7 @@ std::uint64_t FrameCounter::update() {
   timestamps_.emplace_back(time_nsec());
 
   // Keep size >= 2 otherwise dt will give bad results on pauses longer than 1s
-  while (timestamps_.size() > 2 && timestamps_.back() - timestamps_.front() > 1'000'000'000)
+  while (timestamps_.size() > 2 && timestamps_.back() - timestamps_.front() > 1e9)
     timestamps_.pop_front();
 
   averager_.update(static_cast<double>(timestamps_.size()));
@@ -139,7 +139,7 @@ double FrameCounter::dt() const {
   if (timestamps_.size() < 2)
     return 0;
 
-  return static_cast<double>(timestamps_.back() - timestamps_[timestamps_.size() - 2]);
+  return static_cast<double>(timestamps_.back() - timestamps_[timestamps_.size() - 2]) / 1e9;
 }
 
 } // namespace baphy
