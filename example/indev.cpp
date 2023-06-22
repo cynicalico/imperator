@@ -11,6 +11,12 @@ public:
       });
       BAPHY_LOG_INFO("pressed 1");
     }
+
+    if (input->pressed("2")) {
+      timer->every(std::vector{0.1, 0.25, 0.5}, [&] {
+        BAPHY_LOG_INFO("Tick!");
+      });
+    }
   }
 
   void draw() override {
