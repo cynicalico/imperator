@@ -118,4 +118,4 @@ void Module<T>::e_shutdown_(const EShutdown &e) {
 
 } // namespace baphy
 
-#endif //BAPHY_MODULE_MGR_HPP
+#endif//BAPHY_MODULE_MGR_HPP

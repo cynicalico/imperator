@@ -1,44 +1,24 @@
 #include "baphy/baphy.hpp"
+#include "baphy/gfx/internal/gl/shader.hpp"
+#include <filesystem>
+
+auto DATA = std::filesystem::path(__FILE__).parent_path() / "data";
 
 class Indev : public baphy::Application {
 public:
-  std::string tag{};
-
-  void initialize() override {}
+  void initialize() override {
+    auto ss_o = baphy::ShaderSrc::parse(DATA / "shader" / "basic.shader");
+    if (ss_o)
+      baphy::Shader(gfx, *ss_o);
+  }
 
   void update(double dt) override {
-    if (input->pressed("1")) {
-      timer->after(2.0, [&] {
-        BAPHY_LOG_INFO("After 2s");
-      });
-      BAPHY_LOG_INFO("pressed 1");
-    }
-
-    if (input->pressed("2")) {
-      tag = timer->every(std::vector{0.1, 0.25, 0.5}, [&] {
-        BAPHY_LOG_INFO("Tick!");
-      });
-    }
-
-    if (input->pressed("3")) {
-      timer->until(1.0, 10, [&] {
-        BAPHY_LOG_INFO("Hello!");
-        return input->down("4");
-      });
-    }
-
-    if (input->pressed("5"))
-      timer->cancel(tag);
-
-    if (input->pressed("6"))
-      timer->cancel_all();
-
-    if (input->pressed("7"))
-      timer->toggle(tag);
+    if (input->pressed("escape"))
+      window->set_should_close(true);
   }
 
   void draw() override {
-    gfx->clear(baphy::rgb(0x222244));
+    gfx->clear(baphy::rgb(0x111122));
   }
 };
 

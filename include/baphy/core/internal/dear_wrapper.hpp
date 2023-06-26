@@ -159,4 +159,4 @@ struct ChildFrame : public ScopeWrapper<ChildFrame, true> {
 
 } // namespace baphy
 
-#endif //BAPHY_DEAR_WRAPPER_HPP
+#endif//BAPHY_DEAR_WRAPPER_HPP

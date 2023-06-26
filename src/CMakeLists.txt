@@ -8,6 +8,8 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
     src/baphy/core/event_bus.cpp
     src/baphy/core/glfw_callbacks.cpp
 
+    src/baphy/gfx/internal/gl/shader.cpp
+
     src/baphy/gfx/module/gfx_context.cpp
 
     src/baphy/gfx/color.cpp

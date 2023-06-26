@@ -29,7 +29,7 @@ Primarily a passion project/fun side project to work on.
 - [ ] OpenGL context
     - [x] Creation
     - [ ] vsync (~~windows~~, linux)
-- [ ] Timers
+- [x] Timers
 - [ ] [Tweens](https://easings.net/)
 - [ ] Thread pool
 - [x] Refactor out circular dependency on engine

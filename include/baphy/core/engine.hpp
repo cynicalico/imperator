@@ -67,4 +67,4 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
 
 BAPHY_REGISTER_ENDPOINT(baphy::Engine);
 
-#endif //BAPHY_CORE_ENGINE_HPP
+#endif//BAPHY_CORE_ENGINE_HPP
