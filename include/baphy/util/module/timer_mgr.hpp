@@ -31,6 +31,13 @@ public:
 
   ~TimerMgr() override = default;
 
+  void cancel(const std::string &tag);
+  void cancel_all();
+
+  void pause(const std::string &tag);
+  void resume(const std::string &tag);
+  void toggle(const std::string &tag);
+
   template<AfterFunc T>
   std::string after(const std::string &tag, double delay, T &&f);
 

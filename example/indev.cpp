@@ -2,6 +2,8 @@
 
 class Indev : public baphy::Application {
 public:
+  std::string tag{};
+
   void initialize() override {}
 
   void update(double dt) override {
@@ -13,7 +15,7 @@ public:
     }
 
     if (input->pressed("2")) {
-      timer->every(std::vector{0.1, 0.25, 0.5}, [&] {
+      tag = timer->every(std::vector{0.1, 0.25, 0.5}, [&] {
         BAPHY_LOG_INFO("Tick!");
       });
     }
@@ -24,6 +26,15 @@ public:
         return input->down("4");
       });
     }
+
+    if (input->pressed("5"))
+      timer->cancel(tag);
+
+    if (input->pressed("6"))
+      timer->cancel_all();
+
+    if (input->pressed("7"))
+      timer->toggle(tag);
   }
 
   void draw() override {

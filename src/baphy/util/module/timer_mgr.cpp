@@ -2,6 +2,34 @@
 
 namespace baphy {
 
+void TimerMgr::cancel(const std::string &tag) {
+  auto it = timers_.find(tag);
+  if (it != timers_.end())
+    timers_.erase(it);
+}
+
+void TimerMgr::cancel_all() {
+  timers_.clear();
+}
+
+void TimerMgr::pause(const std::string &tag) {
+  auto it = timers_.find(tag);
+  if (it != timers_.end())
+    it->second->paused = true;
+}
+
+void TimerMgr::resume(const std::string &tag) {
+  auto it = timers_.find(tag);
+  if (it != timers_.end())
+    it->second->paused = false;
+}
+
+void TimerMgr::toggle(const std::string &tag) {
+  auto it = timers_.find(tag);
+  if (it != timers_.end())
+    it->second->paused = !it->second->paused;
+}
+
 void TimerMgr::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
 
