@@ -61,6 +61,30 @@ public:
   template<EveryFunc T>
   std::string every(double delay, T &&f);
 
+  template<UntilFunc T>
+  std::string until(const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f);
+
+  template<UntilFunc T>
+  std::string until(const std::string &tag, double delay, std::int64_t count, T &&f);
+
+  template<UntilFunc T>
+  std::string until(const std::string &tag, const std::vector<double> &delay_opts, T &&f);
+
+  template<UntilFunc T>
+  std::string until(const std::string &tag, double delay, T &&f);
+
+  template<UntilFunc T>
+  std::string until(const std::vector<double> &delay_opts, std::int64_t count, T &&f);
+
+  template<UntilFunc T>
+  std::string until(double delay, std::int64_t count, T &&f);
+
+  template<UntilFunc T>
+  std::string until(const std::vector<double> &delay_opts, T &&f);
+
+  template<UntilFunc T>
+  std::string until(double delay, T &&f);
+  
 private:
   struct TimerI {
     double delay{0.0};
@@ -95,6 +119,19 @@ private:
 
     EveryTimer(const std::vector<double> &delay_opts, std::int64_t count, EveryFunc &&f)
         : TimerI(choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<EveryFunc>(f)) {}
+
+    void update(double dt) override;
+    void fire() override;
+  };
+
+  template<typename UntilFunc>
+  struct UntilTimer : public TimerI {
+    UntilFunc f;
+    std::vector<double> delay_opts;
+    std::int64_t count, count_acc{0};
+
+    UntilTimer(const std::vector<double> &delay_opts, std::int64_t count, UntilFunc &&f)
+        : TimerI(choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<UntilFunc>(f)) {}
 
     void update(double dt) override;
     void fire() override;
@@ -160,6 +197,47 @@ std::string TimerMgr::every(double delay, T &&f) {
   return every(base58(11), std::vector{delay}, -1, std::forward<T>(f));
 }
 
+template<UntilFunc T>
+std::string TimerMgr::until(const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f) {
+  timers_[tag] = std::make_unique<UntilTimer<T>>(delay_opts, count, std::forward<T>(f));
+  return tag;
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(const std::string &tag, double delay, std::int64_t count, T &&f) {
+  return until(tag, std::vector{delay}, count, std::forward<T>(f));
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(const std::string &tag, const std::vector<double> &delay_opts, T &&f) {
+  return until(tag, delay_opts, -1, std::forward<T>(f));
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(const std::string &tag, double delay, T &&f) {
+  return until(tag, std::vector{delay}, -1, std::forward<T>(f));
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(const std::vector<double> &delay_opts, std::int64_t count, T &&f) {
+  return until(base58(11), delay_opts, count, std::forward<T>(f));
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(double delay, std::int64_t count, T &&f) {
+  return until(base58(11), std::vector{delay}, count, std::forward<T>(f));
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(const std::vector<double> &delay_opts, T &&f) {
+  return until(base58(11), delay_opts, -1, std::forward<T>(f));
+}
+
+template<UntilFunc T>
+std::string TimerMgr::until(double delay, T &&f) {
+  return until(base58(11), std::vector{delay}, -1, std::forward<T>(f));
+}
+
 template<typename T>
 void TimerMgr::AfterTimer<T>::update(double dt) {
   acc += dt;
@@ -186,6 +264,29 @@ void TimerMgr::EveryTimer<T>::update(double dt) {
 template<typename T>
 void TimerMgr::EveryTimer<T>::fire() {
   f();
+  should_fire = false;
+  acc -= delay;
+  delay = choose(delay_opts);
+
+  count_acc++;
+  if (count_acc == count)
+    expired = true;
+}
+
+template<typename T>
+void TimerMgr::UntilTimer<T>::update(double dt) {
+  acc += dt;
+
+  if (acc >= delay)
+    should_fire = true;
+}
+
+template<typename T>
+void TimerMgr::UntilTimer<T>::fire() {
+  bool should_continue = f();
+  if (!should_continue)
+    expired = true;
+
   should_fire = false;
   acc -= delay;
   delay = choose(delay_opts);

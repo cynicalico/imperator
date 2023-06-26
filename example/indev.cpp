@@ -17,6 +17,13 @@ public:
         BAPHY_LOG_INFO("Tick!");
       });
     }
+
+    if (input->pressed("3")) {
+      timer->until(1.0, 10, [&] {
+        BAPHY_LOG_INFO("Hello!");
+        return input->down("4");
+      });
+    }
   }
 
   void draw() override {
