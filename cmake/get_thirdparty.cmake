@@ -1,12 +1,4 @@
 CPMAddPackage(
-        NAME abseil
-        GITHUB_REPOSITORY abseil/abseil-cpp
-        GIT_TAG 419b54d4870e31ae2442b7f453c7b8d5b8c08026
-        OPTIONS
-        "ABSL_PROPAGATE_CXX_STD ON"
-)
-
-CPMAddPackage(
         NAME fmt
         GITHUB_REPOSITORY fmtlib/fmt
         GIT_TAG 0de789cf294ae59582e7372884bbdb7158e90b8d
@@ -142,8 +134,6 @@ target_include_directories(baphy_thirdparty PUBLIC
                            ${stb_SOURCE_DIR})
 
 target_link_libraries(baphy_thirdparty PUBLIC
-                      absl::flat_hash_map
-                      absl::hash
                       fmt::fmt
                       glad_gl_core_mx_33
                       glfw
