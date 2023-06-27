@@ -136,23 +136,21 @@ void PrioList<T>::hash_get_i_deps_(
     std::size_t &I,
     std::vector<std::size_t> &I_deps
 ) {
-  if (!s_to_id_.contains(name)) {
-    s_to_id_[name] = s_to_id_.size();
-    id_to_s_.emplace_back(name);
+  auto new_entry_setup = [&](const std::string &s) {
+    s_to_id_[s] = s_to_id_.size();
+    id_to_s_.emplace_back(s);
     idx_.emplace_back(MAX_SIZE_T);
     saved_deps_.emplace_back();
     unmet_deps_.emplace_back();
-  }
+  };
+
+  if (!s_to_id_.contains(name))
+    new_entry_setup(name);
   I = s_to_id_[name];
 
   for (const auto &d: deps) {
-    if (!s_to_id_.contains(d)) {
-      s_to_id_[d] = s_to_id_.size();
-      id_to_s_.emplace_back(d);
-      idx_.emplace_back(MAX_SIZE_T);
-      saved_deps_.emplace_back();
-      unmet_deps_.emplace_back();
-    }
+    if (!s_to_id_.contains(d))
+      new_entry_setup(d);
     I_deps.emplace_back(s_to_id_[d]);
   }
 }

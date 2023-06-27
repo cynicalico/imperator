@@ -22,7 +22,7 @@ add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
 if (WIN32)
     glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
 else ()
-    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3)
+    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4)
 endif ()
 
 CPMAddPackage(

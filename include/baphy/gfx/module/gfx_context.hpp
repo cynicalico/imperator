@@ -8,6 +8,10 @@
 #include "baphy/util/platform.hpp"
 #if defined(BAPHY_PLATFORM_WINDOWS)
 #include "glad/wgl.h"
+#elif defined(BAPHY_PLATFORM_LINUX)
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+#include "glad/glx.h"
 #endif
 #include "glad/gl.h"
 #include "glm/vec2.hpp"

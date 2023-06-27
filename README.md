@@ -26,9 +26,9 @@ Primarily a passion project/fun side project to work on.
     - [x] Focus on show
     - [x] Icon
     - [ ] User callbacks for events
-- [ ] OpenGL context
+- [x] OpenGL context
     - [x] Creation
-    - [ ] vsync (~~windows~~, linux)
+    - [x] vsync set/get
 - [x] Timers
 - [ ] [Tweens](https://easings.net/)
 - [ ] Thread pool

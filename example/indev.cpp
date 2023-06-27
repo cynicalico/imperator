@@ -26,5 +26,5 @@ BAPHY_RUN(Indev,
   .title = "Indev",
   .size = {800, 800},
   .monitor_num = 0,
-  .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync
+  .flags = baphy::WindowFlags::centered
 )

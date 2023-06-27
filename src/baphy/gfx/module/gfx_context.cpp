@@ -9,6 +9,11 @@
 #define GLFW_EXPOSE_NATIVE_WGL
 #define GLFW_NATIVE_INCLUDE_NONE
 #include "GLFW/glfw3native.h"
+#elif defined(BAPHY_PLATFORM_LINUX)
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
+#define GLFW_NATIVE_INCLUDE_NONE
+#include "GLFW/glfw3native.h"
 #endif
 
 namespace baphy {
@@ -69,9 +74,42 @@ void GfxContext::platform_set_vsync_(bool v) {
 }
 
 #else
-void GfxContext::initialize_platform_extensions_() {}
-bool GfxContext::platform_is_vsync_() const { return false; }
-void GfxContext::platform_set_vsync_(bool v) { glfwSwapInterval(v ? 1 : 0); }
+// Unsure what this will do in a multi-monitor setup if the
+// monitors are actually recognized as separate screens
+
+void GfxContext::initialize_platform_extensions_() {
+  auto window = module_mgr->get<Window>();
+
+  Display *dpy = glfwGetX11Display();
+  int screen = DefaultScreen(dpy);
+  auto glx_version = gladLoadGLX(dpy, screen, glfwGetProcAddress);
+  if (glx_version == 0) {
+    BAPHY_LOG_CRITICAL("Failed to initialize GLX");
+    std::exit(EXIT_FAILURE);
+  }
+
+  auto version_major = GLAD_VERSION_MAJOR(glx_version);
+  auto version_minor = GLAD_VERSION_MINOR(glx_version);
+  BAPHY_LOG_DEBUG("Initialized GLX");
+  BAPHY_LOG_DEBUG("=> Version: {}.{}", version_major, version_minor);
+}
+
+bool GfxContext::platform_is_vsync_() const {
+  Display *dpy = glXGetCurrentDisplay();
+  GLXDrawable drawable = glXGetCurrentDrawable();
+
+  unsigned int swap;
+  glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &swap);
+
+  return swap > 0;
+}
+
+void GfxContext::platform_set_vsync_(bool v) {
+  Display *dpy = glXGetCurrentDisplay();
+  GLXDrawable drawable = glXGetCurrentDrawable();
+
+  glXSwapIntervalEXT(dpy, drawable, v ? 1 : 0);
+}
 #endif
 
 void GfxContext::e_initialize_(const baphy::EInitialize &e) {
