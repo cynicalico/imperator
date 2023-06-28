@@ -50,6 +50,10 @@ private:
   BufUsage last_usage{BufUsage::none};
 };
 
+using FSBuffer = StaticBuffer<float>;
+using ISBuffer = StaticBuffer<int>;
+using USBuffer = StaticBuffer<unsigned int>;
+
 template<Numeric T>
 StaticBuffer<T>::StaticBuffer(
     std::shared_ptr<GfxContext> gfx,

@@ -10,7 +10,7 @@ public:
   std::shared_ptr<baphy::Shader> basic_shader{nullptr};
 
   GLuint vao;
-  std::unique_ptr<baphy::StaticBuffer<>> vbo{nullptr};
+  std::unique_ptr<baphy::FSBuffer> vbo{nullptr};
 
   void initialize() override {
     shaders = module_mgr->get<baphy::ShaderMgr>();
@@ -19,7 +19,7 @@ public:
     gfx->gl->GenVertexArrays(1, &vao);
     gfx->gl->BindVertexArray(vao);
 
-    vbo = std::make_unique<baphy::StaticBuffer<>>(
+    vbo = std::make_unique<baphy::FSBuffer>(
         gfx,
         baphy::BufTarget::array,
         baphy::BufUsage::static_draw,
