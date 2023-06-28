@@ -13,7 +13,9 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/core/msgs.hpp
         include/baphy/core/prio_list.hpp
 
+        include/baphy/gfx/internal/gl/buffer.hpp
         include/baphy/gfx/internal/gl/shader.hpp
+        include/baphy/gfx/internal/gl/static_buffer.hpp
 
         include/baphy/gfx/module/gfx_context.hpp
         include/baphy/gfx/module/shader_mgr.hpp

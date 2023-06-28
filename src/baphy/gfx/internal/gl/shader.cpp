@@ -534,6 +534,7 @@ void Shader::del_id_(GLuint id) {
   if (id != 0) {
     gfx->gl->DeleteProgram(id);
     BAPHY_LOG_DEBUG("DEL_ID({}): Shader/{}", id, name);
+    id = 0;
   }
 }
 
