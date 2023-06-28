@@ -13,6 +13,8 @@ struct ShaderSrc {
   std::optional<std::string> vertex;
   std::optional<std::string> fragment;
 
+  std::string get() const;
+
   static std::optional<ShaderSrc> parse(const std::string &src);
   static std::optional<ShaderSrc> parse(const std::filesystem::path &path);
 };
@@ -28,14 +30,23 @@ public:
 
   ~Shader();
 
+  std::string src() const;
+
+  void use();
+
+  void recompile(const ShaderSrc &src);
+
 private:
-  void compile_shader_src_(const ShaderSrc &src);
+  ShaderSrc src_;
+
+  bool compile_shader_src_(const ShaderSrc &src);
 
   bool check_compile_(GLuint shader_id, GLenum type);
   bool check_link_();
 
   void gen_id_();
   void del_id_();
+  void del_id_(GLuint id);
 };
 
 } // namespace baphy

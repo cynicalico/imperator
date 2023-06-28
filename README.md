@@ -58,7 +58,7 @@ Primarily a passion project/fun side project to work on.
           - [x] All log events (including before creation/registration)
           - [ ] Configurable dock position (corners)
         - [ ] Stickies (track variables)
-    - [ ] Shader editor/recompiler
+    - [x] Shader editor/recompiler
     - [ ] Batcher stats/information
 - [ ] OpenGL abstraction
     - [ ] Shaders

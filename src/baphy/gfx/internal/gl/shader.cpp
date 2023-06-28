@@ -83,6 +83,9 @@ std::optional<ShaderSrc> try_parse_shader_src(const std::string &src) {
       return;
     }
 
+    trim(buffer);
+    buffer += "\n";
+
     switch (buffer_dst) {
       using enum BufferDst;
       case vertex:
@@ -152,6 +155,29 @@ std::optional<ShaderSrc> try_parse_shader_src(const std::string &src) {
   return s;
 }
 
+std::string ShaderSrc::get() const {
+  std::string s;
+
+  if (name) {
+    s += fmt::format("#pragma name({})\n", *name);
+    s += "\n";
+  }
+
+  if (vertex) {
+    s += fmt::format("#pragma vertex\n");
+    s += "\n";
+    s += fmt::format("{}\n", *vertex);
+  }
+
+  if (fragment) {
+    s += fmt::format("#pragma fragment\n");
+    s += "\n";
+    s += fmt::format("{}\n", *fragment);
+  }
+
+  return s;
+}
+
 std::optional<ShaderSrc> ShaderSrc::parse(const std::string &src) {
   return try_parse_shader_src(src);
 }
@@ -175,7 +201,25 @@ Shader::~Shader() {
   del_id_();
 }
 
-void Shader::compile_shader_src_(const ShaderSrc &src) {
+std::string Shader::src() const {
+  return src_.get();
+}
+
+void Shader::use() {
+  gfx->gl->UseProgram(id);
+}
+
+void Shader::recompile(const ShaderSrc &src) {
+  auto old_id = id;
+
+  gen_id_();
+  if (compile_shader_src_(src))
+    del_id_(old_id);
+  else
+    id = old_id;
+}
+
+bool Shader::compile_shader_src_(const ShaderSrc &src) {
   GLuint vertex_id{0};
   GLuint fragment_id{0};
 
@@ -189,7 +233,8 @@ void Shader::compile_shader_src_(const ShaderSrc &src) {
     if (check_compile_(vertex_id, GL_VERTEX_SHADER)) {
       gfx->gl->AttachShader(id, vertex_id);
       BAPHY_LOG_DEBUG("Attached vertex shader ({}:{})", name, id);
-    }
+    } else
+      return false;
   }
 
   if (src.fragment) {
@@ -202,18 +247,24 @@ void Shader::compile_shader_src_(const ShaderSrc &src) {
     if (check_compile_(fragment_id, GL_FRAGMENT_SHADER)) {
       gfx->gl->AttachShader(id, fragment_id);
       BAPHY_LOG_DEBUG("Attached fragment shader ({}:{})", name, id);
-    }
+    } else
+      return false;
   }
 
   gfx->gl->LinkProgram(id);
-  if (check_link_())
+  if (check_link_()) {
     BAPHY_LOG_DEBUG("Linked shader program ({}:{})", name, id);
+    src_ = src;
+  } else
+    return false;
 
   if (vertex_id != 0)
     gfx->gl->DeleteShader(vertex_id);
 
   if (fragment_id != 0)
     gfx->gl->DeleteShader(fragment_id);
+
+  return true;
 }
 
 bool Shader::check_compile_(GLuint shader_id, GLenum type) {
@@ -267,11 +318,15 @@ void Shader::gen_id_() {
   BAPHY_LOG_DEBUG("GEN_ID({}): Shader/{}", id, name);
 }
 
-void Shader::del_id_() {
+void Shader::del_id_(GLuint id) {
   if (id != 0) {
     gfx->gl->DeleteProgram(id);
     BAPHY_LOG_DEBUG("DEL_ID({}): Shader/{}", id, name);
   }
+}
+
+void Shader::del_id_() {
+  del_id_(id);
 }
 
 } // namespace baphy

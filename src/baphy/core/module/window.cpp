@@ -409,7 +409,10 @@ void Window::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void Window::e_update_(const EUpdate &e) {
-  glfwPollEvents();
+  EventBus::poll<EGlfwWindowClose>(module_name);
+
+  if (!no_more_polling_)
+    glfwPollEvents();
 }
 
 void Window::e_start_frame_(const EStartFrame &e) {}
@@ -422,6 +425,8 @@ void Window::e_end_frame_(const EEndFrame &e) {
 }
 
 void Window::e_glfw_window_close_(const EGlfwWindowClose &e) {
+  no_more_polling_ = true;
+
   EventBus::send_nowait<EShutdown>();
 }
 

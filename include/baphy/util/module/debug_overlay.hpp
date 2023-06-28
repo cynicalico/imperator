@@ -5,6 +5,8 @@
 #include "baphy/core/module/window.hpp"
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
+#include "baphy/gfx/module/shader_mgr.hpp"
+#include "TextEditor.h"
 #include <deque>
 #include <memory>
 
@@ -14,9 +16,15 @@ class DebugOverlay : public Module<DebugOverlay> {
 public:
   std::shared_ptr<DearImgui> dear{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<ShaderMgr> shader_mgr{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  DebugOverlay() : Module<DebugOverlay>({EPI<Window>::name, EPI<GfxContext>::name, EPI<DearImgui>::name}) {}
+  DebugOverlay() : Module<DebugOverlay>({
+      EPI<DearImgui>::name,
+      EPI<GfxContext>::name,
+      EPI<ShaderMgr>::name,
+      EPI<Window>::name,
+  }) {}
 
   ~DebugOverlay() override = default;
 
@@ -47,6 +55,12 @@ private:
   struct {
     bool show{false};
   } controls_{};
+
+  struct {
+    bool show{false};
+
+    TextEditor te{};
+  } shader_editor_{};
 
   struct {
     int x{};

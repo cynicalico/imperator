@@ -132,7 +132,11 @@ void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
 
   dear = module_mgr->get<DearImgui>();
   gfx = module_mgr->get<GfxContext>();
+  shader_mgr = module_mgr->get<ShaderMgr>();
   window = module_mgr->get<Window>();
+
+  shader_editor_.te.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
+  shader_editor_.te.SetPalette(TextEditor::GetDarkPalette());
 
   log_clear();
   log_.color_map.insert({
@@ -186,6 +190,7 @@ void DebugOverlay::e_draw_(const EDraw &e) {
     if (ImGui::BeginPopupContextWindow()) {
       ImGui::Checkbox("Log", &log_.show);
       ImGui::Checkbox("Controls", &controls_.show);
+      ImGui::Checkbox("Shader Editor", &shader_editor_.show);
       ImGui::EndPopup();
     }
 
@@ -262,6 +267,39 @@ void DebugOverlay::e_draw_(const EDraw &e) {
             gfx->set_vsync(gfx_tab_.vsync);
         };
       };
+    };
+  }
+
+  if (shader_editor_.show) {
+    dear->begin("Shader Editor"), [&] {
+      const auto items = shader_mgr->get_names();
+      static int item_current_idx = -1;
+
+      if (ImGui::Button("Compile")) {
+        auto src_o = baphy::ShaderSrc::parse(shader_editor_.te.GetText());
+        if (src_o)
+          shader_mgr->recompile(items[item_current_idx], *src_o);
+      }
+
+      ImGui::SameLine();
+
+      std::string combo_preview_value;
+      if (item_current_idx != -1)
+        combo_preview_value = items[item_current_idx];
+      dear->combo("Name", combo_preview_value.c_str()), [&] {
+        for (const auto &[i, v]: baphy::enumerate(items)) {
+          const bool is_selected = (item_current_idx == i);
+          if (ImGui::Selectable(v.c_str(), is_selected)) {
+            item_current_idx = i;
+            shader_editor_.te.SetText(shader_mgr->get(v)->src());
+          }
+
+          if (is_selected)
+            ImGui::SetItemDefaultFocus();
+        }
+      };
+
+      shader_editor_.te.Render("##text edit");
     };
   }
 

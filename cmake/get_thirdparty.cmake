@@ -48,10 +48,23 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME ImGuiColorTextEdit
+        GITHUB_REPOSITORY santaclose/ImGuiColorTextEdit
+        GIT_TAG 23fdb8f6f990711f4643511cb9855482cc7d7ce7
+        DOWNLOAD_ONLY
+)
+
+CPMAddPackage(
         NAME pcg-cpp
         GITHUB_REPOSITORY imneme/pcg-cpp
         GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
         DOWNLOAD_ONLY YES
+)
+
+CPMAddPackage(
+        NAME range-v3
+        GITHUB_REPOSITORY ericniebler/range-v3
+        GIT_TAG 9aa41d6b8ded2cf5e8007e66a0efd1ab33dbf9a5
 )
 
 CPMAddPackage(
@@ -90,56 +103,63 @@ CPMAddPackage(
 )
 
 add_library(baphy_thirdparty STATIC
-            ${imgui_SOURCE_DIR}/imconfig.h
-            ${imgui_SOURCE_DIR}/imgui.h
-            ${imgui_SOURCE_DIR}/imgui_internal.h
-            ${imgui_SOURCE_DIR}/imstb_rectpack.h
-            ${imgui_SOURCE_DIR}/imstb_textedit.h
-            ${imgui_SOURCE_DIR}/imstb_truetype.h
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
+        ${imgui_SOURCE_DIR}/imconfig.h
+        ${imgui_SOURCE_DIR}/imgui.h
+        ${imgui_SOURCE_DIR}/imgui_internal.h
+        ${imgui_SOURCE_DIR}/imstb_rectpack.h
+        ${imgui_SOURCE_DIR}/imstb_textedit.h
+        ${imgui_SOURCE_DIR}/imstb_truetype.h
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
 
-            ${imgui_SOURCE_DIR}/imgui.cpp
-            ${imgui_SOURCE_DIR}/imgui_demo.cpp
-            ${imgui_SOURCE_DIR}/imgui_draw.cpp
-            ${imgui_SOURCE_DIR}/imgui_tables.cpp
-            ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-            ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_demo.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 
-            ${implot_SOURCE_DIR}/implot.h
-            ${implot_SOURCE_DIR}/implot_internal.h
+        ${implot_SOURCE_DIR}/implot.h
+        ${implot_SOURCE_DIR}/implot_internal.h
 
-            ${implot_SOURCE_DIR}/implot.cpp
-            ${implot_SOURCE_DIR}/implot_demo.cpp
-            ${implot_SOURCE_DIR}/implot_items.cpp
+        ${implot_SOURCE_DIR}/implot.cpp
+        ${implot_SOURCE_DIR}/implot_demo.cpp
+        ${implot_SOURCE_DIR}/implot_items.cpp
 
-            ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
-            ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
-            ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
+        ${ImGuiColorTextEdit_SOURCE_DIR}/TextEditor.h
 
-            ${stb_SOURCE_DIR}/stb_image.h
-            ${stb_SOURCE_DIR}/stb_image_write.h
-            ${stb_SOURCE_DIR}/stb_image_resize.h)
+        ${ImGuiColorTextEdit_SOURCE_DIR}/LanguageDefinitions.cpp
+        ${ImGuiColorTextEdit_SOURCE_DIR}/TextEditor.cpp
+
+        ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
+        ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
+        ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
+
+        ${stb_SOURCE_DIR}/stb_image.h
+        ${stb_SOURCE_DIR}/stb_image_write.h
+        ${stb_SOURCE_DIR}/stb_image_resize.h)
 
 if (MSVC)
     target_compile_definitions(baphy_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
 
 target_include_directories(baphy_thirdparty PUBLIC
-                           ${imgui_SOURCE_DIR}
-                           ${imgui_SOURCE_DIR}/backends
-                           ${implot_SOURCE_DIR}
-                           ${pcg-cpp_SOURCE_DIR}/include
-                           ${stb_SOURCE_DIR})
+        ${imgui_SOURCE_DIR}
+        ${imgui_SOURCE_DIR}/backends
+        ${implot_SOURCE_DIR}
+        ${ImGuiColorTextEdit_SOURCE_DIR}
+        ${pcg-cpp_SOURCE_DIR}/include
+        ${stb_SOURCE_DIR})
 
 target_link_libraries(baphy_thirdparty PUBLIC
-                      fmt::fmt
-                      glad_gl_core_mx_33
-                      glfw
-                      glfw
-                      glm::glm
-                      rapidcsv
-                      re2::re2
-                      spdlog::spdlog
-                      stduuid)
+        fmt::fmt
+        glad_gl_core_mx_33
+        glfw
+        glfw
+        glm::glm
+        range-v3::range-v3
+        rapidcsv
+        re2::re2
+        spdlog::spdlog
+        stduuid)

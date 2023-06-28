@@ -48,8 +48,7 @@ void GfxContext::initialize_platform_extensions_() {
 
   auto version_major = GLAD_VERSION_MAJOR(wgl_version);
   auto version_minor = GLAD_VERSION_MINOR(wgl_version);
-  BAPHY_LOG_DEBUG("Initialized WGL");
-  BAPHY_LOG_DEBUG("=> Version: {}.{}", version_major, version_minor);
+  BAPHY_LOG_DEBUG("Initialized WGL v{}.{}", version_major, version_minor);
 
   wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
   if (!wglSwapIntervalEXT)
@@ -90,8 +89,7 @@ void GfxContext::initialize_platform_extensions_() {
 
   auto version_major = GLAD_VERSION_MAJOR(glx_version);
   auto version_minor = GLAD_VERSION_MINOR(glx_version);
-  BAPHY_LOG_DEBUG("Initialized GLX");
-  BAPHY_LOG_DEBUG("=> Version: {}.{}", version_major, version_minor);
+  BAPHY_LOG_DEBUG("Initialized GLX v{}.{}", version_major, version_minor);
 }
 
 bool GfxContext::platform_is_vsync_() const {
@@ -153,11 +151,17 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
 
   gl->Enable(GL_DEPTH_TEST);
 
+  EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
+
   Module::e_initialize_(e);
 }
 
 void GfxContext::e_shutdown_(const baphy::EShutdown &e) {
   Module::e_shutdown_(e);
+}
+
+void GfxContext::e_glfw_window_size_(const EGlfwWindowSize &e) {
+  gl->Viewport(0, 0, e.width, e.height);
 }
 
 void GfxContext::gl_message_callback_(

@@ -71,6 +71,8 @@ private:
   GLFWwindow *glfw_handle_{nullptr};
   WindowOpenParams open_params_{};
 
+  bool no_more_polling_{false};
+
   void open_(const WindowOpenParams &params);
   GLFWmonitor *get_monitor_(int monitor_num);
   void open_fullscreen_(const WindowOpenParams &params);

@@ -7,6 +7,7 @@
 #include "baphy/core/module/window.hpp"
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
+#include "baphy/gfx/module/shader_mgr.hpp"
 #include "baphy/util/module/debug_overlay.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
 #include "baphy/util/time.hpp"
@@ -42,6 +43,7 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
   module_mgr_->create<Window>();
 
   module_mgr_->create<GfxContext>();
+  module_mgr_->create<ShaderMgr>();
 
   module_mgr_->create<DebugOverlay>();
   module_mgr_->create<TimerMgr>();

@@ -43,7 +43,7 @@ void error_callback(int code, const char *description) {
 }
 
 void window_close_callback(GLFWwindow *window) {
-  EventBus::send_nowait<EGlfwWindowClose>(window);
+  EventBus::send<EGlfwWindowClose>(window);
 }
 
 void window_size_callback(GLFWwindow *window, int width, int height) {

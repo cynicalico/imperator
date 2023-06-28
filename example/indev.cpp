@@ -1,15 +1,37 @@
 #include "baphy/baphy.hpp"
-#include "baphy/gfx/internal/gl/shader.hpp"
-#include <filesystem>
+#include "baphy/gfx/module/shader_mgr.hpp"
 
 auto DATA = std::filesystem::path(__FILE__).parent_path() / "data";
 
 class Indev : public baphy::Application {
 public:
+  std::shared_ptr<baphy::ShaderMgr> shaders{nullptr};
+  std::shared_ptr<baphy::Shader> basic_shader{nullptr};
+
+  GLuint vao;
+  GLuint vbo;
+
   void initialize() override {
-    auto ss_o = baphy::ShaderSrc::parse(DATA / "shader" / "basic.shader");
-    if (ss_o)
-      baphy::Shader(gfx, *ss_o);
+    shaders = module_mgr->get<baphy::ShaderMgr>();
+    shaders->compile(*baphy::ShaderSrc::parse(DATA / "shader" / "basic.shader"));
+    shaders->compile(*baphy::ShaderSrc::parse(DATA / "shader" / "basic_2.shader"));
+    shaders->compile(*baphy::ShaderSrc::parse(DATA / "shader" / "basic_3.shader"));
+
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f
+    };
+
+    gfx->gl->GenVertexArrays(1, &vao);
+    gfx->gl->BindVertexArray(vao);
+
+    gfx->gl->GenBuffers(1, &vbo);
+    gfx->gl->BindBuffer(GL_ARRAY_BUFFER, vbo);
+    gfx->gl->BufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    gfx->gl->VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    gfx->gl->EnableVertexAttribArray(0);
   }
 
   void update(double dt) override {
@@ -18,7 +40,11 @@ public:
   }
 
   void draw() override {
-    gfx->clear(baphy::rgb(0x111122));
+    gfx->clear(baphy::rgb(0.06 * 255, 0.06 * 255, 0.06 * 255));
+
+    shaders->get("basic")->use();
+    gfx->gl->BindVertexArray(vao);
+    gfx->gl->DrawArrays(GL_TRIANGLES, 0, 3);
   }
 };
 

@@ -25,6 +25,11 @@
 #include "baphy/util/time.hpp"
 #include "baphy/util/type_id.hpp"
 
+#include "fmt/format.h"
+#include "fmt/ranges.h"
+
+#include <filesystem>
+
 #ifndef BAPHY_NO_MACRO
 
 #define BAPHY_RUN(a, ...)                                        \
