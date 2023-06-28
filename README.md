@@ -42,15 +42,16 @@ Primarily a passion project/fun side project to work on.
     - [ ] User callbacks for events (as opposed to polling, which I prefer but isn't universal)
 - [ ] Imgui integration
     - [x] Create module, initialize
-    - [ ] Add Implot
+    - [x] Add Implot
     - [ ] Debug overlay
         - [x] FPS
-        - [ ] FPS graph
+        - [x] FPS graph
         - [ ] FPS stats (1%/95%/99%)
         - [x] Memusage
         - [ ] GPU usage (?)
         - [ ] Control window
           - [x] Window
+          - [x] GfxContext
           - [ ] InputMgr
     - [ ] In-window information
         - [x] Log

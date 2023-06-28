@@ -2,6 +2,7 @@
 
 #include "baphy/util/rnd.hpp"
 #include "baphy/util/sops.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include <fstream>
 #include <utility>
 
@@ -205,10 +206,6 @@ std::string Shader::src() const {
   return src_.get();
 }
 
-void Shader::use() {
-  gfx->gl->UseProgram(id);
-}
-
 void Shader::recompile(const ShaderSrc &src) {
   auto old_id = id;
 
@@ -217,6 +214,221 @@ void Shader::recompile(const ShaderSrc &src) {
     del_id_(old_id);
   else
     id = old_id;
+}
+
+void Shader::use() {
+  gfx->gl->UseProgram(id);
+}
+
+void Shader::uniform_1f(const std::string &uniform_name, float v0) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform1f(loc, v0);
+}
+
+void Shader::uniform_2f(const std::string &uniform_name, float v0, float v1) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform2f(loc, v0, v1);
+}
+
+void Shader::uniform_3f(const std::string &uniform_name, float v0, float v1, float v2) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform3f(loc, v0, v1, v2);
+}
+
+void Shader::uniform_4f(const std::string &uniform_name, float v0, float v1, float v2, float v3) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform4f(loc, v0, v1, v2, v3);
+}
+
+void Shader::uniform_1f(const std::string &uniform_name, glm::vec1 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform1fv(loc, 1, &v.x);
+}
+
+void Shader::uniform_2f(const std::string &uniform_name, glm::vec2 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform2fv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_3f(const std::string &uniform_name, glm::vec3 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform3fv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_4f(const std::string &uniform_name, glm::vec4 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform4fv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_1i(const std::string &uniform_name, int v0) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform1i(loc, v0);
+}
+
+void Shader::uniform_2i(const std::string &uniform_name, int v0, int v1) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform2i(loc, v0, v1);
+}
+
+void Shader::uniform_3i(const std::string &uniform_name, int v0, int v1, int v2) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform3i(loc, v0, v1, v2);
+}
+
+void Shader::uniform_4i(const std::string &uniform_name, int v0, int v1, int v2, int v3) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform4i(loc, v0, v1, v2, v3);
+}
+
+void Shader::uniform_1i(const std::string &uniform_name, glm::ivec1 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform1iv(loc, 1, &v.x);
+}
+
+void Shader::uniform_2i(const std::string &uniform_name, glm::ivec2 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform2iv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_3i(const std::string &uniform_name, glm::ivec3 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform3iv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_4i(const std::string &uniform_name, glm::ivec4 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform4iv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_1u(const std::string &uniform_name, unsigned int v0) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform1ui(loc, v0);
+}
+
+void Shader::uniform_2u(const std::string &uniform_name, unsigned int v0, unsigned int v1) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform2ui(loc, v0, v1);
+}
+
+void Shader::uniform_3u(const std::string &uniform_name, unsigned int v0, unsigned int v1, unsigned int v2) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform3ui(loc, v0, v1, v2);
+}
+
+void Shader::uniform_4u(const std::string &uniform_name, unsigned int v0, unsigned int v1, unsigned int v2, unsigned int v3) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform4ui(loc, v0, v1, v2, v3);
+}
+
+void Shader::uniform_1u(const std::string &uniform_name, glm::uvec1 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform1uiv(loc, 1, &v.x);
+}
+
+void Shader::uniform_2u(const std::string &uniform_name, glm::uvec2 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform2uiv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_3u(const std::string &uniform_name, glm::uvec3 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform3uiv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_4u(const std::string &uniform_name, glm::uvec4 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->Uniform4uiv(loc, 1, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat2f(const std::string &uniform_name, glm::mat2 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat3f(const std::string &uniform_name, glm::mat3 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat4f(const std::string &uniform_name, glm::mat4 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat2x3f(const std::string &uniform_name, glm::mat2x3 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix2x3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat3x2f(const std::string &uniform_name, glm::mat3x2 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix3x2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat2x4f(const std::string &uniform_name, glm::mat2x4 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix2x4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat4x2f(const std::string &uniform_name, glm::mat4x2 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix4x2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat3x4f(const std::string &uniform_name, glm::mat3x4 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix3x4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+void Shader::uniform_mat4x3f(const std::string &uniform_name, glm::mat4x3 v) {
+  auto loc = get_uniform_loc_(uniform_name);
+  if (loc != -1)
+    gfx->gl->UniformMatrix4x3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+}
+
+GLint Shader::get_uniform_loc_(const std::string &uniform_name) {
+  auto it = uniform_locs_.find(uniform_name);
+  if (it != uniform_locs_.end())
+    return it->second;
+
+  GLint loc = gfx->gl->GetUniformLocation(id, uniform_name.c_str());
+  if (loc == -1)
+    BAPHY_LOG_WARN("Uniform '{}' not found in shader ({}:{})", uniform_name, name, id);
+  uniform_locs_[uniform_name] = loc;
+
+  return loc;
 }
 
 bool Shader::compile_shader_src_(const ShaderSrc &src) {

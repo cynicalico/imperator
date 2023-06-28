@@ -20,6 +20,8 @@ namespace baphy {
 
 class GfxContext : public Module<GfxContext> {
 public:
+  std::shared_ptr<Window> window{nullptr};
+
   std::unique_ptr<GladGLContext> gl{nullptr};
   glm::ivec2 version{0, 0};
 
@@ -31,6 +33,8 @@ public:
   void set_vsync(bool v);
 
   void clear(const RGB &color, const ClearBit &bit = ClearBit::color | ClearBit::depth);
+
+  glm::mat4 ortho_projection() const;
 
 private:
   void initialize_platform_extensions_();

@@ -1,6 +1,8 @@
 #include "baphy/gfx/module/shader_mgr.hpp"
 
 #include "baphy/util/rnd.hpp"
+// stb defines this, and so does range-v3, and they do it in a very different way,
+// and it caused the most gnarly compile error I've ever seen
 #ifdef True
 #undef True
 #endif

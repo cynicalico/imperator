@@ -17,14 +17,14 @@ public:
   ShaderMgr() : Module<ShaderMgr>({EPI<GfxContext>::name}) {}
   ~ShaderMgr() override = default;
 
+  std::vector<std::string> get_names();
+
+  std::shared_ptr<Shader> get(const std::string &name);
+
   std::shared_ptr<Shader> compile(const std::string &name, const ShaderSrc &src);
   std::shared_ptr<Shader> compile(const ShaderSrc &src);
 
   void recompile(const std::string &name, const ShaderSrc &src);
-
-  std::shared_ptr<Shader> get(const std::string &name);
-
-  std::vector<std::string> get_names();
 
 private:
   std::unordered_map<std::string, std::shared_ptr<Shader>> shaders_{};

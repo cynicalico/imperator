@@ -15,6 +15,7 @@
 #define GLFW_NATIVE_INCLUDE_NONE
 #include "GLFW/glfw3native.h"
 #endif
+#include "glm/gtx/transform.hpp"
 
 namespace baphy {
 
@@ -35,10 +36,15 @@ void GfxContext::clear(const RGB &color, const ClearBit &bit) {
   gl->Clear(unwrap(bit));
 }
 
+glm::mat4 GfxContext::ortho_projection() const {
+  return glm::ortho(
+      0.0f, static_cast<float>(window->w()),
+      static_cast<float>(window->h()), 0.0f,
+      0.0f, 1.0f);
+}
+
 #if defined(BAPHY_PLATFORM_WINDOWS)
 void GfxContext::initialize_platform_extensions_() {
-  auto window = module_mgr->get<Window>();
-
   HDC dc = GetDC(glfwGetWin32Window(window->handle()));
   auto wgl_version = gladLoadWGL(dc, glfwGetProcAddress);
   if (wgl_version == 0) {
@@ -77,8 +83,6 @@ void GfxContext::platform_set_vsync_(bool v) {
 // monitors are actually recognized as separate screens
 
 void GfxContext::initialize_platform_extensions_() {
-  auto window = module_mgr->get<Window>();
-
   Display *dpy = glfwGetX11Display();
   int screen = DefaultScreen(dpy);
   auto glx_version = gladLoadGLX(dpy, screen, glfwGetProcAddress);
@@ -111,7 +115,7 @@ void GfxContext::platform_set_vsync_(bool v) {
 #endif
 
 void GfxContext::e_initialize_(const baphy::EInitialize &e) {
-  auto window = module_mgr->get<Window>();
+  window = module_mgr->get<Window>();
   window->make_context_current();
 
   gl = std::make_unique<GladGLContext>();
