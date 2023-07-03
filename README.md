@@ -31,7 +31,7 @@ Primarily a passion project/fun side project to work on.
     - [x] vsync set/get
 - [x] Timers
 - [ ] [Tweens](https://easings.net/)
-- [ ] Thread pool
+- [x] Thread pool
 - [x] Refactor out circular dependency on engine
     - [x] ~~Static module storage, maybe? Drawbacks but arguably better than circ dep~~
     - [x] ModuleMgr!

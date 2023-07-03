@@ -9,6 +9,7 @@
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/shader_mgr.hpp"
 #include "baphy/util/module/debug_overlay.hpp"
+#include "baphy/util/module/thread_pool.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
 #include "baphy/util/time.hpp"
 #include <memory>
@@ -46,6 +47,7 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
   module_mgr_->create<ShaderMgr>();
 
   module_mgr_->create<DebugOverlay>();
+  module_mgr_->create<ThreadPool>();
   module_mgr_->create<TimerMgr>();
 
   EventBus::send_nowait<EInitialize>(window_open_params);

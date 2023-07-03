@@ -9,6 +9,8 @@ class Indev : public baphy::Application {
 public:
   baphy::HSV tri_color{baphy::hsv(0.0, 1.0, 1.0)};
 
+  std::shared_ptr<baphy::ThreadPool> pool{nullptr};
+
   std::shared_ptr<baphy::ShaderMgr> shaders{nullptr};
   std::shared_ptr<baphy::Shader> basic_shader{nullptr};
 
@@ -16,6 +18,8 @@ public:
   std::unique_ptr<baphy::FSBuffer> vbo{nullptr};
 
   void initialize() override {
+    pool = module_mgr->get<baphy::ThreadPool>();
+
     shaders = module_mgr->get<baphy::ShaderMgr>();
     basic_shader = shaders->compile(*baphy::ShaderSrc::parse(DATA / "shader" / "basic.shader"));
 
@@ -37,6 +41,20 @@ public:
   void update(double dt) override {
     if (input->pressed("escape"))
       window->set_should_close(true);
+
+    if (input->pressed("1"))
+      pool->add_job("cancel_me", [&](auto wait) {
+        BAPHY_LOG_INFO("3...");
+        wait(1.0);
+        BAPHY_LOG_INFO("2...");
+        wait(1.0);
+        BAPHY_LOG_INFO("1...");
+        wait(1.0);
+        BAPHY_LOG_INFO("Done!");
+      });
+
+    if (input->pressed("2"))
+      pool->cancel_job("cancel_me");
 
     vbo->write_sub(6, {static_cast<float>(input->mouse_x()), static_cast<float>(input->mouse_y()), 0.0f});
 

@@ -25,6 +25,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/gfx_enum_types.hpp
 
         include/baphy/util/module/debug_overlay.hpp
+        include/baphy/util/module/thread_pool.hpp
         include/baphy/util/module/timer_mgr.hpp
 
         include/baphy/util/averagers.hpp

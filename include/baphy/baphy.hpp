@@ -13,6 +13,8 @@
 #include "baphy/gfx/color.hpp"
 #include "baphy/gfx/gfx_enum_types.hpp"
 
+#include "baphy/util/module/thread_pool.hpp"
+
 #include "baphy/util/averagers.hpp"
 #include "baphy/util/enum_bitops.hpp"
 #include "baphy/util/helpers.hpp"
