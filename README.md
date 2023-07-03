@@ -62,9 +62,9 @@ Primarily a passion project/fun side project to work on.
     - [x] Shader editor/recompiler
     - [ ] Batcher stats/information
 - [ ] OpenGL abstraction
-    - [ ] Shaders
-    - [ ] Vertex buffers
-    - [ ] Vertex array objects
+    - [x] Shaders
+    - [x] Vertex buffers
+    - [x] Vertex array objects
     - [ ] Framebuffers
 - [ ] Batching system
 - [ ] Primitives

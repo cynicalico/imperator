@@ -258,6 +258,24 @@ RGB rgba(const std::string &css_color, int a) {
   return {c[0], c[1], c[2], a};
 }
 
+RGB rgb_f(float r, float g, float b) {
+  return {
+    static_cast<int>(r * 255),
+    static_cast<int>(g * 255),
+    static_cast<int>(b * 255),
+    255
+  };
+}
+
+RGB rgba_f(float r, float g, float b, float a) {
+  return {
+      static_cast<int>(r * 255),
+      static_cast<int>(g * 255),
+      static_cast<int>(b * 255),
+      static_cast<int>(a * 255)
+  };
+}
+
 RGB RGB::get_inverse() {
   return {255 - r, 255 - g, 255 - b, a};
 }

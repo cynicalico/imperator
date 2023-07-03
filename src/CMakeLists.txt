@@ -10,6 +10,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
 
         src/baphy/gfx/internal/gl/buffer.cpp
         src/baphy/gfx/internal/gl/shader.cpp
+        src/baphy/gfx/internal/gl/vertex_array.cpp
 
         src/baphy/gfx/module/gfx_context.cpp
         src/baphy/gfx/module/shader_mgr.cpp

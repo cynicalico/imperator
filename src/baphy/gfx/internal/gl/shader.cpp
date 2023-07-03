@@ -210,14 +210,30 @@ void Shader::recompile(const ShaderSrc &src) {
   auto old_id = id;
 
   gen_id_();
-  if (compile_shader_src_(src))
+  if (compile_shader_src_(src)) {
     del_id_(old_id);
-  else
+
+    attrib_locs_.clear();
+    uniform_locs_.clear();
+  } else
     id = old_id;
 }
 
 void Shader::use() {
   gfx->gl->UseProgram(id);
+}
+
+GLint Shader::get_attrib_loc(const std::string &attrib_name) {
+  auto it = attrib_locs_.find(attrib_name);
+  if (it != attrib_locs_.end())
+    return it->second;
+
+  GLint loc = gfx->gl->GetAttribLocation(id, attrib_name.c_str());
+  if (loc == -1)
+    BAPHY_LOG_WARN("Attrib '{}' not found in shader ({}:{})", attrib_name, name, id);
+  attrib_locs_[attrib_name] = loc;
+
+  return loc;
 }
 
 void Shader::uniform_1f(const std::string &uniform_name, float v0) {

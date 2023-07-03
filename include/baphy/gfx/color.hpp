@@ -33,6 +33,10 @@ RGB rgba(int r, int g, int b, int a);
 RGB rgba(std::uint64_t hex);
 RGB rgba(const std::string &css_color, int a);
 
+RGB rgb_f(float r, float g, float b);
+
+RGB rgba_f(float r, float g, float b, float a);
+
 class RGB {
 public:
   int r {0}, g {0}, b {0}, a {255};
@@ -46,6 +50,10 @@ public:
   friend RGB rgba(int r, int g, int b, int a);
   friend RGB rgba(std::uint64_t hex);
   friend RGB rgba(const std::string &css_color, int a);
+
+  friend RGB rgb_f(float r, float g, float b);
+
+  friend RGB rgba_f(float r, float g, float b, float a);
 
   RGB get_inverse();
   void invert();
@@ -237,10 +245,17 @@ private:
 
 } // namespace baphy
 
+template<> struct fmt::formatter<baphy::RGB>: formatter<string_view> {
+  template <typename FormatContext>
+  auto format(baphy::RGB c, FormatContext& ctx) const {
+    return fmt::format_to(ctx.out(), "RGB({:.2f},{:.2f},{:.2f},{:.2f})", c.r, c.g, c.b, c.a);
+  }
+};
+
 template<> struct fmt::formatter<baphy::HSV>: formatter<string_view> {
   template <typename FormatContext>
   auto format(baphy::HSV c, FormatContext& ctx) const {
-    return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.v, c.a);
+    return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{:.2f})", c.h, c.s, c.v, c.a);
   }
 };
 

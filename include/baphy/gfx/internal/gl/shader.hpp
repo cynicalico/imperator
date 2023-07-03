@@ -35,6 +35,8 @@ public:
 
   void use();
 
+  GLint get_attrib_loc(const std::string &attrib_name);
+
   void uniform_1f(const std::string &uniform_name, float v0);
   void uniform_2f(const std::string &uniform_name, float v0, float v1);
   void uniform_3f(const std::string &uniform_name, float v0, float v1, float v2);
@@ -78,6 +80,8 @@ public:
 
 private:
   ShaderSrc src_;
+
+  std::unordered_map<std::string, GLint> attrib_locs_{};
 
   std::unordered_map<std::string, GLint> uniform_locs_{};
   GLint get_uniform_loc_(const std::string &uniform_name);
