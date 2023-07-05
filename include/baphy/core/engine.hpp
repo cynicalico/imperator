@@ -11,6 +11,7 @@
 #include "baphy/util/module/debug_overlay.hpp"
 #include "baphy/util/module/thread_pool.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
+#include "baphy/util/module/tween_mgr.hpp"
 #include "baphy/util/time.hpp"
 #include <memory>
 
@@ -49,6 +50,7 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
   module_mgr_->create<DebugOverlay>();
   module_mgr_->create<ThreadPool>();
   module_mgr_->create<TimerMgr>();
+  module_mgr_->create<TweenMgr>();
 
   EventBus::send_nowait<EInitialize>(window_open_params);
   EventBus::send_nowait<EStartApplication>();

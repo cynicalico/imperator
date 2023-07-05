@@ -7,9 +7,11 @@ auto DATA = std::filesystem::path(__FILE__).parent_path() / "data";
 
 class Indev : public baphy::Application {
 public:
-  baphy::HSV tri_color{baphy::hsv(0.0, 1.0, 1.0)};
-
-  std::shared_ptr<baphy::ThreadPool> pool{nullptr};
+  float x{0.0f};
+  float y{0.0f};
+  float w{50.0f};
+  float h{50.0f};
+  baphy::HSV color{baphy::hsv(0.0, 1.0, 1.0)};
 
   std::shared_ptr<baphy::ShaderMgr> shaders{nullptr};
   std::shared_ptr<baphy::Shader> basic_shader{nullptr};
@@ -18,52 +20,40 @@ public:
   std::unique_ptr<baphy::FSBuffer> vbo{nullptr};
 
   void initialize() override {
-    pool = module_mgr->get<baphy::ThreadPool>();
-
     shaders = module_mgr->get<baphy::ShaderMgr>();
     basic_shader = shaders->compile(*baphy::ShaderSrc::parse(DATA / "shader" / "basic.shader"));
 
     vao = std::make_unique<baphy::VertexArray>(gfx);
 
     vbo = std::make_unique<baphy::FSBuffer>(
-        gfx,
-        baphy::BufTarget::array,
-        baphy::BufUsage::static_draw,
-        std::vector {
-            window->w() - 10.0f, 10.0f,               0.0f,   1.0f, 1.0f, 1.0f,
-            0.0f,                0.0f,                0.0f,   1.0f, 1.0f, 1.0f,
-            window->w() - 10.0f, window->h() - 10.0f, 0.0f,   1.0f, 1.0f, 1.0f
-        }
-    );
-    vao->attrib(*basic_shader, *vbo, "pos:3f color:3f");
+        gfx, baphy::BufTarget::array, baphy::BufUsage::stream_draw, std::vector(3 * 6, 0.0f));
+    vao->attrib(*basic_shader, *vbo, "pos:3f");
+
+    x = window->w() / 2.0f;
+    y = window->h() / 2.0f;
   }
 
   void update(double dt) override {
     if (input->pressed("escape"))
       window->set_should_close(true);
 
-    if (input->pressed("1"))
-      pool->add_job("cancel_me", [&](auto wait) {
-        BAPHY_LOG_INFO("3...");
-        wait(1.0);
-        BAPHY_LOG_INFO("2...");
-        wait(1.0);
-        BAPHY_LOG_INFO("1...");
-        wait(1.0);
-        BAPHY_LOG_INFO("Done!");
-      });
+    if (input->pressed("mb_left")) {
+      auto f_mx = static_cast<float>(input->mouse_x());
+      auto f_my = static_cast<float>(input->mouse_y());
+      tween->begin("x", x, f_mx, 2.0, baphy::Easing::in_bounce, [&](auto v) { x = v; });
+      tween->begin("y", y, f_my, 2.0, baphy::Easing::out_bounce, [&](auto v) { y = v; });
+    }
 
-    if (input->pressed("2"))
-      pool->cancel_job("cancel_me");
+    vbo->write_sub(0, {
+        x - (w / 2.0f), y - (h / 2.0f), 0.0f,
+        x + (w / 2.0f), y - (h / 2.0f), 0.0f,
+        x - (w / 2.0f), y + (h / 2.0f), 0.0f,
+        x - (w / 2.0f), y + (h / 2.0f), 0.0f,
+        x + (w / 2.0f), y + (h / 2.0f), 0.0f,
+        x + (w / 2.0f), y - (h / 2.0f), 0.0f,
+    });
 
-    vbo->write_sub(6, {static_cast<float>(input->mouse_x()), static_cast<float>(input->mouse_y()), 0.0f});
-
-    tri_color.h = std::fmod(tri_color.h + (dt * 90.0), 360.0);
-    auto c = tri_color.to_rgb();
-    auto cv = std::vector {c.r / 255.0f, c.g / 255.0f, c.b / 255.0f};
-    vbo->write_sub(3, cv);
-    vbo->write_sub(9, cv);
-    vbo->write_sub(15, cv);
+    color.h = std::fmod(color.h + (90.0f * dt), 360.0f);
   }
 
   void draw() override {
@@ -71,8 +61,9 @@ public:
 
     basic_shader->use();
     basic_shader->uniform_mat4f("mvp", gfx->ortho_projection());
+    basic_shader->uniform_3f("color", color.to_rgb().vec3());
 
-    vao->draw_arrays(baphy::DrawMode::triangles, 3);
+    vao->draw_arrays(baphy::DrawMode::triangles, 6);
   }
 };
 
