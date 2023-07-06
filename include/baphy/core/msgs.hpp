@@ -41,6 +41,16 @@ struct ELogMsg {
   spdlog::level::level_enum level;
 };
 
+struct EOPrimitiveVertexData {
+  std::vector<float> data;
+  float z;
+};
+
+struct ETPrimitiveVertexData {
+  std::vector<float> data;
+  float z;
+};
+
 /* GLFW CALLBACKS */
 
 struct EGlfwWindowClose {

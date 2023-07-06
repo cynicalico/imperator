@@ -10,16 +10,19 @@ Buffer::~Buffer() {
   del_id_();
 }
 
-Buffer::Buffer(Buffer &&other) noexcept : gfx(std::move(other.gfx)) {
-  std::swap(id, other.id);
+Buffer::Buffer(Buffer &&other) noexcept : gfx(std::move(other.gfx)), id(other.id) {
+  other.id = 0;
 }
 
 Buffer &Buffer::operator=(Buffer &&other) noexcept {
   if (this != &other) {
     del_id_();
 
-    std::swap(gfx, other.gfx);
-    std::swap(id, other.id);
+    gfx = other.gfx;
+    id = other.id;
+
+    other.gfx = nullptr;
+    other.id = 0;
   }
   return *this;
 }
