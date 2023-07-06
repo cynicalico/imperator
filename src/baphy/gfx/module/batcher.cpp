@@ -5,13 +5,13 @@
 namespace baphy {
 
 void Batcher::new_o_primitive_batch_() {
+  curr_o_primitive_batch_++;
+
   if (curr_o_primitive_batch_ >= o_primitive_vaos_.size()) {
     o_primitive_vaos_.emplace_back(std::make_unique<VertexArray>(gfx));
     o_primitive_vbos_.emplace_back(std::make_unique<FVBuffer>(
         gfx, 10 * 3, true, BufTarget::array, BufUsage::stream_draw));
     o_primitive_max_z_.emplace_back();
-
-    BAPHY_LOG_INFO("sdfosd: {}", o_primitive_vbos_.back()->id);
 
     o_primitive_vaos_.back()->attrib(
         *primitive_shader_,
@@ -19,7 +19,12 @@ void Batcher::new_o_primitive_batch_() {
         "in_pos:3f in_color:4f in_trans:3f"
     );
   }
-  curr_o_primitive_batch_++;
+}
+
+void Batcher::check_add_new_o_primitive_batch_() {
+  // 2 MB batches
+  if (o_primitive_vbos_[curr_o_primitive_batch_]->size() > 500'000)
+    new_o_primitive_batch_();
 }
 
 void Batcher::e_initialize_(const baphy::EInitialize &e) {
@@ -35,7 +40,7 @@ void Batcher::e_initialize_(const baphy::EInitialize &e) {
 
   EventBus::sub<EOPrimitiveVertexData>(module_name, [&](const auto &e) { e_o_primitive_vertex_data_(e); });
 //  EventBus::sub<ETPrimitiveVertexData>(module_name, [&](const auto &e) { e_t_primitive_vertex_data_(e); });
-  EventBus::sub<EEndFrame>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_end_frame_(e); });
+  EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
 
   Module::e_initialize_(e);
 }
@@ -45,13 +50,14 @@ void Batcher::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void Batcher::e_o_primitive_vertex_data_(const EOPrimitiveVertexData &e) {
+  check_add_new_o_primitive_batch_();
   o_primitive_vbos_[curr_o_primitive_batch_]->add(e.data);
   o_primitive_max_z_[curr_o_primitive_batch_] = std::max(o_primitive_max_z_[curr_o_primitive_batch_], e.z);
 }
 
 //void Batcher::e_t_primitive_vertex_data_(const ETPrimitiveVertexData &e) {}
 
-void Batcher::e_end_frame_(const EEndFrame &e) {
+void Batcher::e_draw_(const EDraw &e) {
   for (int i = o_primitive_vaos_.size() - 1; i >= 0; --i) {
     o_primitive_vbos_[i]->sync();
 

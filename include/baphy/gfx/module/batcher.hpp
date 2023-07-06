@@ -27,6 +27,7 @@ private:
   std::size_t curr_o_primitive_batch_{0};
 
   void new_o_primitive_batch_();
+  void check_add_new_o_primitive_batch_();
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
@@ -34,7 +35,7 @@ private:
   void e_o_primitive_vertex_data_(const EOPrimitiveVertexData &e);
 //  void e_t_primitive_vertex_data_(const ETPrimitiveVertexData &e);
 
-  void e_end_frame_(const EEndFrame &e);
+  void e_draw_(const EDraw &e);
 };
 
 } // namespace baphy

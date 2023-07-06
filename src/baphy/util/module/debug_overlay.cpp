@@ -1,10 +1,9 @@
-#include <utility>
-
 #include "baphy/util/module/debug_overlay.hpp"
 
-#include "baphy/core/module/application.hpp"
+#include "baphy/gfx/module/batcher.hpp"
 #include "baphy/util/memusage.hpp"
 #include "baphy/util/sops.hpp"
+#include <utility>
 
 namespace baphy {
 
@@ -128,7 +127,7 @@ void DebugOverlay::update_gfx_state_() {
 void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<ELogMsg>(module_name, [&](const auto &e) { e_log_msg_(e); });
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
-  EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
+  EventBus::sub<EDraw>(module_name, {EPI<Batcher>::name}, [&](const auto &e) { e_draw_(e); });
 
   dear = module_mgr->get<DearImgui>();
   gfx = module_mgr->get<GfxContext>();
