@@ -8,13 +8,13 @@
 namespace baphy {
 
 template<typename T>
-concept Numeric = requires(T) { std::integral<T> || std::floating_point<T>; };
+concept Numeric = std::integral<T> || std::floating_point<T>;
 
 template<Numeric T = float>
 class VecBuffer : public Buffer {
 public:
   VecBuffer(
-      std::shared_ptr<GfxContext> gfx,
+      GfxContext &gfx,
       std::size_t initial_size, bool fill_reverse,
       BufTarget target, BufUsage usage
   );
@@ -58,7 +58,7 @@ using UVBuffer = VecBuffer<unsigned int>;
 
 template<Numeric T>
 VecBuffer<T>::VecBuffer(
-    std::shared_ptr<GfxContext> gfx,
+    GfxContext &gfx,
     std::size_t initial_size, bool fill_reverse,
     BufTarget target, BufUsage usage
 ) : Buffer(gfx), target_(target), usage_(usage), fill_reverse_(fill_reverse) {
@@ -154,7 +154,7 @@ template<Numeric T>
 void VecBuffer<T>::sync() {
   if (gl_bufsize_ < data_.size()) {
     bind(target_);
-    gfx->gl->BufferData(
+    gl.BufferData(
         unwrap(target_),
         sizeof(T) * data_.size(),
         &data_[0],
@@ -168,7 +168,7 @@ void VecBuffer<T>::sync() {
   } else {
     if (fill_reverse_ && gl_bufpos_ > front_) {
       bind(target_);
-      gfx->gl->BufferSubData(
+      gl.BufferSubData(
           unwrap(target_),
           sizeof(T) * front_,
           sizeof(T) * (gl_bufpos_ - front_),
@@ -180,7 +180,7 @@ void VecBuffer<T>::sync() {
 
     } else if (!fill_reverse_ && gl_bufpos_ < back_) {
       bind(target_);
-      gfx->gl->BufferSubData(
+      gl.BufferSubData(
           unwrap(target_),
           sizeof(T) * gl_bufpos_,
           sizeof(T) * (back_ - gl_bufpos_),

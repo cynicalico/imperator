@@ -39,11 +39,11 @@ enum class BufUsage {
 
 class Buffer {
 public:
-  std::shared_ptr<GfxContext> gfx{nullptr};
+  GladGLContext &gl;
 
   GLuint id{0};
 
-  explicit Buffer(std::shared_ptr<GfxContext> gfx);
+  explicit Buffer(GfxContext &gfx);
   virtual ~Buffer();
 
   // Copy constructors don't make sense for OpenGL objects

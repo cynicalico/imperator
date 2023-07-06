@@ -22,7 +22,7 @@ class GfxContext : public Module<GfxContext> {
 public:
   std::shared_ptr<Window> window{nullptr};
 
-  std::unique_ptr<GladGLContext> gl{nullptr};
+  GladGLContext gl;
   glm::ivec2 version{0, 0};
 
   GfxContext() : Module<GfxContext>({EPI<Window>::name}) {}

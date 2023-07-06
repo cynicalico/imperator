@@ -21,11 +21,11 @@ enum class DrawMode {
 
 class VertexArray {
 public:
-  std::shared_ptr<GfxContext> gfx{nullptr};
+  GladGLContext &gl;
 
   GLuint id{0};
 
-  explicit VertexArray(std::shared_ptr<GfxContext> gfx);
+  explicit VertexArray(GfxContext &gfx);
 
   void bind();
   void unbind();

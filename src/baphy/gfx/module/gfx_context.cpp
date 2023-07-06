@@ -28,12 +28,12 @@ void GfxContext::set_vsync(bool v) {
 }
 
 void GfxContext::clear(const RGB &color, const ClearBit &bit) {
-  gl->ClearColor(
+  gl.ClearColor(
       static_cast<float>(color.r) / 255.0f,
       static_cast<float>(color.g) / 255.0f,
       static_cast<float>(color.b) / 255.0f,
       static_cast<float>(color.a) / 255.0f);
-  gl->Clear(unwrap(bit));
+  gl.Clear(unwrap(bit));
 }
 
 glm::mat4 GfxContext::ortho_projection() const {
@@ -118,8 +118,8 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
   window = module_mgr->get<Window>();
   window->make_context_current();
 
-  gl = std::make_unique<GladGLContext>();
-  auto glad_version = gladLoadGLContext(gl.get(), glfwGetProcAddress);
+  gl = GladGLContext();
+  auto glad_version = gladLoadGLContext(&gl, glfwGetProcAddress);
   if (glad_version == 0) {
     BAPHY_LOG_CRITICAL("Failed to initialize OpenGL");
     std::exit(EXIT_FAILURE);
@@ -128,9 +128,9 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
   version.x = GLAD_VERSION_MAJOR(glad_version);
   version.y = GLAD_VERSION_MINOR(glad_version);
   BAPHY_LOG_DEBUG("Initialized OpenGL");
-  BAPHY_LOG_DEBUG("=> Version: {}",(char *)gl->GetString(GL_VERSION));
-  BAPHY_LOG_DEBUG("=> Vendor: {}", (char *)gl->GetString(GL_VENDOR));
-  BAPHY_LOG_DEBUG("=> Renderer: {}", (char *)gl->GetString(GL_RENDERER));
+  BAPHY_LOG_DEBUG("=> Version: {}",(char *)gl.GetString(GL_VERSION));
+  BAPHY_LOG_DEBUG("=> Vendor: {}", (char *)gl.GetString(GL_VENDOR));
+  BAPHY_LOG_DEBUG("=> Renderer: {}", (char *)gl.GetString(GL_RENDERER));
 
   auto open_params = window->open_params();
   if (version.x != open_params.backend_version.x || version.y != open_params.backend_version.y)
@@ -146,14 +146,16 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
     set_vsync(true);
 
 #if !defined(NDEBUG)
-  gl->Enable(GL_DEBUG_OUTPUT);
-  gl->DebugMessageCallback(gl_message_callback_, nullptr);
+  gl.Enable(GL_DEBUG_OUTPUT);
+  gl.DebugMessageCallback(gl_message_callback_, nullptr);
 #endif
 
-  gl->Enable(GL_BLEND);
-  gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  gl.Enable(GL_BLEND);
+  gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  gl->Enable(GL_DEPTH_TEST);
+  gl.Enable(GL_DEPTH_TEST);
+
+  gl.DepthMask(GL_TRUE);
 
   EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
 
@@ -165,7 +167,7 @@ void GfxContext::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void GfxContext::e_glfw_window_size_(const EGlfwWindowSize &e) {
-  gl->Viewport(0, 0, e.width, e.height);
+  gl.Viewport(0, 0, e.width, e.height);
 }
 
 void GfxContext::gl_message_callback_(

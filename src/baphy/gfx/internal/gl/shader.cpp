@@ -192,8 +192,8 @@ std::optional<ShaderSrc> ShaderSrc::parse(const std::filesystem::path &path) {
   return try_parse_shader_src(*src);
 }
 
-Shader::Shader(std::shared_ptr<GfxContext> gfx, const ShaderSrc &src)
-    : gfx(std::move(gfx)), name(src.name.value_or(base58(11))) {
+Shader::Shader(GfxContext &gfx, const ShaderSrc &src)
+    : gl(gfx.gl), name(src.name.value_or(base58(11))) {
   gen_id_();
   compile_shader_src_(src);
 }
@@ -220,7 +220,7 @@ void Shader::recompile(const ShaderSrc &src) {
 }
 
 void Shader::use() {
-  gfx->gl->UseProgram(id);
+  gl.UseProgram(id);
 }
 
 GLint Shader::get_attrib_loc(const std::string &attrib_name) {
@@ -228,7 +228,7 @@ GLint Shader::get_attrib_loc(const std::string &attrib_name) {
   if (it != attrib_locs_.end())
     return it->second;
 
-  GLint loc = gfx->gl->GetAttribLocation(id, attrib_name.c_str());
+  GLint loc = gl.GetAttribLocation(id, attrib_name.c_str());
   if (loc == -1)
     BAPHY_LOG_WARN("Attrib '{}' not found in shader ({}:{})", attrib_name, name, id);
   attrib_locs_[attrib_name] = loc;
@@ -239,199 +239,199 @@ GLint Shader::get_attrib_loc(const std::string &attrib_name) {
 void Shader::uniform_1f(const std::string &uniform_name, float v0) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform1f(loc, v0);
+    gl.Uniform1f(loc, v0);
 }
 
 void Shader::uniform_2f(const std::string &uniform_name, float v0, float v1) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform2f(loc, v0, v1);
+    gl.Uniform2f(loc, v0, v1);
 }
 
 void Shader::uniform_3f(const std::string &uniform_name, float v0, float v1, float v2) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform3f(loc, v0, v1, v2);
+    gl.Uniform3f(loc, v0, v1, v2);
 }
 
 void Shader::uniform_4f(const std::string &uniform_name, float v0, float v1, float v2, float v3) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform4f(loc, v0, v1, v2, v3);
+    gl.Uniform4f(loc, v0, v1, v2, v3);
 }
 
 void Shader::uniform_1f(const std::string &uniform_name, glm::vec1 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform1fv(loc, 1, &v.x);
+    gl.Uniform1fv(loc, 1, &v.x);
 }
 
 void Shader::uniform_2f(const std::string &uniform_name, glm::vec2 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform2fv(loc, 1, glm::value_ptr(v));
+    gl.Uniform2fv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_3f(const std::string &uniform_name, glm::vec3 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform3fv(loc, 1, glm::value_ptr(v));
+    gl.Uniform3fv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_4f(const std::string &uniform_name, glm::vec4 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform4fv(loc, 1, glm::value_ptr(v));
+    gl.Uniform4fv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_1i(const std::string &uniform_name, int v0) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform1i(loc, v0);
+    gl.Uniform1i(loc, v0);
 }
 
 void Shader::uniform_2i(const std::string &uniform_name, int v0, int v1) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform2i(loc, v0, v1);
+    gl.Uniform2i(loc, v0, v1);
 }
 
 void Shader::uniform_3i(const std::string &uniform_name, int v0, int v1, int v2) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform3i(loc, v0, v1, v2);
+    gl.Uniform3i(loc, v0, v1, v2);
 }
 
 void Shader::uniform_4i(const std::string &uniform_name, int v0, int v1, int v2, int v3) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform4i(loc, v0, v1, v2, v3);
+    gl.Uniform4i(loc, v0, v1, v2, v3);
 }
 
 void Shader::uniform_1i(const std::string &uniform_name, glm::ivec1 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform1iv(loc, 1, &v.x);
+    gl.Uniform1iv(loc, 1, &v.x);
 }
 
 void Shader::uniform_2i(const std::string &uniform_name, glm::ivec2 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform2iv(loc, 1, glm::value_ptr(v));
+    gl.Uniform2iv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_3i(const std::string &uniform_name, glm::ivec3 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform3iv(loc, 1, glm::value_ptr(v));
+    gl.Uniform3iv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_4i(const std::string &uniform_name, glm::ivec4 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform4iv(loc, 1, glm::value_ptr(v));
+    gl.Uniform4iv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_1u(const std::string &uniform_name, unsigned int v0) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform1ui(loc, v0);
+    gl.Uniform1ui(loc, v0);
 }
 
 void Shader::uniform_2u(const std::string &uniform_name, unsigned int v0, unsigned int v1) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform2ui(loc, v0, v1);
+    gl.Uniform2ui(loc, v0, v1);
 }
 
 void Shader::uniform_3u(const std::string &uniform_name, unsigned int v0, unsigned int v1, unsigned int v2) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform3ui(loc, v0, v1, v2);
+    gl.Uniform3ui(loc, v0, v1, v2);
 }
 
 void Shader::uniform_4u(const std::string &uniform_name, unsigned int v0, unsigned int v1, unsigned int v2, unsigned int v3) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform4ui(loc, v0, v1, v2, v3);
+    gl.Uniform4ui(loc, v0, v1, v2, v3);
 }
 
 void Shader::uniform_1u(const std::string &uniform_name, glm::uvec1 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform1uiv(loc, 1, &v.x);
+    gl.Uniform1uiv(loc, 1, &v.x);
 }
 
 void Shader::uniform_2u(const std::string &uniform_name, glm::uvec2 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform2uiv(loc, 1, glm::value_ptr(v));
+    gl.Uniform2uiv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_3u(const std::string &uniform_name, glm::uvec3 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform3uiv(loc, 1, glm::value_ptr(v));
+    gl.Uniform3uiv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_4u(const std::string &uniform_name, glm::uvec4 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->Uniform4uiv(loc, 1, glm::value_ptr(v));
+    gl.Uniform4uiv(loc, 1, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat2f(const std::string &uniform_name, glm::mat2 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat3f(const std::string &uniform_name, glm::mat3 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat4f(const std::string &uniform_name, glm::mat4 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat2x3f(const std::string &uniform_name, glm::mat2x3 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix2x3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix2x3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat3x2f(const std::string &uniform_name, glm::mat3x2 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix3x2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix3x2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat2x4f(const std::string &uniform_name, glm::mat2x4 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix2x4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix2x4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat4x2f(const std::string &uniform_name, glm::mat4x2 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix4x2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix4x2fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat3x4f(const std::string &uniform_name, glm::mat3x4 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix3x4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix3x4fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 void Shader::uniform_mat4x3f(const std::string &uniform_name, glm::mat4x3 v) {
   auto loc = get_uniform_loc_(uniform_name);
   if (loc != -1)
-    gfx->gl->UniformMatrix4x3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
+    gl.UniformMatrix4x3fv(loc, 1, GL_FALSE, glm::value_ptr(v));
 }
 
 GLint Shader::get_uniform_loc_(const std::string &uniform_name) {
@@ -439,7 +439,7 @@ GLint Shader::get_uniform_loc_(const std::string &uniform_name) {
   if (it != uniform_locs_.end())
     return it->second;
 
-  GLint loc = gfx->gl->GetUniformLocation(id, uniform_name.c_str());
+  GLint loc = gl.GetUniformLocation(id, uniform_name.c_str());
   if (loc == -1)
     BAPHY_LOG_WARN("Uniform '{}' not found in shader ({}:{})", uniform_name, name, id);
   uniform_locs_[uniform_name] = loc;
@@ -452,34 +452,34 @@ bool Shader::compile_shader_src_(const ShaderSrc &src) {
   GLuint fragment_id{0};
 
   if (src.vertex) {
-    vertex_id = gfx->gl->CreateShader(GL_VERTEX_SHADER);
+    vertex_id = gl.CreateShader(GL_VERTEX_SHADER);
 
     const char *src_p = src.vertex.value().c_str();
-    gfx->gl->ShaderSource(vertex_id, 1, &src_p, nullptr);
-    gfx->gl->CompileShader(vertex_id);
+    gl.ShaderSource(vertex_id, 1, &src_p, nullptr);
+    gl.CompileShader(vertex_id);
 
     if (check_compile_(vertex_id, GL_VERTEX_SHADER)) {
-      gfx->gl->AttachShader(id, vertex_id);
+      gl.AttachShader(id, vertex_id);
       BAPHY_LOG_DEBUG("Attached vertex shader ({}:{})", name, id);
     } else
       return false;
   }
 
   if (src.fragment) {
-    fragment_id = gfx->gl->CreateShader(GL_FRAGMENT_SHADER);
+    fragment_id = gl.CreateShader(GL_FRAGMENT_SHADER);
 
     const char *src_p = src.fragment.value().c_str();
-    gfx->gl->ShaderSource(fragment_id, 1, &src_p, nullptr);
-    gfx->gl->CompileShader(fragment_id);
+    gl.ShaderSource(fragment_id, 1, &src_p, nullptr);
+    gl.CompileShader(fragment_id);
 
     if (check_compile_(fragment_id, GL_FRAGMENT_SHADER)) {
-      gfx->gl->AttachShader(id, fragment_id);
+      gl.AttachShader(id, fragment_id);
       BAPHY_LOG_DEBUG("Attached fragment shader ({}:{})", name, id);
     } else
       return false;
   }
 
-  gfx->gl->LinkProgram(id);
+  gl.LinkProgram(id);
   if (check_link_()) {
     BAPHY_LOG_DEBUG("Linked shader program ({}:{})", name, id);
     src_ = src;
@@ -487,10 +487,10 @@ bool Shader::compile_shader_src_(const ShaderSrc &src) {
     return false;
 
   if (vertex_id != 0)
-    gfx->gl->DeleteShader(vertex_id);
+    gl.DeleteShader(vertex_id);
 
   if (fragment_id != 0)
-    gfx->gl->DeleteShader(fragment_id);
+    gl.DeleteShader(fragment_id);
 
   return true;
 }
@@ -499,11 +499,11 @@ bool Shader::check_compile_(GLuint shader_id, GLenum type) {
   static auto info_log = std::vector<char>();
   static int success;
 
-  gfx->gl->GetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
+  gl.GetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
   if (!success) {
     info_log.clear();
     info_log.resize(512);
-    gfx->gl->GetShaderInfoLog(shader_id, static_cast<GLsizei>(info_log.size()), nullptr, &info_log[0]);
+    gl.GetShaderInfoLog(shader_id, static_cast<GLsizei>(info_log.size()), nullptr, &info_log[0]);
 
     std::string type_str;
     switch (type) {
@@ -528,11 +528,11 @@ bool Shader::check_link_() {
   static auto info_log = std::vector<char>();
   static int success;
 
-  gfx->gl->GetProgramiv(id, GL_LINK_STATUS, &success);
+  gl.GetProgramiv(id, GL_LINK_STATUS, &success);
   if (!success) {
     info_log.clear();
     info_log.resize(512);
-    gfx->gl->GetProgramInfoLog(id, static_cast<GLsizei>(info_log.size()), nullptr, &info_log[0]);
+    gl.GetProgramInfoLog(id, static_cast<GLsizei>(info_log.size()), nullptr, &info_log[0]);
 
     BAPHY_LOG_ERROR("Failed to link shader program ({}:{})! Info log:\n{}", name, id, &info_log[0]);
     return false;
@@ -542,13 +542,13 @@ bool Shader::check_link_() {
 }
 
 void Shader::gen_id_() {
-  id = gfx->gl->CreateProgram();
+  id = gl.CreateProgram();
   BAPHY_LOG_DEBUG("GEN_ID({}): Shader/{}", id, name);
 }
 
 void Shader::del_id_(GLuint id) {
   if (id != 0) {
-    gfx->gl->DeleteProgram(id);
+    gl.DeleteProgram(id);
     BAPHY_LOG_DEBUG("DEL_ID({}): Shader/{}", id, name);
     id = 0;
   }

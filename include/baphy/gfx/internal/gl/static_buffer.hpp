@@ -8,13 +8,13 @@
 namespace baphy {
 
 template<typename T>
-concept Numeric = requires(T) { std::integral<T> || std::floating_point<T>; };
+concept Numeric = std::integral<T> || std::floating_point<T>;
 
 template<Numeric T = float>
 class StaticBuffer : public Buffer {
 public:
   StaticBuffer(
-      std::shared_ptr<GfxContext> gfx,
+      GfxContext &gfx,
       const BufTarget &target,
       const BufUsage &usage,
       const std::vector<T> &data
@@ -56,7 +56,7 @@ using USBuffer = StaticBuffer<unsigned int>;
 
 template<Numeric T>
 StaticBuffer<T>::StaticBuffer(
-    std::shared_ptr<GfxContext> gfx,
+    GfxContext &gfx,
     const BufTarget &target,
     const BufUsage &usage,
     const std::vector<T> &data
@@ -88,7 +88,7 @@ void StaticBuffer<T>::write(
     const std::vector<T> &data
 ) {
   bind(target);
-  gfx->gl->BufferData(unwrap(target), sizeof(T) * data.size(), &data[0], unwrap(usage));
+  gl.BufferData(unwrap(target), sizeof(T) * data.size(), &data[0], unwrap(usage));
   unbind(target);
 
   last_target = target;
@@ -108,7 +108,7 @@ void StaticBuffer<T>::write_sub(
     const std::vector<T> &data
 ) {
   bind(target);
-  gfx->gl->BufferSubData(unwrap(target), sizeof(T) * offset, sizeof(T) * data.size(), &data[0]);
+  gl.BufferSubData(unwrap(target), sizeof(T) * offset, sizeof(T) * data.size(), &data[0]);
   unbind(target);
 
   last_target = target;

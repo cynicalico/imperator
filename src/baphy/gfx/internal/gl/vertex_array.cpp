@@ -4,16 +4,16 @@
 
 namespace baphy {
 
-VertexArray::VertexArray(std::shared_ptr<GfxContext> gfx) : gfx(std::move(gfx)) {
+VertexArray::VertexArray(GfxContext &gfx) : gl(gfx.gl) {
   gen_id_();
 }
 
 void VertexArray::bind() {
-  gfx->gl->BindVertexArray(id);
+  gl.BindVertexArray(id);
 }
 
 void VertexArray::unbind() {
-  gfx->gl->BindVertexArray(0);
+  gl.BindVertexArray(0);
 }
 
 /* Attrib format:
@@ -97,8 +97,8 @@ void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const st
   bind();
   buf.bind(target);
   for (const auto &a: vertex_attribs) {
-    gfx->gl->VertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, reinterpret_cast<void *>(a.offset));
-    gfx->gl->EnableVertexAttribArray(a.index);
+    gl.VertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, reinterpret_cast<void *>(a.offset));
+    gl.EnableVertexAttribArray(a.index);
   }
   buf.unbind(target);
   unbind();
@@ -110,18 +110,18 @@ void VertexArray::attrib(Shader &shader, Buffer &buf, const std::string &desc) {
 
 void VertexArray::draw_arrays(const DrawMode &mode, GLsizei count, int first) {
   bind();
-  gfx->gl->DrawArrays(unwrap(mode), first, count);
+  gl.DrawArrays(unwrap(mode), first, count);
   unbind();
 }
 
 void VertexArray::gen_id_() {
-  gfx->gl->GenVertexArrays(1, &id);
+  gl.GenVertexArrays(1, &id);
   BAPHY_LOG_DEBUG("GEN_ID({}): Vertex array", id);
 }
 
 void VertexArray::del_id_() {
   if (id != 0) {
-    gfx->gl->DeleteVertexArrays(1, &id);
+    gl.DeleteVertexArrays(1, &id);
     BAPHY_LOG_DEBUG("DEL_ID({}): Vertex array", id);
     id = 0;
   }

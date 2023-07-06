@@ -12,7 +12,7 @@
 namespace baphy {
 
 std::shared_ptr<Shader> ShaderMgr::compile(const std::string &name, const ShaderSrc &src) {
-  shaders_[name] = std::make_shared<Shader>(gfx, src);
+  shaders_[name] = std::make_shared<Shader>(*gfx, src);
 
   return shaders_[name];
 }

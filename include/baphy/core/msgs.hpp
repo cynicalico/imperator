@@ -15,142 +15,177 @@
 
 namespace baphy {
 
-struct EInitialize {
-  const WindowOpenParams window_open_params;
+struct EBase {
+  virtual ~EBase() = default;
 };
 
-struct EShutdown {};
+struct EInitialize : public EBase {
+  const WindowOpenParams window_open_params;
 
-struct EStartApplication {};
+  EInitialize(const WindowOpenParams &window_open_params) : window_open_params(window_open_params) {}
+};
 
-struct EUpdate {
+struct EShutdown : public EBase {};
+
+struct EStartApplication : public EBase {};
+
+struct EUpdate : public EBase  {
   double dt;
-
   double fps;
   std::uint64_t timestamp;
+
+  EUpdate(double dt, double fps, std::uint64_t timestamp) : dt(dt), fps(fps), timestamp(timestamp) {}
 };
 
-struct EStartFrame {};
+struct EStartFrame : public EBase  {};
 
-struct EDraw {};
+struct EDraw : public EBase  {};
 
-struct EEndFrame {};
+struct EEndFrame : public EBase  {};
 
-struct ELogMsg {
+struct ELogMsg : public EBase  {
   std::string text;
   spdlog::level::level_enum level;
-};
 
-struct EOPrimitiveVertexData {
-  std::vector<float> data;
-  float z;
-};
-
-struct ETPrimitiveVertexData {
-  std::vector<float> data;
-  float z;
+  ELogMsg(const std::string &text, spdlog::level::level_enum level) : text(text), level(level) {}
 };
 
 /* GLFW CALLBACKS */
 
-struct EGlfwWindowClose {
+struct EGlfwWindowClose : public EBase {
   GLFWwindow *window;
+
+  EGlfwWindowClose(GLFWwindow *window) : window(window) {}
 };
 
-struct EGlfwWindowSize {
-  GLFWwindow *window;
-  int width;
-  int height;
-};
-
-struct EGlfwFramebufferSize {
+struct EGlfwWindowSize : public EBase {
   GLFWwindow *window;
   int width;
   int height;
+
+  EGlfwWindowSize(GLFWwindow *window, int width, int height) : window(window), width(width), height(height) {}
 };
 
-struct EGlfwWindowContentScale {
+struct EGlfwFramebufferSize : public EBase {
+  GLFWwindow *window;
+  int width;
+  int height;
+
+  EGlfwFramebufferSize(GLFWwindow *window, int width, int height) : window(window), width(width), height(height) {}
+};
+
+struct EGlfwWindowContentScale : public EBase {
   GLFWwindow *window;
   float xscale;
   float yscale;
+
+  EGlfwWindowContentScale(GLFWwindow *window, float xscale, float yscale) : window(window), xscale(xscale), yscale(yscale) {}
 };
 
-struct EGlfwWindowPos {
+struct EGlfwWindowPos : public EBase {
   GLFWwindow *window;
   int xpos;
   int ypos;
+
+  EGlfwWindowPos(GLFWwindow *window, int xpos, int ypos) : window(window), xpos(xpos), ypos(ypos) {}
 };
 
-struct EGlfwWindowIconify {
+struct EGlfwWindowIconify : public EBase {
   GLFWwindow *window;
   int iconified;
+
+  EGlfwWindowIconify(GLFWwindow *window, int iconified) : window(window), iconified(iconified) {}
 };
 
-struct EGlfwWindowMaximize {
+struct EGlfwWindowMaximize : public EBase {
   GLFWwindow *window;
   int maximized;
+
+  EGlfwWindowMaximize(GLFWwindow *window, int maximized) : window(window), maximized(maximized) {}
 };
 
-struct EGlfwWindowFocus {
+struct EGlfwWindowFocus : public EBase {
   GLFWwindow *window;
   int focused;
+
+  EGlfwWindowFocus(GLFWwindow *window, int focused) : window(window), focused(focused) {}
 };
 
-struct EGlfwWindowRefresh {
+struct EGlfwWindowRefresh : public EBase {
   GLFWwindow *window;
+
+  EGlfwWindowRefresh(GLFWwindow *window) : window(window) {}
 };
 
-struct EGlfwMonitor {
+struct EGlfwMonitor : public EBase {
   GLFWmonitor *monitor;
   int event;
+
+  EGlfwMonitor(GLFWmonitor *monitor, int event) : monitor(monitor), event(event) {}
 };
 
-struct EGlfwKey {
+struct EGlfwKey : public EBase {
   GLFWwindow *window;
   int key;
   int scancode;
   int action;
   int mods;
+
+  EGlfwKey(GLFWwindow *window, int key, int scancode, int action, int mods) : window(window), key(key), scancode(scancode), action(action), mods(mods) {}
 };
 
-struct EGlfwCharacter {
+struct EGlfwCharacter : public EBase {
   GLFWwindow *window;
   unsigned int codepoint;
+
+  EGlfwCharacter(GLFWwindow *window, unsigned int codepoint) : window(window), codepoint(codepoint) {}
 };
 
-struct EGlfwCursorPos {
+struct EGlfwCursorPos : public EBase {
   GLFWwindow *window;
   double xpos;
   double ypos;
+
+  EGlfwCursorPos(GLFWwindow *window, double xpos, double ypos) : window(window), xpos(xpos), ypos(ypos) {}
 };
 
-struct EGlfwCursorEnter {
+struct EGlfwCursorEnter : public EBase {
   GLFWwindow *window;
   int entered;
+
+  EGlfwCursorEnter(GLFWwindow *window, int entered) : window(window), entered(entered) {}
 };
 
-struct EGlfwMouseButton {
+struct EGlfwMouseButton : public EBase {
   GLFWwindow *window;
   int button;
   int action;
   int mods;
+
+  EGlfwMouseButton(GLFWwindow *window, int button, int action, int mods) : window(window), button(button), action(action), mods(mods) {}
 };
 
-struct EGlfwScroll {
+struct EGlfwScroll : public EBase {
   GLFWwindow *window;
   double xoffset;
   double yoffset;
+
+  EGlfwScroll(GLFWwindow *window, double xoffset, double yoffset) : window(window), xoffset(xoffset), yoffset(yoffset) {}
 };
 
-struct EGlfwJoystick {
+struct EGlfwJoystick : public EBase {
   int jid;
   int event;
+
+  EGlfwJoystick(int jid, int event) : jid(jid), event(event) {}
 };
 
-struct EGlfwDrop {
+struct EGlfwDrop : public EBase {
   GLFWwindow *window;
   int count;
   const char **paths;
+
+  EGlfwDrop(GLFWwindow *window, int count, const char **paths) : window(window), count(count), paths(paths) {}
 };
 
 } // namespace baphy

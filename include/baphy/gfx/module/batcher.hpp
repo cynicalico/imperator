@@ -18,6 +18,9 @@ public:
   Batcher() : Module<Batcher>({EPI<GfxContext>::name, EPI<ShaderMgr>::name}) {}
   ~Batcher() override = default;
 
+  void add_o_primitive(const std::vector<float> &data, float z);
+  void add_o_primitive(std::initializer_list<float> data, float z);
+
 private:
   std::shared_ptr<Shader> primitive_shader_{nullptr};
 
@@ -31,9 +34,6 @@ private:
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
-
-  void e_o_primitive_vertex_data_(const EOPrimitiveVertexData &e);
-//  void e_t_primitive_vertex_data_(const ETPrimitiveVertexData &e);
 
   void e_draw_(const EDraw &e);
 };

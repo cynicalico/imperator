@@ -21,12 +21,12 @@ struct ShaderSrc {
 
 class Shader {
 public:
-  std::shared_ptr<GfxContext> gfx{nullptr};
+  GladGLContext &gl;
 
   GLuint id{0};
   std::string name{};
 
-  Shader(std::shared_ptr<GfxContext> gfx, const ShaderSrc &src);
+  Shader(GfxContext &gfx, const ShaderSrc &src);
 
   ~Shader();
 

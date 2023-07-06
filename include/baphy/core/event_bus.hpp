@@ -4,7 +4,6 @@
 #include "baphy/core/msgs.hpp"
 #include "baphy/core/prio_list.hpp"
 #include "baphy/util/type_id.hpp"
-#include <any>
 #include <functional>
 #include <memory>
 #include <string>
@@ -29,7 +28,7 @@ public:
   ReceiverI(ReceiverI &&other) noexcept = default;
   ReceiverI &operator=(ReceiverI &&other) noexcept = default;
 
-  virtual void call(const std::any &e) const {};
+  virtual void call(const EBase *e) const {};
 };
 
 template<typename T>
@@ -48,8 +47,8 @@ public:
   ReceiverWrap(ReceiverWrap &&other) noexcept = default;
   ReceiverWrap &operator=(ReceiverWrap &&other) noexcept = default;
 
-  void call(const std::any &e) const override {
-    receiver_(std::any_cast<T>(e));
+  void call(const EBase *e) const override {
+    receiver_(*dynamic_cast<const T *>(e));
   }
 };
 
@@ -85,9 +84,8 @@ public:
     auto e_idx = type_id<T>;
 
     if (e_idx < buffers_.size()) {
-      auto pay = std::any(T{std::forward<Args>(args)...});
       for (auto &p: buffers_[e_idx])
-        p.second.emplace_back(pay);
+        p.second.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
     }
   }
 
@@ -96,9 +94,9 @@ public:
     auto e_idx = type_id<T>;
 
     if (e_idx < receivers_.size()) {
-      auto pay = std::any(T{std::forward<Args>(args)...});
+      auto pay = std::make_unique<T>(std::forward<Args>(args)...);
       for (const auto &p: receivers_[type_id<T>])
-        p.v->call(pay);
+        p.v->call(pay.get());
     }
   }
 
@@ -106,8 +104,8 @@ public:
   static void poll(const std::string &name) {
     auto e_idx = type_id<T>;
 
-    for (const auto &pay: buffers_[e_idx][name])
-      receivers_[e_idx][name]->call(pay);
+    for (auto &pay: buffers_[e_idx][name])
+      receivers_[e_idx][name]->call(pay.get());
     buffers_[e_idx][name].clear();
   }
 
@@ -130,11 +128,11 @@ private:
       buffers_.emplace_back();
 
     if (!buffers_[e_idx].contains(name))
-      buffers_[e_idx][name] = std::vector<std::any>{};
+      buffers_[e_idx][name] = std::vector<std::unique_ptr<EBase>>{};
   }
 
   static std::vector<PrioList<std::unique_ptr<ReceiverI>>> receivers_;
-  static std::vector<std::unordered_map<std::string, std::vector<std::any>>> buffers_;
+  static std::vector<std::unordered_map<std::string, std::vector<std::unique_ptr<EBase>>>> buffers_;
 };
 
 } // namespace baphy

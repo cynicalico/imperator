@@ -4,13 +4,25 @@
 
 namespace baphy {
 
+void Batcher::add_o_primitive(const std::vector<float> &data, float z) {
+  check_add_new_o_primitive_batch_();
+  o_primitive_vbos_[curr_o_primitive_batch_]->add(data);
+  o_primitive_max_z_ = std::max(o_primitive_max_z_, z);
+}
+
+void Batcher::add_o_primitive(std::initializer_list<float> data, float z) {
+  check_add_new_o_primitive_batch_();
+  o_primitive_vbos_[curr_o_primitive_batch_]->add(data);
+  o_primitive_max_z_ = std::max(o_primitive_max_z_, z);
+}
+
 void Batcher::new_o_primitive_batch_() {
   curr_o_primitive_batch_++;
 
   if (curr_o_primitive_batch_ >= o_primitive_vaos_.size()) {
-    o_primitive_vaos_.emplace_back(std::make_unique<VertexArray>(gfx));
+    o_primitive_vaos_.emplace_back(std::make_unique<VertexArray>(*gfx));
     o_primitive_vbos_.emplace_back(std::make_unique<FVBuffer>(
-        gfx, 10 * 3, true, BufTarget::array, BufUsage::dynamic_draw));
+        *gfx, 10 * 6, true, BufTarget::array, BufUsage::dynamic_draw));
 
     o_primitive_vaos_.back()->attrib(
         *primitive_shader_,
@@ -22,8 +34,8 @@ void Batcher::new_o_primitive_batch_() {
 
 void Batcher::check_add_new_o_primitive_batch_() {
   // 2 MB batches
-  if (o_primitive_vbos_[curr_o_primitive_batch_]->size() > 500'000)
-    new_o_primitive_batch_();
+//  if (o_primitive_vbos_[curr_o_primitive_batch_]->size() > 500'000)
+//    new_o_primitive_batch_();
 }
 
 void Batcher::e_initialize_(const baphy::EInitialize &e) {
@@ -37,8 +49,6 @@ void Batcher::e_initialize_(const baphy::EInitialize &e) {
   new_o_primitive_batch_();
   curr_o_primitive_batch_ = 0;  // Reset for first batch
 
-  EventBus::sub<EOPrimitiveVertexData>(module_name, [&](const auto &e) { e_o_primitive_vertex_data_(e); });
-//  EventBus::sub<ETPrimitiveVertexData>(module_name, [&](const auto &e) { e_t_primitive_vertex_data_(e); });
   EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
 
   Module::e_initialize_(e);
@@ -47,14 +57,6 @@ void Batcher::e_initialize_(const baphy::EInitialize &e) {
 void Batcher::e_shutdown_(const baphy::EShutdown &e) {
   Module::e_shutdown_(e);
 }
-
-void Batcher::e_o_primitive_vertex_data_(const EOPrimitiveVertexData &e) {
-  check_add_new_o_primitive_batch_();
-  o_primitive_vbos_[curr_o_primitive_batch_]->add(e.data);
-  o_primitive_max_z_ = std::max(o_primitive_max_z_, e.z);
-}
-
-//void Batcher::e_t_primitive_vertex_data_(const ETPrimitiveVertexData &e) {}
 
 void Batcher::e_draw_(const EDraw &e) {
   primitive_shader_->use();
