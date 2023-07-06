@@ -29,9 +29,9 @@ public:
 
   void clear();
 
-  std::size_t front();
+  std::size_t front() const;
 
-  std::size_t size();
+  std::size_t size() const;
 
   void add(const std::vector<T> &new_data);
   void add(std::initializer_list<T> new_data);
@@ -131,12 +131,12 @@ void VecBuffer<T>::clear() {
 }
 
 template<Numeric T>
-std::size_t VecBuffer<T>::front() {
+std::size_t VecBuffer<T>::front() const {
   return front_;
 }
 
 template<Numeric T>
-std::size_t VecBuffer<T>::size() {
+std::size_t VecBuffer<T>::size() const {
   return back_ - front_;
 }
 

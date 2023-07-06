@@ -4,38 +4,62 @@
 
 namespace baphy {
 
-void Batcher::add_o_primitive(const std::vector<float> &data, float z) {
-  check_add_new_o_primitive_batch_();
-  o_primitive_vbos_[curr_o_primitive_batch_]->add(data);
-  o_primitive_max_z_ = std::max(o_primitive_max_z_, z);
+std::size_t Batch::size() const {
+  return vbo_.size();
 }
 
-void Batcher::add_o_primitive(std::initializer_list<float> data, float z) {
-  check_add_new_o_primitive_batch_();
-  o_primitive_vbos_[curr_o_primitive_batch_]->add(data);
-  o_primitive_max_z_ = std::max(o_primitive_max_z_, z);
+void Batch::add(std::initializer_list<float> data) {
+  vbo_.add(data);
 }
 
-void Batcher::new_o_primitive_batch_() {
-  curr_o_primitive_batch_++;
+void Batch::draw(glm::mat4 projection, float z_max) {
+  vbo_.sync();
 
-  if (curr_o_primitive_batch_ >= o_primitive_vaos_.size()) {
-    o_primitive_vaos_.emplace_back(std::make_unique<VertexArray>(*gfx));
-    o_primitive_vbos_.emplace_back(std::make_unique<FVBuffer>(
-        *gfx, 10 * 6, true, BufTarget::array, BufUsage::dynamic_draw));
+  shader_->use();
+  shader_->uniform_mat4f("mvp", projection);
+  shader_->uniform_1f("z_max", z_max);
 
-    o_primitive_vaos_.back()->attrib(
-        *primitive_shader_,
-        *o_primitive_vbos_.back(),
-        "in_pos:3f in_color:4f in_trans:3f"
-    );
+  vao_.draw_arrays(DrawMode::triangles, vbo_.size() / 10, vbo_.front() / 10);
+}
+
+void Batch::clear() {
+  vbo_.clear();
+}
+
+std::size_t BatchList::size() const {
+  return batches_[curr_batch_].size();
+}
+
+void BatchList::clear() {
+  for (auto &b: batches_)
+    b.clear();
+
+  curr_batch_ = 0;
+}
+
+void BatchList::add(std::initializer_list<float> data) {
+  if (batches_.empty())
+    batches_.emplace_back(gfx, shader, floats_per_obj_, fill_reverse_);
+
+  else if (batches_[curr_batch_].size() > 500'000) {
+    batches_.emplace_back(gfx, shader, floats_per_obj_, fill_reverse_);
+    curr_batch_++;
   }
+
+  batches_[curr_batch_].add(data);
 }
 
-void Batcher::check_add_new_o_primitive_batch_() {
-  // 2 MB batches
-//  if (o_primitive_vbos_[curr_o_primitive_batch_]->size() > 500'000)
-//    new_o_primitive_batch_();
+void BatchList::draw(glm::mat4 projection, float z_max) {
+  for (int i = curr_batch_; i >= 0; --i)
+    batches_[i].draw(projection, z_max);
+
+  curr_batch_ = 0;
+}
+
+void Batcher::add_o_primitive(float z, std::initializer_list<float> data) {
+  o_primitive_batches_->add(data);
+
+  z_max_ = std::max(z, z_max_);
 }
 
 void Batcher::e_initialize_(const baphy::EInitialize &e) {
@@ -46,8 +70,7 @@ void Batcher::e_initialize_(const baphy::EInitialize &e) {
   if (primitives_src)
     primitive_shader_ = shaders->compile(*primitives_src);
 
-  new_o_primitive_batch_();
-  curr_o_primitive_batch_ = 0;  // Reset for first batch
+  o_primitive_batches_ = std::make_unique<BatchList>(gfx, primitive_shader_, 10 * 3, true);
 
   EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
 
@@ -59,24 +82,11 @@ void Batcher::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void Batcher::e_draw_(const EDraw &e) {
-  primitive_shader_->use();
-  primitive_shader_->uniform_mat4f("mvp", gfx->ortho_projection());
-  primitive_shader_->uniform_1f("z_max", o_primitive_max_z_);
+  o_primitive_batches_->draw(gfx->ortho_projection(), z_max_);
 
-  for (int i = o_primitive_vaos_.size() - 1; i >= 0; --i) {
-    o_primitive_vbos_[i]->sync();
+  o_primitive_batches_->clear();
 
-    o_primitive_vaos_[i]->draw_arrays(
-        DrawMode::triangles,
-        o_primitive_vbos_[i]->size() / 10,
-        o_primitive_vbos_[i]->front() / 10
-    );
-
-    o_primitive_vbos_[i]->clear();
-  }
-
-  curr_o_primitive_batch_ = 0;
-  o_primitive_max_z_ = 1.0f;
+  z_max_ = 1.0f;
 }
 
 } // namespace baphy

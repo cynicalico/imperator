@@ -1,6 +1,7 @@
 #ifndef BAPHY_CORE_MODULE_WINDOW_HPP
 #define BAPHY_CORE_MODULE_WINDOW_HPP
 
+#define GLFW_INCLUDE_NONE
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/util/platform.hpp"
 #include "GLFW/glfw3.h"

@@ -1,8 +1,8 @@
 #include "baphy/gfx/module/gfx_context.hpp"
 
+#define GLFW_INCLUDE_NONE
 #include "baphy/util/log.hpp"
 #include "baphy/util/platform.hpp"
-#define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #if defined(BAPHY_PLATFORM_WINDOWS)
 #define GLFW_EXPOSE_NATIVE_WIN32
