@@ -39,7 +39,7 @@ private:
   std::deque<double> dts_{};
 
   struct {
-    bool show{true};
+    bool show{false};
 
     ImGuiTextBuffer buf;
     ImGuiTextFilter filter;

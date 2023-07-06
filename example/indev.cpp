@@ -11,7 +11,7 @@ public:
     for (std::size_t i = 0; i < 100000; i++) {
       rects.emplace_back(
           baphy::get<float>(window->w() / 4.0f, 3.0f * window->w() / 4.0f),
-          baphy::get<float>(window->w() / 4.0f, 3.0f * window->w() / 4.0f),
+          baphy::get<float>(window->h() / 4.0f, 3.0f * window->h() / 4.0f),
           baphy::get<float>(10.0f, 50.0f),
           baphy::get<float>(10.0f, 50.0f),
           z,

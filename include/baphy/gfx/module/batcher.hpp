@@ -23,7 +23,7 @@ private:
 
   std::vector<std::unique_ptr<VertexArray>> o_primitive_vaos_{};
   std::vector<std::unique_ptr<FVBuffer>> o_primitive_vbos_{};
-  std::vector<float> o_primitive_max_z_{};
+  float o_primitive_max_z_{1.0f};
   std::size_t curr_o_primitive_batch_{0};
 
   void new_o_primitive_batch_();
