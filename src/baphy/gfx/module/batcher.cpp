@@ -42,7 +42,9 @@ void BatchList::add(std::initializer_list<float> data) {
     batches_.emplace_back(gfx, shader, floats_per_obj_, fill_reverse_);
 
   else if (batches_[curr_batch_].size() > 500'000) {
-    batches_.emplace_back(gfx, shader, floats_per_obj_, fill_reverse_);
+    if (curr_batch_ == batches_.size() - 1)
+      batches_.emplace_back(gfx, shader, floats_per_obj_, fill_reverse_);
+
     curr_batch_++;
   }
 
@@ -52,8 +54,6 @@ void BatchList::add(std::initializer_list<float> data) {
 void BatchList::draw(glm::mat4 projection, float z_max) {
   for (int i = curr_batch_; i >= 0; --i)
     batches_[i].draw(projection, z_max);
-
-  curr_batch_ = 0;
 }
 
 void Batcher::add_o_primitive(float z, std::initializer_list<float> data) {
