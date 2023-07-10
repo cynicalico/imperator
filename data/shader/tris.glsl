@@ -1,4 +1,4 @@
-#pragma name(primitives)
+#pragma name(tris)
 
 #pragma vertex
 

@@ -15,11 +15,14 @@ namespace baphy {
 class Batch {
 public:
   Batch(const std::shared_ptr<GfxContext> &gfx, std::shared_ptr<Shader> shader,
-        std::size_t floats_per_obj, bool fill_reverse)
+        std::size_t floats_per_obj, bool fill_reverse, const std::string &attrib_format,
+        DrawMode draw_mode, std::size_t draw_divisor)
     : shader_(std::move(shader)),
       vao_(*gfx),
-      vbo_(*gfx, floats_per_obj, fill_reverse, BufTarget::array, BufUsage::dynamic_draw) {
-    vao_.attrib(*shader_, vbo_, "in_pos:3f in_color:4f in_trans:3f");
+      vbo_(*gfx, floats_per_obj, fill_reverse, BufTarget::array, BufUsage::dynamic_draw),
+      draw_mode_(draw_mode),
+      draw_divisor_(draw_divisor) {
+    vao_.attrib(*shader_, vbo_, attrib_format);
   }
 
   std::size_t size() const;
@@ -35,6 +38,9 @@ private:
 
   VertexArray vao_;
   FVBuffer vbo_;
+
+  DrawMode draw_mode_;
+  std::size_t draw_divisor_;
 };
 
 class BatchList {
@@ -43,9 +49,11 @@ public:
   std::shared_ptr<Shader> shader;
 
   BatchList(std::shared_ptr<GfxContext> gfx, std::shared_ptr<Shader> shader,
-            std::size_t floats_per_obj, bool fill_reverse)
+            std::size_t floats_per_obj, bool fill_reverse, std::string attrib_format,
+            DrawMode draw_mode, std::size_t draw_divisor)
       : gfx(std::move(gfx)), shader(std::move(shader)),
-        floats_per_obj_(floats_per_obj), fill_reverse_(fill_reverse) {}
+        floats_per_obj_(floats_per_obj), fill_reverse_(fill_reverse), attrib_format_(std::move(attrib_format)),
+        draw_mode_(draw_mode), draw_divisor_(draw_divisor) {}
 
   std::size_t size() const;
 
@@ -61,6 +69,10 @@ private:
 
   std::size_t floats_per_obj_;
   bool fill_reverse_;
+  std::string attrib_format_;
+
+  DrawMode draw_mode_;
+  std::size_t draw_divisor_;
 };
 
 class Batcher : public Module<Batcher> {
@@ -71,13 +83,24 @@ public:
   Batcher() : Module<Batcher>({EPI<GfxContext>::name, EPI<ShaderMgr>::name}) {}
   ~Batcher() override = default;
 
-  void add_o_primitive(float z, std::initializer_list<float> data);
+  void add_o_tri(float z, std::initializer_list<float> data);
+  void add_o_line(float z, std::initializer_list<float> data);
+  void add_o_point(float z, std::initializer_list<float> data);
+
+  void add_t_tri(float z, std::initializer_list<float> data);
+  void add_t_line(float z, std::initializer_list<float> data);
+  void add_t_point(float z, std::initializer_list<float> data);
 
 private:
   float z_max_{1.0f};
 
-  std::shared_ptr<Shader> primitive_shader_{nullptr};
-  std::unique_ptr<BatchList> o_primitive_batches_{nullptr};
+  std::shared_ptr<Shader> tri_shader_{nullptr};
+  std::shared_ptr<Shader> line_shader_{nullptr};
+  std::shared_ptr<Shader> point_shader_{nullptr};
+
+  std::unique_ptr<BatchList> o_tri_batches_{nullptr};
+  std::unique_ptr<BatchList> o_line_batches_{nullptr};
+  std::unique_ptr<BatchList> o_point_batches_{nullptr};
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
