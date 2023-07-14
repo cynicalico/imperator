@@ -32,7 +32,15 @@ public:
   bool is_vsync() const;
   void set_vsync(bool v);
 
+  void enable(Capability c);
+  void disable(Capability c);
+
   void clear(const RGB &color, const ClearBit &bit = ClearBit::color | ClearBit::depth);
+
+  void blend_func(BlendFunc s_factor, BlendFunc d_factor);
+  void blend_func_separate(BlendFunc src_rgb, BlendFunc dst_rgb, BlendFunc src_alpha, BlendFunc dst_alpha);
+
+  void depth_mask(bool enabled);
 
   glm::mat4 ortho_projection() const;
 

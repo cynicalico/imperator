@@ -27,6 +27,14 @@ void GfxContext::set_vsync(bool v) {
   platform_set_vsync_(v);
 }
 
+void GfxContext::enable(Capability c) {
+  gl.Enable(unwrap(c));
+}
+
+void GfxContext::disable(Capability c) {
+  gl.Disable(unwrap(c));
+}
+
 void GfxContext::clear(const RGB &color, const ClearBit &bit) {
   gl.ClearColor(
       static_cast<float>(color.r) / 255.0f,
@@ -34,6 +42,18 @@ void GfxContext::clear(const RGB &color, const ClearBit &bit) {
       static_cast<float>(color.b) / 255.0f,
       static_cast<float>(color.a) / 255.0f);
   gl.Clear(unwrap(bit));
+}
+
+void GfxContext::blend_func(BlendFunc s_factor, BlendFunc d_factor) {
+  gl.BlendFunc(unwrap(s_factor), unwrap(d_factor));
+}
+
+void GfxContext::blend_func_separate(BlendFunc src_rgb, BlendFunc dst_rgb, BlendFunc src_alpha, BlendFunc dst_alpha) {
+  gl.BlendFuncSeparate(unwrap(src_rgb), unwrap(dst_rgb), unwrap(src_alpha), unwrap(dst_alpha));
+}
+
+void GfxContext::depth_mask(bool enabled) {
+  gl.DepthMask(enabled ? 1 : 0);
 }
 
 glm::mat4 GfxContext::ortho_projection() const {
