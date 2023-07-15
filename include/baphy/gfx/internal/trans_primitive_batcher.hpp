@@ -108,7 +108,7 @@ private:
   std::vector<TDrawCall> draw_calls_{};
 
   TBatchType last_batch_type_{TBatchType::none};
-  void check_get_draw_calls_(TBatchType t, TBatchList &batch);
+  void check_get_draw_calls_(TBatchType t);
 };
 
 } // namespace baphy

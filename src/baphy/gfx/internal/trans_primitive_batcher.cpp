@@ -97,21 +97,21 @@ TransPrimitiveBatcher::TransPrimitiveBatcher(ModuleMgr &module_mgr) {
 }
 
 void TransPrimitiveBatcher::add_tri(std::initializer_list<float> data) {
-  check_get_draw_calls_(TBatchType::tri, *tri_batches_);
+  check_get_draw_calls_(TBatchType::tri);
   tri_batches_->add(data);
 
   last_batch_type_ = TBatchType::tri;
 }
 
 void TransPrimitiveBatcher::add_line(std::initializer_list<float> data) {
-  check_get_draw_calls_(TBatchType::line, *line_batches_);
+  check_get_draw_calls_(TBatchType::line);
   line_batches_->add(data);
 
   last_batch_type_ = TBatchType::line;
 }
 
 void TransPrimitiveBatcher::add_point(std::initializer_list<float> data) {
-  check_get_draw_calls_(TBatchType::point, *point_batches_);
+  check_get_draw_calls_(TBatchType::point);
   point_batches_->add(data);
 
   last_batch_type_ = TBatchType::point;
@@ -140,9 +140,15 @@ void TransPrimitiveBatcher::draw(glm::mat4 projection, float z_max) {
   last_batch_type_ = TBatchType::none;
 }
 
-void TransPrimitiveBatcher::check_get_draw_calls_(TBatchType t, TBatchList &batch) {
+void TransPrimitiveBatcher::check_get_draw_calls_(TBatchType t) {
   if (last_batch_type_ != TBatchType::none && last_batch_type_ != t) {
-    const auto new_draw_calls = batch.get_draw_calls();
+    std::vector<TDrawCall> new_draw_calls;
+    switch (last_batch_type_) {
+      case TBatchType::none:  std::unreachable();
+      case TBatchType::tri:   new_draw_calls = tri_batches_->get_draw_calls(); break;
+      case TBatchType::line:  new_draw_calls = line_batches_->get_draw_calls(); break;
+      case TBatchType::point: new_draw_calls = point_batches_->get_draw_calls(); break;
+    }
     draw_calls_.insert(draw_calls_.begin(), new_draw_calls.begin(), new_draw_calls.end());
   }
 }

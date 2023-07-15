@@ -26,6 +26,12 @@ public:
   void tri_equilateral(float cx, float cy, float radius, float angle, const RGB &color);
   void tri_equilateral(float cx, float cy, float radius, const RGB &color);
 
+  void line(float x0, float y0, float x1, float y1, float rx, float ry, float angle, const RGB &color);
+  void line(float x0, float y0, float x1, float y1, float angle, const RGB &color);
+  void line(float x0, float y0, float x1, float y1, const RGB &color);
+
+  void point(float x, float y, const RGB &color);
+
 private:
   float z_{1.0f};
 

@@ -12,14 +12,14 @@ void PrimitiveBatcher::tri(
     const RGB &color
 ) {
   auto cv = color.vec4();
-  std::initializer_list<float> es = {
+  std::initializer_list<float> data = {
       x0, y0, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
       x1, y1, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
       x2, y2, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
   };
 
-  if (color.a < 255) t_primitive_batcher_->add_tri(es);
-  else               o_primitive_batcher_->add_tri(es);
+  if (color.a < 255) t_primitive_batcher_->add_tri(data);
+  else               o_primitive_batcher_->add_tri(data);
 
   z_ += 1.0f;
 }
@@ -48,6 +48,37 @@ void PrimitiveBatcher::tri_equilateral(float cx, float cy, float radius, float a
 
 void PrimitiveBatcher::tri_equilateral(float cx, float cy, float radius, const RGB &color) {
   tri_equilateral(cx, cy, radius, 0, 0, 0, color);
+}
+
+void PrimitiveBatcher::line(float x0, float y0, float x1, float y1, float rx, float ry, float angle, const RGB &color) {
+  auto cv = color.vec4();
+  std::initializer_list<float> data = {
+      x0, y0, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x1, y1, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+  };
+
+  if (color.a < 255) t_primitive_batcher_->add_line(data);
+  else               o_primitive_batcher_->add_line(data);
+
+  z_ += 1.0f;
+}
+
+void PrimitiveBatcher::line(float x0, float y0, float x1, float y1, float angle, const RGB &color) {
+  line(x0, y0, x1, y1, (x0 + x1) / 2, (y0 + y1) / 2, angle, color);
+}
+
+void PrimitiveBatcher::line(float x0, float y0, float x1, float y1, const RGB &color) {
+  line(x0, y0, x1, y1, 0, 0, 0, color);
+}
+
+void PrimitiveBatcher::point(float x, float y, const RGB &color) {
+  auto cv = color.vec4();
+  std::initializer_list<float> data = {x, y, z_,  cv.r, cv.g, cv.b, cv.a};
+
+  if (color.a < 255) t_primitive_batcher_->add_point(data);
+  else               o_primitive_batcher_->add_point(data);
+
+  z_ += 1.0f;
 }
 
 void PrimitiveBatcher::e_initialize_(const baphy::EInitialize &e) {
