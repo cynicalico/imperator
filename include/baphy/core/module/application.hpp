@@ -6,6 +6,7 @@
 #include "baphy/core/module/window.hpp"
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
+#include "baphy/gfx/module/primitive_batcher.hpp"
 #include "baphy/util/module/thread_pool.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
 #include "baphy/util/module/tween_mgr.hpp"
@@ -18,6 +19,7 @@ public:
   std::shared_ptr<InputMgr> input{nullptr};
   std::shared_ptr<Window> window{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<PrimitiveBatcher> primitives{nullptr};
   std::shared_ptr<ThreadPool> pool{nullptr};
   std::shared_ptr<TimerMgr> timer{nullptr};
   std::shared_ptr<TweenMgr> tween{nullptr};
@@ -27,6 +29,7 @@ public:
       EPI<InputMgr>::name,
       EPI<Window>::name,
       EPI<GfxContext>::name,
+      EPI<PrimitiveBatcher>::name,
       EPI<ThreadPool>::name,
       EPI<TimerMgr>::name,
       EPI<TweenMgr>::name,

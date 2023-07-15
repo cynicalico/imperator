@@ -97,28 +97,28 @@ TransPrimitiveBatcher::TransPrimitiveBatcher(ModuleMgr &module_mgr) {
 }
 
 void TransPrimitiveBatcher::add_tri(std::initializer_list<float> data) {
-  check_get_draw_calls_(BatchType::tri, *tri_batches_);
+  check_get_draw_calls_(TBatchType::tri, *tri_batches_);
   tri_batches_->add(data);
 
-  last_batch_type_ = BatchType::tri;
+  last_batch_type_ = TBatchType::tri;
 }
 
 void TransPrimitiveBatcher::add_line(std::initializer_list<float> data) {
-  check_get_draw_calls_(BatchType::line, *line_batches_);
+  check_get_draw_calls_(TBatchType::line, *line_batches_);
   line_batches_->add(data);
 
-  last_batch_type_ = BatchType::line;
+  last_batch_type_ = TBatchType::line;
 }
 
 void TransPrimitiveBatcher::add_point(std::initializer_list<float> data) {
-  check_get_draw_calls_(BatchType::point, *point_batches_);
+  check_get_draw_calls_(TBatchType::point, *point_batches_);
   point_batches_->add(data);
 
-  last_batch_type_ = BatchType::point;
+  last_batch_type_ = TBatchType::point;
 }
 
 void TransPrimitiveBatcher::draw(glm::mat4 projection, float z_max) {
-  static auto do_draw_calls_ = [=](TBatchList &batch) {
+  static auto do_draw_calls_ = [&](TBatchList &batch) {
     std::ranges::for_each(batch.get_draw_calls(), [=](auto fn) { fn(projection, z_max); });
   };
 
@@ -126,10 +126,10 @@ void TransPrimitiveBatcher::draw(glm::mat4 projection, float z_max) {
     call(projection, z_max);
 
   switch (last_batch_type_) {
-    case BatchType::none:  break;
-    case BatchType::tri:   do_draw_calls_(*tri_batches_); break;
-    case BatchType::line:  do_draw_calls_(*line_batches_); break;
-    case BatchType::point: do_draw_calls_(*point_batches_); break;
+    case TBatchType::none:  break;
+    case TBatchType::tri:   do_draw_calls_(*tri_batches_); break;
+    case TBatchType::line:  do_draw_calls_(*line_batches_); break;
+    case TBatchType::point: do_draw_calls_(*point_batches_); break;
   }
 
   tri_batches_->clear();
@@ -137,11 +137,11 @@ void TransPrimitiveBatcher::draw(glm::mat4 projection, float z_max) {
   point_batches_->clear();
 
   draw_calls_.clear();
-  last_batch_type_ = BatchType::none;
+  last_batch_type_ = TBatchType::none;
 }
 
-void TransPrimitiveBatcher::check_get_draw_calls_(BatchType t, TBatchList &batch) {
-  if (last_batch_type_ != BatchType::none && last_batch_type_ != t) {
+void TransPrimitiveBatcher::check_get_draw_calls_(TBatchType t, TBatchList &batch) {
+  if (last_batch_type_ != TBatchType::none && last_batch_type_ != t) {
     const auto new_draw_calls = batch.get_draw_calls();
     draw_calls_.insert(draw_calls_.begin(), new_draw_calls.begin(), new_draw_calls.end());
   }

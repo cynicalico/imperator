@@ -6,7 +6,7 @@
 #include "baphy/core/module/input_mgr.hpp"
 #include "baphy/core/module/window.hpp"
 #include "baphy/core/module_mgr.hpp"
-#include "baphy/gfx/module/batcher.hpp"
+#include "baphy/gfx/module/primitive_batcher.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/shader_mgr.hpp"
 #include "baphy/util/module/debug_overlay.hpp"
@@ -45,7 +45,7 @@ void Engine::run_application(const WindowOpenParams &window_open_params) {
   module_mgr_->create<InputMgr>();
   module_mgr_->create<Window>();
 
-  module_mgr_->create<Batcher>();
+  module_mgr_->create<PrimitiveBatcher>();
   module_mgr_->create<GfxContext>();
   module_mgr_->create<ShaderMgr>();
 

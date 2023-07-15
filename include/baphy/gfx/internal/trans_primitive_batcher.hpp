@@ -11,8 +11,7 @@
 
 namespace baphy {
 
-// We will switch on these to keep track of alpha call order
-enum class BatchType {
+enum class TBatchType {
   none, tri, line, point
 };
 
@@ -108,8 +107,8 @@ private:
 
   std::vector<TDrawCall> draw_calls_{};
 
-  BatchType last_batch_type_{BatchType::none};
-  void check_get_draw_calls_(BatchType t, TBatchList &batch);
+  TBatchType last_batch_type_{TBatchType::none};
+  void check_get_draw_calls_(TBatchType t, TBatchList &batch);
 };
 
 } // namespace baphy

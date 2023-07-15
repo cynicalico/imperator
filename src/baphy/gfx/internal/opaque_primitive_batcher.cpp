@@ -75,31 +75,31 @@ OpaquePrimitiveBatcher::OpaquePrimitiveBatcher(ModuleMgr &module_mgr) {
     point_shader_ = shaders->compile(*point_src);
 
   auto gfx = module_mgr.get<GfxContext>();
-  o_tri_batches_ = std::make_unique<OBatchList>(gfx, tri_shader_, 10 * 3, "in_pos:3f in_color:4f in_trans:3f", DrawMode::triangles, 10);
-  o_line_batches_ = std::make_unique<OBatchList>(gfx, line_shader_, 10 * 2, "in_pos:3f in_color:4f in_trans:3f", DrawMode::lines, 10);
-  o_point_batches_ = std::make_unique<OBatchList>(gfx, point_shader_, 7 * 1, "in_pos:3f in_color:4f", DrawMode::points, 7);
+  tri_batches_ = std::make_unique<OBatchList>(gfx, tri_shader_, 10 * 3, "in_pos:3f in_color:4f in_trans:3f", DrawMode::triangles, 10);
+  line_batches_ = std::make_unique<OBatchList>(gfx, line_shader_, 10 * 2, "in_pos:3f in_color:4f in_trans:3f", DrawMode::lines, 10);
+  point_batches_ = std::make_unique<OBatchList>(gfx, point_shader_, 7 * 1, "in_pos:3f in_color:4f", DrawMode::points, 7);
 }
 
 void OpaquePrimitiveBatcher::add_tri(std::initializer_list<float> data) {
-  o_tri_batches_->add(data);
+  tri_batches_->add(data);
 }
 
 void OpaquePrimitiveBatcher::add_line(std::initializer_list<float> data) {
-  o_line_batches_->add(data);
+  line_batches_->add(data);
 }
 
 void OpaquePrimitiveBatcher::add_point(std::initializer_list<float> data) {
-  o_point_batches_->add(data);
+  point_batches_->add(data);
 }
 
 void OpaquePrimitiveBatcher::draw(glm::mat4 projection, float z_max) {
-  o_tri_batches_->draw(projection, z_max);
-  o_line_batches_->draw(projection, z_max);
-  o_point_batches_->draw(projection, z_max);
+  tri_batches_->draw(projection, z_max);
+  line_batches_->draw(projection, z_max);
+  point_batches_->draw(projection, z_max);
 
-  o_tri_batches_->clear();
-  o_line_batches_->clear();
-  o_point_batches_->clear();
+  tri_batches_->clear();
+  line_batches_->clear();
+  point_batches_->clear();
 }
 
 } // namespace baphy

@@ -28,6 +28,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   input = module_mgr->get<InputMgr>();
   window = module_mgr->get<Window>();
   gfx = module_mgr->get<GfxContext>();
+  primitives = module_mgr->get<PrimitiveBatcher>();
   pool = module_mgr->get<ThreadPool>();
   timer = module_mgr->get<TimerMgr>();
   tween = module_mgr->get<TweenMgr>();

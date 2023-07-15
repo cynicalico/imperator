@@ -2,25 +2,23 @@
 
 class Indev : public baphy::Application {
 public:
-  std::shared_ptr<baphy::Batcher> batcher{nullptr};
+  float theta{0.0f};
 
-  void initialize() override {
-    batcher = module_mgr->get<baphy::Batcher>();
-  }
+  void initialize() override {}
 
   void update(double dt) override {
     if (input->pressed("escape"))
       window->set_should_close(true);
+
+    theta += 90.0 * dt;
   }
 
   void draw() override {
-    gfx->clear(baphy::rgb("white"));
+    gfx->clear(baphy::rgb("black"));
 
-    batcher->tri(200, 200, 300, 300, 200, 300, baphy::rgb("red"));
-    batcher->tri(225, 250, 325, 350, 225, 350, baphy::rgb("lime"));
-
-    batcher->tri(200, 400, 300, 500, 200, 500, baphy::rgba("red", 128));
-    batcher->tri(225, 450, 325, 550, 225, 550, baphy::rgba("lime", 128));
+    primitives->tri_equilateral(window->w() / 2, window->h() / 4, window->h() / 2, 90, baphy::rgb("red"));
+    primitives->tri_equilateral(input->mouse_x(), input->mouse_y(), window->h() / 4, theta, baphy::rgba("blue", 128));
+    primitives->tri_equilateral(window->w() / 2, 3 * window->h() / 4, window->h() / 2, 270, baphy::rgb("lime"));
   }
 };
 

@@ -90,9 +90,9 @@ private:
   std::shared_ptr<Shader> line_shader_{nullptr};
   std::shared_ptr<Shader> point_shader_{nullptr};
 
-  std::unique_ptr<OBatchList> o_tri_batches_{nullptr};
-  std::unique_ptr<OBatchList> o_line_batches_{nullptr};
-  std::unique_ptr<OBatchList> o_point_batches_{nullptr};
+  std::unique_ptr<OBatchList> tri_batches_{nullptr};
+  std::unique_ptr<OBatchList> line_batches_{nullptr};
+  std::unique_ptr<OBatchList> point_batches_{nullptr};
 };
 
 } // namespace baphy
