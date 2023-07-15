@@ -3,6 +3,7 @@
 
 #include "baphy/util/enum_bitops.hpp"
 #include "glm/vec2.hpp"
+#include <filesystem>
 #include <string>
 
 namespace baphy {
@@ -18,7 +19,7 @@ enum class WindowFlags {
 //  decorated  = 1 << 7,
 };
 
-struct WindowOpenParams {
+struct InitializeParams {
   std::string title{"Baphy Window"};
 
   glm::ivec2 size{0, 0};
@@ -32,6 +33,8 @@ struct WindowOpenParams {
 
   bool win32_force_light_mode{false};
   bool win32_force_dark_mode{false};
+
+  std::filesystem::path debug_overlay_options_path{};
 };
 
 } // namespace baphy

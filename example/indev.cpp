@@ -1,5 +1,7 @@
 #include "baphy/baphy.hpp"
 
+const auto HERE = std::filesystem::path(__FILE__).parent_path();
+
 class Indev : public baphy::Application {
 public:
   float theta{0.0f};
@@ -23,8 +25,9 @@ public:
 };
 
 BAPHY_RUN(Indev,
-  .title = "Indev",
-  .size = {800, 600},
-  .monitor_num = 0,
-  .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync
+    .title = "Indev",
+    .size = {1280, 960},
+    .monitor_num = 0,
+    .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync,
+    .debug_overlay_options_path = HERE / "debug_options.json"
 )

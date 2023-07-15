@@ -1,0 +1,14 @@
+{
+  "log": {
+    "show": true,
+    "collapsed": false
+  },
+  "controls": {
+    "show": true,
+    "collapsed": true
+  },
+  "shader editor": {
+    "show": false,
+    "collapsed": true
+  }
+}

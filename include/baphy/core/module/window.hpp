@@ -23,7 +23,7 @@ public:
 
   GLFWwindow *handle();
 
-  WindowOpenParams open_params() const;
+  InitializeParams open_params() const;
 
   void make_context_current();
 
@@ -70,14 +70,14 @@ private:
   static std::once_flag initialize_glfw_;
 
   GLFWwindow *glfw_handle_{nullptr};
-  WindowOpenParams open_params_{};
+  InitializeParams open_params_{};
 
   bool no_more_polling_{false};
 
-  void open_(const WindowOpenParams &params);
+  void open_(const InitializeParams &params);
   GLFWmonitor *get_monitor_(int monitor_num);
-  void open_fullscreen_(const WindowOpenParams &params);
-  void open_windowed_(const WindowOpenParams &params);
+  void open_fullscreen_(const InitializeParams &params);
+  void open_windowed_(const InitializeParams &params);
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;

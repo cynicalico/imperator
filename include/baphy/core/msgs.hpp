@@ -16,7 +16,7 @@
 namespace baphy {
 
 struct EInitialize {
-  const WindowOpenParams window_open_params;
+  const InitializeParams params;
 };
 
 struct EShutdown {};

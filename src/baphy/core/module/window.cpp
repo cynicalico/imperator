@@ -25,7 +25,7 @@ GLFWwindow *Window::handle() {
   return glfw_handle_;
 }
 
-void Window::open_(const baphy::WindowOpenParams &params) {
+void Window::open_(const baphy::InitializeParams &params) {
   open_params_ = params;
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, params.backend_version.x);
@@ -61,7 +61,7 @@ void Window::open_(const baphy::WindowOpenParams &params) {
     glfwShowWindow(glfw_handle_);
 }
 
-WindowOpenParams Window::open_params() const {
+InitializeParams Window::open_params() const {
   return open_params_;
 }
 
@@ -273,7 +273,7 @@ GLFWmonitor *Window::get_monitor_(int monitor_num) {
   return monitors[monitor_num];
 }
 
-void Window::open_fullscreen_(const WindowOpenParams &params) {
+void Window::open_fullscreen_(const InitializeParams &params) {
 #if defined(BAPHY_PLATFORM_WINDOWS)
   GLFWmonitor *monitor = get_monitor_(params.monitor_num);
   const GLFWvidmode *mode = glfwGetVideoMode(monitor);
@@ -344,7 +344,7 @@ void Window::open_fullscreen_(const WindowOpenParams &params) {
 #endif
 }
 
-void Window::open_windowed_(const WindowOpenParams &params) {
+void Window::open_windowed_(const InitializeParams &params) {
   GLFWmonitor *monitor = get_monitor_(params.monitor_num);
   const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
@@ -396,7 +396,7 @@ void Window::e_initialize_(const baphy::EInitialize &e) {
     BAPHY_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
   });
 
-  open_(e.window_open_params);
+  open_(e.params);
 
   Module::e_initialize_(e);
 }

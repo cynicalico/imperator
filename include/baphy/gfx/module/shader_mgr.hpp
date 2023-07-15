@@ -21,6 +21,8 @@ public:
 
   std::shared_ptr<Shader> get(const std::string &name);
 
+  // Names must be unique, and a previously compiled shader will be returned if
+  // a shader with that name has already been compiled (rather than recompiling)
   std::shared_ptr<Shader> compile(const std::string &name, const ShaderSrc &src);
   std::shared_ptr<Shader> compile(const ShaderSrc &src);
 

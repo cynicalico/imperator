@@ -55,6 +55,12 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME json
+        GITHUB_REPOSITORY nlohmann/json
+        GIT_TAG 5d2754306d67d1e654a1a34e1d2e74439a9d53b3
+)
+
+CPMAddPackage(
         NAME pcg-cpp
         GITHUB_REPOSITORY imneme/pcg-cpp
         GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
@@ -158,6 +164,7 @@ target_link_libraries(baphy_thirdparty PUBLIC
         glfw
         glfw
         glm::glm
+        nlohmann_json::nlohmann_json
         range-v3::range-v3
         rapidcsv
         re2::re2

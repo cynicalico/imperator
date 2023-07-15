@@ -3,6 +3,8 @@
 #include "baphy/gfx/module/primitive_batcher.hpp"
 #include "baphy/util/memusage.hpp"
 #include "baphy/util/sops.hpp"
+#include "nlohmann/json.hpp"
+#include <fstream>
 #include <utility>
 
 namespace baphy {
@@ -147,6 +149,35 @@ void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
       {spdlog::level::critical, IM_COL32(244, 184, 228, 255)}
   });
 
+  // TODO: Make a function in io.hpp to get a std::optional<nlohmann::json>
+  std::ifstream ifs(e.params.debug_overlay_options_path);
+  if (ifs.is_open()) {
+    nlohmann::json j = nlohmann::json::parse(ifs);
+
+    if (j.contains("log")) {
+      if (j["log"].contains("show"))
+        log_.show = j["log"]["show"].get<bool>();
+      if (j["log"].contains("collapsed"))
+        log_.start_collapsed = j["log"]["collapsed"].get<bool>();
+    }
+    if (j.contains("controls")) {
+      if (j["controls"].contains("show"))
+        controls_.show = j["controls"]["show"].get<bool>();
+      if (j["controls"].contains("collapsed"))
+        controls_.start_collapsed = j["controls"]["collapsed"].get<bool>();
+    }
+    if (j.contains("shader editor")) {
+      if (j["shader editor"].contains("show"))
+        shader_editor_.show = j["shader editor"]["show"].get<bool>();
+      if (j["shader editor"].contains("collapsed"))
+        shader_editor_.start_collapsed = j["shader editor"]["collapsed"].get<bool>();
+    }
+
+  } else
+    BAPHY_LOG_WARN("Failed to open debug options: '{}'", e.params.debug_overlay_options_path.string());
+
+  ifs.close();
+
   Module::e_initialize_(e);
 }
 
@@ -224,7 +255,8 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   ImGui::PopStyleVar(5);
 
   if (controls_.show) {
-    ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+    if (controls_.start_collapsed)
+      ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
     ImGui::SetNextWindowPos({static_cast<float>(window->w()), 0}, ImGuiCond_Always, {1, 0});
     dear->begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize), [&] {
       dear->tab_bar("Control tabs"), [&] {
@@ -270,6 +302,8 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   }
 
   if (shader_editor_.show) {
+    if (shader_editor_.start_collapsed)
+      ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
     dear->begin("Shader Editor"), [&] {
       const auto items = shader_mgr->get_names();
       static int item_current_idx = -1;
@@ -303,7 +337,8 @@ void DebugOverlay::e_draw_(const EDraw &e) {
   }
 
   if (log_.show) {
-    ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
+    if (log_.start_collapsed)
+      ImGui::SetNextWindowCollapsed(true, ImGuiCond_Once);
     ImGui::SetNextWindowSize({static_cast<float>(window->w() / 2.0), static_cast<float>(window->h() / 4.0)}, ImGuiCond_Once);
     if (log_.docked)
       ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});

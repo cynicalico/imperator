@@ -40,6 +40,7 @@ private:
 
   struct {
     bool show{false};
+    bool start_collapsed{true};
 
     ImGuiTextBuffer buf;
     ImGuiTextFilter filter;
@@ -54,10 +55,12 @@ private:
 
   struct {
     bool show{false};
+    bool start_collapsed{true};
   } controls_{};
 
   struct {
     bool show{false};
+    bool start_collapsed{true};
 
     TextEditor te{};
   } shader_editor_{};

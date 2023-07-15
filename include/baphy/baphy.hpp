@@ -37,7 +37,7 @@
 #define BAPHY_RUN(a, ...)                                        \
   int main(int, char *[]) {                                      \
     auto e = std::make_unique<baphy::Engine>();                  \
-    e->run_application<a>(baphy::WindowOpenParams{__VA_ARGS__}); \
+    e->run_application<a>(baphy::InitializeParams{__VA_ARGS__}); \
   }
 
 #endif//BAPHY_NO_MACRO

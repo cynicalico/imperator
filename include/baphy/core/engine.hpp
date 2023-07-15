@@ -24,7 +24,7 @@ public:
 
   template<typename T>
   requires std::derived_from<T, Application>
-  void run_application(const WindowOpenParams &window_open_params);
+  void run_application(const InitializeParams &window_open_params);
 
 private:
   FrameCounter framecounter_{};
@@ -35,7 +35,7 @@ private:
 
 template<typename T>
 requires std::derived_from<T, Application>
-void Engine::run_application(const WindowOpenParams &window_open_params) {
+void Engine::run_application(const InitializeParams &window_open_params) {
   EventBus::presub_for_cache<ELogMsg>(EPI<DebugOverlay>::name);
 
   baphy::log_platform();
