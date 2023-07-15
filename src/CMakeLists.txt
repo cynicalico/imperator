@@ -26,6 +26,9 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/util/module/timer_mgr.cpp
         src/baphy/util/module/tween_mgr.cpp
 
+        src/baphy/util/noise/opensimplex.cpp
+        src/baphy/util/noise/perlin.cpp
+
         src/baphy/util/averagers.cpp
         src/baphy/util/helpers.cpp
         src/baphy/util/log.cpp

@@ -34,6 +34,9 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/util/module/timer_mgr.hpp
         include/baphy/util/module/tween_mgr.hpp
 
+        include/baphy/util/noise/opensimplex.hpp
+        include/baphy/util/noise/perlin.hpp
+
         include/baphy/util/averagers.hpp
         include/baphy/util/enum_bitops.hpp
         include/baphy/util/helpers.hpp
