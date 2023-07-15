@@ -4,13 +4,44 @@
 
 namespace baphy {
 
-void PrimitiveBatcher::tri(
-    float x0, float y0,
-    float x1, float y1,
-    float x2, float y2,
-    float rx, float ry, float angle,
-    const RGB &color
-) {
+void PrimitiveBatcher::rect(float x, float y, float w, float h, float rx, float ry, float angle, const RGB &color) {
+  auto cv = color.vec4();
+  std::initializer_list<float> data = {
+      x,     y,     z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x + w, y,     z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x + w, y + h, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x,     y,     z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x + w, y + h, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x,     y + h, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+  };
+
+  if (color.a < 255) t_primitive_batcher_->add_tri(data);
+  else               o_primitive_batcher_->add_tri(data);
+
+  z_ += 1.0f;
+}
+
+void PrimitiveBatcher::rect(float x, float y, float w, float h, float angle, const RGB &color) {
+  rect(x, y, w, h, x + (w / 2), y + (h / 2), angle, color);
+}
+
+void PrimitiveBatcher::rect(float x, float y, float w, float h, const RGB &color) {
+  rect(x, y, w, h, 0, 0, 0, color);
+}
+
+void PrimitiveBatcher::square(float x, float y, float side_l, float rx, float ry, float angle, const RGB &color) {
+  rect(x, y, side_l, side_l, rx, ry, angle, color);
+}
+
+void PrimitiveBatcher::square(float x, float y, float side_l, float angle, const RGB &color) {
+  rect(x, y, x + (side_l / 2), y + (side_l / 2), angle, color);
+}
+
+void PrimitiveBatcher::square(float x, float y, float side_l, const RGB &color) {
+  rect(x, y, side_l, side_l, 0, 0, 0, color);
+}
+
+void PrimitiveBatcher::tri(float x0, float y0, float x1, float y1, float x2, float y2, float rx, float ry, float angle, const RGB &color) {
   auto cv = color.vec4();
   std::initializer_list<float> data = {
       x0, y0, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
