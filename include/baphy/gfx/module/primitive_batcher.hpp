@@ -36,18 +36,19 @@ public:
 
   void point(float x, float y, const RGB &color);
 
-  void draw();
-
 private:
   float z_{1.0f};
 
   std::unique_ptr<OpaquePrimitiveBatcher> o_primitive_batcher_{nullptr};
   std::unique_ptr<TransPrimitiveBatcher> t_primitive_batcher_{nullptr};
 
+  void draw_();
+
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
 
   void e_draw_(const EDraw &e);
+  void e_flush_(const EFlush &e);
 };
 
 } // namespace baphy

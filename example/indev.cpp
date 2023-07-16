@@ -6,10 +6,11 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 class Indev : public baphy::Application {
 public:
   std::unique_ptr<baphy::Framebuffer> fb{nullptr};
+  bool first{true};
 
   void initialize() override {
     fb = baphy::FramebufferBuilder(*gfx, window->w(), window->h())
-      .renderbuffer(baphy::RBufFormat::rgba32f)
+      .texture(baphy::TexFormat::rgba32f)
       .renderbuffer(baphy::RBufFormat::d32f)
       .check_complete();
   }
@@ -19,13 +20,15 @@ public:
   }
 
   void draw() override {
-    gfx->clear(baphy::rgb("black"));
+    gfx->clear(baphy::rgb("red"));
 
     fb->bind();
-    gfx->clear(baphy::rgb("red"));
-    primitives->tri_equilateral(window->w() / 2, window->h() / 2, 100, baphy::rgb("lime"));
-    primitives->draw();
-    gfx->gl.Flush();
+    if (first) {
+      gfx->clear(baphy::rgb("black"));
+      first = false;
+    }
+    primitives->tri_equilateral(input->mouse_x(), input->mouse_y(), 100, baphy::rgb("lime"));
+    gfx->flush_draw_calls();
     fb->unbind();
 
     fb->copy_to_default_framebuffer();

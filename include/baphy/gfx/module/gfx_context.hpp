@@ -42,6 +42,9 @@ public:
 
   void depth_mask(bool enabled);
 
+  void flush_draw_calls();
+  void flush();
+
   glm::mat4 ortho_projection() const;
 
 private:

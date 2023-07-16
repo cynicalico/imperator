@@ -56,6 +56,14 @@ void GfxContext::depth_mask(bool enabled) {
   gl.DepthMask(enabled ? 1 : 0);
 }
 
+void GfxContext::flush_draw_calls() {
+  EventBus::send_nowait<EFlush>();
+}
+
+void GfxContext::flush() {
+  gl.Flush();
+}
+
 glm::mat4 GfxContext::ortho_projection() const {
   return glm::ortho(
       0.0f, static_cast<float>(window->w()),

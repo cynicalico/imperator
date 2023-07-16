@@ -34,6 +34,10 @@ struct EStartFrame {};
 
 struct EDraw {};
 
+struct EClear {};
+
+struct EFlush {};
+
 struct EEndFrame {};
 
 struct ELogMsg {

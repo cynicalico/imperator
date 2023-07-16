@@ -112,7 +112,7 @@ void PrimitiveBatcher::point(float x, float y, const RGB &color) {
   z_ += 1.0f;
 }
 
-void PrimitiveBatcher::draw() {
+void PrimitiveBatcher::draw_() {
   o_primitive_batcher_->draw(gfx->ortho_projection(), z_);
 
   gfx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha, BlendFunc::one);
@@ -134,6 +134,7 @@ void PrimitiveBatcher::e_initialize_(const baphy::EInitialize &e) {
   t_primitive_batcher_ = std::make_unique<TransPrimitiveBatcher>(*module_mgr);
 
   EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
+  EventBus::sub<EFlush>(module_name, [&](const auto &e) { e_flush_(e); });
 
   Module::e_initialize_(e);
 }
@@ -143,7 +144,11 @@ void PrimitiveBatcher::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void PrimitiveBatcher::e_draw_(const EDraw &e) {
-  draw();
+  draw_();
+}
+
+void PrimitiveBatcher::e_flush_(const EFlush &e) {
+  draw_();
 }
 
 } // namespace baphy
