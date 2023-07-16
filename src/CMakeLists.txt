@@ -9,6 +9,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/core/glfw_callbacks.cpp
 
         src/baphy/gfx/internal/gl/buffer.cpp
+        src/baphy/gfx/internal/gl/framebuffer.cpp
         src/baphy/gfx/internal/gl/shader.cpp
         src/baphy/gfx/internal/gl/vertex_array.cpp
 

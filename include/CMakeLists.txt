@@ -14,6 +14,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/core/prio_list.hpp
 
         include/baphy/gfx/internal/gl/buffer.hpp
+        include/baphy/gfx/internal/gl/framebuffer.hpp
         include/baphy/gfx/internal/gl/shader.hpp
         include/baphy/gfx/internal/gl/static_buffer.hpp
         include/baphy/gfx/internal/gl/vec_buffer.hpp

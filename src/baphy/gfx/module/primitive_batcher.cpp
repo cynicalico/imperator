@@ -112,6 +112,21 @@ void PrimitiveBatcher::point(float x, float y, const RGB &color) {
   z_ += 1.0f;
 }
 
+void PrimitiveBatcher::draw() {
+  o_primitive_batcher_->draw(gfx->ortho_projection(), z_);
+
+  gfx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha, BlendFunc::one);
+  gfx->enable(Capability::blend);
+  gfx->depth_mask(false);
+
+  t_primitive_batcher_->draw(gfx->ortho_projection(), z_);
+
+  gfx->depth_mask(true);
+  gfx->disable(Capability::blend);
+
+  z_ = 1.0f;
+}
+
 void PrimitiveBatcher::e_initialize_(const baphy::EInitialize &e) {
   gfx = module_mgr->get<GfxContext>();
 
@@ -128,18 +143,7 @@ void PrimitiveBatcher::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void PrimitiveBatcher::e_draw_(const EDraw &e) {
-  o_primitive_batcher_->draw(gfx->ortho_projection(), z_);
-
-  gfx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha, BlendFunc::one);
-  gfx->enable(Capability::blend);
-  gfx->depth_mask(false);
-
-  t_primitive_batcher_->draw(gfx->ortho_projection(), z_);
-
-  gfx->depth_mask(true);
-  gfx->disable(Capability::blend);
-
-  z_ = 1.0f;
+  draw();
 }
 
 } // namespace baphy

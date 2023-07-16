@@ -36,6 +36,8 @@ public:
 
   void point(float x, float y, const RGB &color);
 
+  void draw();
+
 private:
   float z_{1.0f};
 
