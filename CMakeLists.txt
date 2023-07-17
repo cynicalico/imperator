@@ -37,3 +37,7 @@ else ()
 endif (WIN32)
 
 add_subdirectory(example)
+
+if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/scratch)
+    add_subdirectory(scratch)
+endif ()

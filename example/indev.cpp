@@ -1,18 +1,16 @@
 #include "baphy/baphy.hpp"
-#include "baphy/gfx/internal/gl/framebuffer.hpp"
+#include "baphy/gfx/surface.hpp"
 
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
 
 class Indev : public baphy::Application {
 public:
-  std::unique_ptr<baphy::Framebuffer> fb{nullptr};
-  bool first{true};
+  std::shared_ptr<baphy::ShaderMgr> shaders{nullptr};
+  std::unique_ptr<baphy::Surface> surf{nullptr};
 
   void initialize() override {
-    fb = baphy::FramebufferBuilder(*gfx, window->w(), window->h())
-      .texture(baphy::TexFormat::rgba32f)
-      .renderbuffer(baphy::RBufFormat::d32f)
-      .check_complete();
+    shaders = module_mgr->get<baphy::ShaderMgr>();
+    surf = std::make_unique<baphy::Surface>(gfx, shaders, 150, 150);
   }
 
   void update(double dt) override {
@@ -22,16 +20,12 @@ public:
   void draw() override {
     gfx->clear(baphy::rgb("red"));
 
-    fb->bind();
-    if (first) {
-      gfx->clear(baphy::rgb("black"));
-      first = false;
-    }
-    primitives->tri_equilateral(input->mouse_x(), input->mouse_y(), 100, baphy::rgb("lime"));
-    gfx->flush_draw_calls();
-    fb->unbind();
+    surf->draw_on([&] {
+      gfx->clear(baphy::rgb("blue"));
+      primitives->tri_equilateral(75, 75, 50, baphy::rgb("lime"));
+    });
 
-    fb->copy_to_default_framebuffer();
+    surf->draw(input->mouse_x(), input->mouse_y());
   }
 };
 

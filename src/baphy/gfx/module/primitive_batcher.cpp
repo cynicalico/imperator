@@ -112,14 +112,14 @@ void PrimitiveBatcher::point(float x, float y, const RGB &color) {
   z_ += 1.0f;
 }
 
-void PrimitiveBatcher::draw_() {
-  o_primitive_batcher_->draw(gfx->ortho_projection(), z_);
+void PrimitiveBatcher::draw_(glm::mat4 projection) {
+  o_primitive_batcher_->draw(projection, z_);
 
   gfx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha, BlendFunc::one);
   gfx->enable(Capability::blend);
   gfx->depth_mask(false);
 
-  t_primitive_batcher_->draw(gfx->ortho_projection(), z_);
+  t_primitive_batcher_->draw(projection, z_);
 
   gfx->depth_mask(true);
   gfx->disable(Capability::blend);
@@ -144,11 +144,11 @@ void PrimitiveBatcher::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void PrimitiveBatcher::e_draw_(const EDraw &e) {
-  draw_();
+  draw_(gfx->ortho_projection());
 }
 
 void PrimitiveBatcher::e_flush_(const EFlush &e) {
-  draw_();
+  draw_(e.projection);
 }
 
 } // namespace baphy

@@ -42,7 +42,7 @@ private:
   std::unique_ptr<OpaquePrimitiveBatcher> o_primitive_batcher_{nullptr};
   std::unique_ptr<TransPrimitiveBatcher> t_primitive_batcher_{nullptr};
 
-  void draw_();
+  void draw_(glm::mat4 projection);
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;

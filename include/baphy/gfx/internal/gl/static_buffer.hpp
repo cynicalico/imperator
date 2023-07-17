@@ -7,9 +7,6 @@
 
 namespace baphy {
 
-template<typename T>
-concept Numeric = std::integral<T> || std::floating_point<T>;
-
 template<Numeric T = float>
 class StaticBuffer : public Buffer {
 public:
@@ -27,6 +24,8 @@ public:
 
   StaticBuffer(StaticBuffer &&other) noexcept;
   StaticBuffer &operator=(StaticBuffer &&other) noexcept;
+
+  std::size_t size() const;
 
   void write(
       const BufTarget &target,
@@ -46,6 +45,8 @@ public:
   void write_sub(std::size_t offset, const std::vector<T> &data);
 
 private:
+  std::size_t size_{0};
+
   BufTarget last_target{BufTarget::none};
   BufUsage last_usage{BufUsage::none};
 };
@@ -53,6 +54,11 @@ private:
 using FSBuffer = StaticBuffer<float>;
 using ISBuffer = StaticBuffer<int>;
 using USBuffer = StaticBuffer<unsigned int>;
+
+template<Numeric T>
+std::size_t StaticBuffer<T>::size() const {
+  return size_;
+}
 
 template<Numeric T>
 StaticBuffer<T>::StaticBuffer(
@@ -91,13 +97,15 @@ void StaticBuffer<T>::write(
   gl.BufferData(unwrap(target), sizeof(T) * data.size(), &data[0], unwrap(usage));
   unbind(target);
 
+  size_ = data.size();
+
   last_target = target;
   last_usage = usage;
 }
 
 template<Numeric T>
 void StaticBuffer<T>::write(const std::vector<T> &data) {
-  write(last_target, last_usage, 0, data);
+  write(last_target, last_usage, data);
 }
 
 template<Numeric T>

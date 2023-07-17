@@ -7,3 +7,5 @@ build/
 .cache/
 
 data/log/
+
+scratch/

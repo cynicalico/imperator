@@ -4,6 +4,7 @@
 #define GLFW_INCLUDE_NONE
 #include "baphy/core/msgs_types.hpp"
 #include "GLFW/glfw3.h"
+#include "glm/glm.hpp"
 #include "spdlog/common.h"
 #include <cstdint>
 #include <memory>
@@ -36,7 +37,9 @@ struct EDraw {};
 
 struct EClear {};
 
-struct EFlush {};
+struct EFlush {
+  glm::mat4 projection;
+};
 
 struct EEndFrame {};
 

@@ -21,6 +21,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/module/shader_mgr.cpp
 
         src/baphy/gfx/color.cpp
+        src/baphy/gfx/surface.cpp
 
         src/baphy/util/module/debug_overlay.cpp
         src/baphy/util/module/thread_pool.cpp

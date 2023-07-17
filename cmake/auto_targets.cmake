@@ -1,10 +1,10 @@
 # Check this directory for files and build them with baphy as a dependency
 
-function(build_executable SRC_FILENAME SRC_FILE_LIST)
+function(build_executable SRC_FILENAME SRC_FILE_LIST TYPE_STR)
     cmake_path(GET SRC_FILENAME STEM EXECUTABLE_NAME)
-    add_executable("example_${EXECUTABLE_NAME}" ${SRC_FILENAME})
-    target_link_libraries("example_${EXECUTABLE_NAME}" PUBLIC baphy)
-    target_compile_features("example_${EXECUTABLE_NAME}" PUBLIC cxx_std_23)
+    add_executable("${TYPE_STR}_${EXECUTABLE_NAME}" ${SRC_FILENAME})
+    target_link_libraries("${TYPE_STR}_${EXECUTABLE_NAME}" PUBLIC baphy)
+    target_compile_features("${TYPE_STR}_${EXECUTABLE_NAME}" PUBLIC cxx_std_23)
 endfunction()
 
 function(auto_targets BASE_DIR TYPE_STR)
@@ -16,7 +16,7 @@ function(auto_targets BASE_DIR TYPE_STR)
     foreach (arg IN LISTS SRC_FILES)
         message(STATUS ${arg})
         set(SRC_FILE_LIST ${SRC_FILE_LIST} ${arg})
-        build_executable(${arg} SRC_FILE_LIST)
+        build_executable(${arg} SRC_FILE_LIST ${TYPE_STR})
     endforeach ()
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 

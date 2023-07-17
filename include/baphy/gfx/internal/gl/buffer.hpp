@@ -2,6 +2,7 @@
 #define BAPHY_GFX_INTERNAL_GL_BUFFER_HPP
 
 #include "baphy/gfx/module/gfx_context.hpp"
+#include <concepts>
 #include <memory>
 
 namespace baphy {
@@ -36,6 +37,9 @@ enum class BufUsage {
   dynamic_read = GL_DYNAMIC_READ,
   dynamic_copy = GL_DYNAMIC_COPY,
 };
+
+template<typename T>
+concept Numeric = std::integral<T> || std::floating_point<T>;
 
 class Buffer {
 public:
