@@ -26,10 +26,10 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/module/gfx_context.hpp
         include/baphy/gfx/module/primitive_batcher.hpp
         include/baphy/gfx/module/shader_mgr.hpp
+        include/baphy/gfx/module/surface_mgr.hpp
 
         include/baphy/gfx/color.hpp
         include/baphy/gfx/gfx_enum_types.hpp
-        include/baphy/gfx/surface.hpp
 
         include/baphy/util/module/debug_overlay.hpp
         include/baphy/util/module/thread_pool.hpp

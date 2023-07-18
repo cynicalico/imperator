@@ -29,9 +29,13 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   window = module_mgr->get<Window>();
   gfx = module_mgr->get<GfxContext>();
   primitives = module_mgr->get<PrimitiveBatcher>();
+  surfaces = module_mgr->get<SurfaceMgr>();
   pool = module_mgr->get<ThreadPool>();
   timer = module_mgr->get<TimerMgr>();
   tween = module_mgr->get<TweenMgr>();
+
+  window_surf_ = surfaces->create(window->w(), window->h());
+  imgui_surf_ = surfaces->create(window->w(), window->h());
 
   Module::e_initialize_(e);
 }
@@ -53,11 +57,21 @@ void Application::e_start_frame_(const EStartFrame &e) {
 }
 
 void Application::e_draw_(const EDraw &e) {
-  draw();
+  gfx->clear(baphy::rgb(0x000000));
+
+  window_surf_->draw_on([&] { draw(); });
+  window_surf_->draw(0, 0);
 }
 
 void Application::e_end_frame_(const EEndFrame &e) {
-  dear->render();
+  imgui_surf_->draw_on([&] {
+    gfx->clear(baphy::rgba(0x00000000));
+    dear->render();
+  });
+  imgui_surf_->draw(0, 0);
+
+  EventBus::send_nowait<EFlushSurfaceDrawCalls>();
+  EventBus::send_nowait<EFlush>(gfx->ortho_projection());
 }
 
 } // namespace baphy

@@ -7,6 +7,7 @@
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/primitive_batcher.hpp"
+#include "baphy/gfx/module/surface_mgr.hpp"
 #include "baphy/util/module/thread_pool.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
 #include "baphy/util/module/tween_mgr.hpp"
@@ -20,6 +21,7 @@ public:
   std::shared_ptr<Window> window{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
   std::shared_ptr<PrimitiveBatcher> primitives{nullptr};
+  std::shared_ptr<SurfaceMgr> surfaces{nullptr};
   std::shared_ptr<ThreadPool> pool{nullptr};
   std::shared_ptr<TimerMgr> timer{nullptr};
   std::shared_ptr<TweenMgr> tween{nullptr};
@@ -30,6 +32,7 @@ public:
       EPI<Window>::name,
       EPI<GfxContext>::name,
       EPI<PrimitiveBatcher>::name,
+      EPI<SurfaceMgr>::name,
       EPI<ThreadPool>::name,
       EPI<TimerMgr>::name,
       EPI<TweenMgr>::name,
@@ -43,6 +46,9 @@ protected:
   virtual void draw();
 
 private:
+  std::shared_ptr<Surface> window_surf_{nullptr};
+  std::shared_ptr<Surface> imgui_surf_{nullptr};
+
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
 

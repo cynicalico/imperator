@@ -93,9 +93,11 @@ void StaticBuffer<T>::write(
     const BufUsage &usage,
     const std::vector<T> &data
 ) {
-  bind(target);
-  gl.BufferData(unwrap(target), sizeof(T) * data.size(), &data[0], unwrap(usage));
-  unbind(target);
+  if (!data.empty()) {
+    bind(target);
+    gl.BufferData(unwrap(target), sizeof(T) * data.size(), &data[0], unwrap(usage));
+    unbind(target);
+  }
 
   size_ = data.size();
 

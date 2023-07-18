@@ -37,6 +37,15 @@ struct EDraw {};
 
 struct EClear {};
 
+struct EPrimitivesReqZ {};
+struct EPrimitivesReqAndIncZ {};
+struct EPrimitivesRespZ { float z; };
+struct EPrimitivesReqStoreZ {};
+struct EPrimitivesRespStoreZ { float z; };
+struct EPrimitivesRestoreZ { float z; };
+
+struct EFlushSurfaceDrawCalls {};
+
 struct EFlush {
   glm::mat4 projection;
 };

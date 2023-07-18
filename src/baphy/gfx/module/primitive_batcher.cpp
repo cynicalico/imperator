@@ -133,7 +133,8 @@ void PrimitiveBatcher::e_initialize_(const baphy::EInitialize &e) {
   o_primitive_batcher_ = std::make_unique<OpaquePrimitiveBatcher>(*module_mgr);
   t_primitive_batcher_ = std::make_unique<TransPrimitiveBatcher>(*module_mgr);
 
-  EventBus::sub<EDraw>(module_name, {EPI<Application>::name}, [&](const auto &e) { e_draw_(e); });
+  EventBus::sub<EPrimitivesReqZ>(module_name, [&](const auto &e) { e_primitives_req_z_(e); });
+  EventBus::sub<EPrimitivesReqAndIncZ>(module_name, [&](const auto &e) { e_primitives_req_and_inc_z_(e); });
   EventBus::sub<EFlush>(module_name, [&](const auto &e) { e_flush_(e); });
 
   Module::e_initialize_(e);
@@ -143,8 +144,13 @@ void PrimitiveBatcher::e_shutdown_(const baphy::EShutdown &e) {
   Module::e_shutdown_(e);
 }
 
-void PrimitiveBatcher::e_draw_(const EDraw &e) {
-  draw_(gfx->ortho_projection());
+void PrimitiveBatcher::e_primitives_req_z_(const EPrimitivesReqZ &e) {
+  EventBus::send_nowait<EPrimitivesRespZ>(z_);
+}
+
+void PrimitiveBatcher::e_primitives_req_and_inc_z_(const EPrimitivesReqAndIncZ &e) {
+  EventBus::send_nowait<EPrimitivesRespZ>(z_);
+  z_ += 1.0f;
 }
 
 void PrimitiveBatcher::e_flush_(const EFlush &e) {

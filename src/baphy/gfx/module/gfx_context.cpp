@@ -56,10 +56,6 @@ void GfxContext::depth_mask(bool enabled) {
   gl.DepthMask(enabled ? 1 : 0);
 }
 
-void GfxContext::flush_draw_calls(glm::mat4 projection) {
-  EventBus::send_nowait<EFlush>(projection);
-}
-
 void GfxContext::flush() {
   gl.Flush();
 }

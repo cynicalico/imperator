@@ -47,7 +47,8 @@ private:
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
 
-  void e_draw_(const EDraw &e);
+  void e_primitives_req_z_(const EPrimitivesReqZ &e);
+  void e_primitives_req_and_inc_z_(const EPrimitivesReqAndIncZ &e);
   void e_flush_(const EFlush &e);
 };
 
