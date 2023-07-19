@@ -2,6 +2,7 @@
 
 #include "baphy/core/glfw_callbacks.hpp"
 #include "baphy/util/time.hpp"
+#include "range/v3/all.hpp"
 
 namespace baphy {
 
@@ -19,7 +20,7 @@ void InputMgr::bind(const std::string &name, const std::string &action) {
 }
 
 void InputMgr::remove_binding(const std::string &name, const std::string &action) {
-
+  // TODO
 }
 
 double InputMgr::mouse_x() const {
@@ -67,16 +68,40 @@ bool InputMgr::mouse_got_first_event() const {
 }
 
 bool InputMgr::pressed(const std::string &binding) {
-  return state_[binding].pressed && !state_[binding].last_pressed;
+  return ranges::any_of(bindings_[binding], [&](const auto &action) {
+    return state_[action].pressed && !state_[action].last_pressed;
+  });
 }
 
 bool InputMgr::released(const std::string &binding) {
-  return !state_[binding].pressed && state_[binding].last_pressed;
+  return ranges::any_of(bindings_[binding], [&](const auto &action) {
+    return !state_[action].pressed && state_[action].last_pressed;
+  });
 }
 
 bool InputMgr::down(const std::string &binding, double interval, double delay) {
   if (interval <= 0 && delay <= 0)
-    return state_[binding].pressed;
+    return ranges::any_of(bindings_[binding], [&](const auto &action) {
+      return state_[action].pressed;
+    });
+
+  else {
+    auto it = repeat_.find(binding);
+    if (it != repeat_.end())
+      return it->second.pressed;
+
+    for (const auto &action: bindings_[binding])
+      if (state_[action].pressed) {
+        repeat_[binding] = RepeatInfo {
+          .action = action,
+          .interval = interval,
+          .delay = delay,
+          .delay_stage = delay > 0
+        };
+
+        return delay <= 0;
+      }
+  }
 
   return false;
 }
@@ -280,6 +305,32 @@ void InputMgr::e_update_(const EUpdate &e) {
 
     state_[a.action].pressed = a.pressed;
     state_[a.action].time = a.time;
+  }
+
+  for (auto it = repeat_.begin(); it != repeat_.end(); ) {
+    auto &r = it->second;
+
+    if (!state_[r.action].pressed && state_[r.action].last_pressed) {
+      it = repeat_.erase(it);
+      continue;
+    }
+    r.pressed = false;
+
+    if (r.delay_stage) {
+      r.delay -= e.dt;
+      if (r.delay <= 0) {
+        r.delay_stage = false;
+        r.pressed = true;
+      }
+    } else {
+      r.acc += e.dt;
+      if (r.acc >= r.interval) {
+        r.acc -= r.interval;
+        r.pressed = true;
+      }
+    }
+
+    it++;
   }
 }
 

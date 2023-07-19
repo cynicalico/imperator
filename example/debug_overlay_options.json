@@ -1,4 +1,9 @@
 {
+  "general": {
+    "fps": false,
+    "mem": false,
+    "latency": false
+  },
   "log": {
     "show": false,
     "collapsed": true

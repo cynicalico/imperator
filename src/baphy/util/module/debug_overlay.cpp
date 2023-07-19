@@ -154,6 +154,14 @@ void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
   if (ifs.is_open()) {
     nlohmann::json j = nlohmann::json::parse(ifs);
 
+    if (j.contains("general")) {
+      if (j["general"].contains("fps"))
+        general_.show_fps = j["general"]["fps"].get<bool>();
+      if (j["general"].contains("mem"))
+        general_.show_mem = j["general"]["mem"].get<bool>();
+      if (j["general"].contains("latency"))
+        general_.show_latency = j["general"]["latency"].get<bool>();
+    }
     if (j.contains("log")) {
       if (j["log"].contains("show"))
         log_.show = j["log"]["show"].get<bool>();
@@ -209,50 +217,57 @@ void DebugOverlay::e_update_(const EUpdate &e) {
 void DebugOverlay::e_draw_(const EDraw &e) {
   EventBus::poll<ELogMsg>(module_name);
 
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0.0f, 0.0f});
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {2.0f, 2.0f});
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {2.0f, 2.0f});
-  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {2.0f, 2.0f});
+  if (general_.show_fps || general_.show_mem || general_.show_latency) {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0.0f, 0.0f});
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {2.0f, 2.0f});
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {2.0f, 2.0f});
+    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {2.0f, 2.0f});
 
-  ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
-  dear->begin(module_name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize), [&] {
-    if (ImGui::BeginPopupContextWindow()) {
-      ImGui::Checkbox("Log", &log_.show);
-      ImGui::Checkbox("Controls", &controls_.show);
-      ImGui::Checkbox("Shader Editor", &shader_editor_.show);
-      ImGui::EndPopup();
-    }
+    ImGui::SetNextWindowPos({0, 0}, ImGuiCond_Always);
+    dear->begin(module_name.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize), [&] {
+      if (ImGui::BeginPopupContextWindow()) {
+        ImGui::Checkbox("Log", &log_.show);
+        ImGui::Checkbox("Controls", &controls_.show);
+        ImGui::Checkbox("Shader Editor", &shader_editor_.show);
+        ImGui::EndPopup();
+      }
 
-    dear->text("FPS: {:.2f}{}", fps_, gfx->is_vsync() ? " (vsync)" : "");
-    dear->text("Mem: {:.2f} MB", memusage_mb());
+      if (general_.show_fps)
+        dear->text("FPS: {:.2f}{}", fps_, gfx->is_vsync() ? " (vsync)" : "");
 
-    auto dts_v = std::vector<double>{dts_.begin(), dts_.end()};
-    auto [dt_min, dt_max] = std::minmax_element(dts_v.begin(), dts_v.end());
+      if (general_.show_mem)
+        dear->text("Mem: {:.2f} MB", memusage_mb());
 
-    ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0, 0});
-    ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
-    ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 1);
-    ImPlot::PushStyleColor(ImPlotCol_Line, {0.0, 1.0, 0.0, 1.0});
-    ImPlot::PushStyleColor(ImPlotCol_Fill, {0.0, 1.0, 0.0, 1.0});
-    ImPlot::PushStyleColor(ImPlotCol_PlotBorder, {1.0, 1.0, 1.0, 1.0});
+      if (general_.show_latency) {
+        auto dts_v = std::vector<double>{dts_.begin(), dts_.end()};
+        auto [dt_min, dt_max] = std::minmax_element(dts_v.begin(), dts_v.end());
 
-    auto latency_w = static_cast<float>(floor(window->w() / 8.0));
-    auto latency_h = 40.0f;
-    if (ImPlot::BeginPlot("##FPS_History", {latency_w, latency_h}, ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs)) {
-      ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
-      ImPlot::SetupAxisLimits(ImAxis_X1, 0, dts_v.size(), ImPlotCond_Always);
-      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, *dt_max + (*dt_max * 0.1), ImPlotCond_Always);
-      ImPlot::PlotShaded("##History_Fill", &dts_v[0], dts_v.size(), -INFINITY);
-      ImPlot::PlotLine("##History", &dts_v[0], dts_v.size());
-      ImPlot::EndPlot();
-    }
+        ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0, 0});
+        ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+        ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 1);
+        ImPlot::PushStyleColor(ImPlotCol_Line, {0.0, 1.0, 0.0, 1.0});
+        ImPlot::PushStyleColor(ImPlotCol_Fill, {0.0, 1.0, 0.0, 1.0});
+        ImPlot::PushStyleColor(ImPlotCol_PlotBorder, {1.0, 1.0, 1.0, 1.0});
 
-    ImPlot::PopStyleColor(3);
-    ImPlot::PopStyleVar(3);
-  };
+        auto latency_w = static_cast<float>(floor(window->w() / 8.0));
+        auto latency_h = 40.0f;
+        if (ImPlot::BeginPlot("##FPS_History", {latency_w, latency_h}, ImPlotFlags_CanvasOnly | ImPlotFlags_NoInputs)) {
+          ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+          ImPlot::SetupAxisLimits(ImAxis_X1, 0, dts_v.size(), ImPlotCond_Always);
+          ImPlot::SetupAxisLimits(ImAxis_Y1, 0, *dt_max + (*dt_max * 0.1), ImPlotCond_Always);
+          ImPlot::PlotShaded("##History_Fill", &dts_v[0], dts_v.size(), -INFINITY);
+          ImPlot::PlotLine("##History", &dts_v[0], dts_v.size());
+          ImPlot::EndPlot();
+        }
 
-  ImGui::PopStyleVar(5);
+        ImPlot::PopStyleColor(3);
+        ImPlot::PopStyleVar(3);
+      }
+    };
+
+    ImGui::PopStyleVar(5);
+  }
 
   if (controls_.show) {
     if (controls_.start_collapsed)

@@ -39,6 +39,12 @@ private:
   std::deque<double> dts_{};
 
   struct {
+    bool show_fps{true};
+    bool show_mem{false};
+    bool show_latency{false};
+  } general_{};
+
+  struct {
     bool show{false};
     bool start_collapsed{true};
 

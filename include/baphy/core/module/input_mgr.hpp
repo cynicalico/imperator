@@ -54,7 +54,16 @@ private:
     bool last_pressed{false};
     std::uint64_t time{0};
   };
+  struct RepeatInfo {
+    std::string action{};
+    double interval{0};
+    double delay{0};
+    bool delay_stage{false};
+    double acc{0};
+    bool pressed{false};
+  };
   std::unordered_map<std::string, ActionInfo> state_{};
+  std::unordered_map<std::string, RepeatInfo> repeat_{};
   std::unordered_map<std::string, std::vector<std::string>> bindings_{};
 
   struct ActionQueueItem {

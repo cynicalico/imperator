@@ -38,6 +38,8 @@ public:
   void resume(const std::string &tag);
   void toggle(const std::string &tag);
 
+  bool is_paused(const std::string &tag);
+
   template<AfterFunc T>
   std::string after(const std::string &tag, double delay, T &&f);
 
