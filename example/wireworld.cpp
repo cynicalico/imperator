@@ -208,6 +208,16 @@ public:
 
     sim_timer = timer->every(0.1, [&] { ww.step(); });
     timer->pause(sim_timer);
+
+    debug->set_cmd_key("f10");
+    debug->set_cmd_callback("!ww", [&](const std::string &cmd) {
+      auto i = std::stod(cmd);
+      bool is_paused = timer->is_paused(sim_timer);
+      timer->cancel(sim_timer);
+      sim_timer = timer->every(i, [&] { ww.step(); });
+      if (is_paused)
+        timer->pause(sim_timer);
+    });
   }
 
   void update(double dt) override {

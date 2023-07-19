@@ -110,6 +110,14 @@ void DebugOverlay::log_draw(const char *title, bool *p_open) {
   };
 }
 
+void DebugOverlay::set_cmd_key(const std::string &binding) {
+  cmd_.binding = binding;
+}
+
+void DebugOverlay::set_cmd_callback(const std::string &prefix, std::function<void(std::string)> callback) {
+  cmd_.callbacks[prefix] = std::move(callback);
+}
+
 void DebugOverlay::update_window_state_() {
   window_tab_.x = window->x();
   window_tab_.y = window->y();
@@ -128,13 +136,16 @@ void DebugOverlay::update_gfx_state_() {
 
 void DebugOverlay::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<ELogMsg>(module_name, [&](const auto &e) { e_log_msg_(e); });
-  EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
+  EventBus::sub<EUpdate>(module_name, {EPI<InputMgr>::name}, [&](const auto &e) { e_update_(e); });
   EventBus::sub<EDraw>(module_name, {EPI<PrimitiveBatcher>::name}, [&](const auto &e) { e_draw_(e); });
 
   dear = module_mgr->get<DearImgui>();
+  input = module_mgr->get<InputMgr>();
   gfx = module_mgr->get<GfxContext>();
   shader_mgr = module_mgr->get<ShaderMgr>();
   window = module_mgr->get<Window>();
+
+  cmd_.buf.fill('\0');
 
   shader_editor_.te.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
   shader_editor_.te.SetPalette(TextEditor::GetDarkPalette());
@@ -212,6 +223,10 @@ void DebugOverlay::e_update_(const EUpdate &e) {
 
   update_window_state_();
   update_gfx_state_();
+
+  if (!cmd_.binding.empty())
+    if (input->pressed(cmd_.binding))
+      cmd_.show = true;
 }
 
 void DebugOverlay::e_draw_(const EDraw &e) {
@@ -358,6 +373,35 @@ void DebugOverlay::e_draw_(const EDraw &e) {
     if (log_.docked)
       ImGui::SetNextWindowPos({0, static_cast<float>(window->h())}, ImGuiCond_Always, {0, 1});
     log_draw("Log");
+  }
+
+  if (cmd_.show) {
+    static RE2 cmd_pat{R"((\S+)(?:[^\S\r\n](.+))?)"};
+    assert(cmd_pat.ok());
+
+    ImGui::SetNextWindowPos({0, 0});
+    ImGui::SetNextWindowSize({static_cast<float>(window->w()), 0.0f});
+    dear->begin("##cmd", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration), [&] {
+      ImGui::PushItemWidth(-1);
+      ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.0, 0.0, 0.0, 1.0});
+
+      ImGui::SetKeyboardFocusHere();
+      if (ImGui::InputText("##cmd_i", &cmd_.buf[0], cmd_.buf.size(), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        std::string cmd_s = fmt::format("{}", &cmd_.buf[0]);
+        std::string prefix, body;
+        if (RE2::FullMatch(cmd_s, cmd_pat, &prefix, &body)) {
+          auto it = cmd_.callbacks.find(prefix);
+          if (it != cmd_.callbacks.end())
+            it->second(body);
+        }
+        cmd_.buf.fill('\0');
+        cmd_.show = false;
+        input->force_update_state_(cmd_.binding);
+      }
+
+      ImGui::PopStyleColor();
+      ImGui::PopItemWidth();
+    };
   }
 }
 

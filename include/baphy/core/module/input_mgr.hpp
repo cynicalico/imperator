@@ -11,7 +11,9 @@ namespace baphy {
 
 class InputMgr : public Module<InputMgr> {
 public:
-  InputMgr();
+  std::shared_ptr<Window> window{nullptr};
+
+  InputMgr() : Module<InputMgr>({EPI<Window>::name}) {}
 
   ~InputMgr() override = default;
 
@@ -33,6 +35,8 @@ public:
   bool pressed(const std::string &binding);
   bool released(const std::string &binding);
   bool down(const std::string &binding, double interval = 0.0, double delay = 0.0);
+
+  void force_update_state_(const std::string &binding);
 
 private:
   struct {
@@ -67,7 +71,7 @@ private:
   std::unordered_map<std::string, std::vector<std::string>> bindings_{};
 
   struct ActionQueueItem {
-    std::string action{""};
+    std::string action;
     bool pressed{false};
     std::uint64_t time{0};
   };
@@ -75,6 +79,8 @@ private:
 
   std::string glfw_key_to_str_(int key);
   std::string glfw_button_to_str_(int button);
+  int str_to_glfw_key_(const std::string &str);
+  int str_to_glfw_button_(const std::string &str);
   const std::unordered_set<std::string> &all_glfw_actions_();
 
   void e_initialize_(const EInitialize &e) override;

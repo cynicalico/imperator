@@ -30,6 +30,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   gfx = module_mgr->get<GfxContext>();
   primitives = module_mgr->get<PrimitiveBatcher>();
   surfaces = module_mgr->get<SurfaceMgr>();
+  debug = module_mgr->get<DebugOverlay>();
   pool = module_mgr->get<ThreadPool>();
   timer = module_mgr->get<TimerMgr>();
   tween = module_mgr->get<TweenMgr>();

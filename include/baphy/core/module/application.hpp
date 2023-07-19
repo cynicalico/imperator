@@ -8,6 +8,7 @@
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/primitive_batcher.hpp"
 #include "baphy/gfx/module/surface_mgr.hpp"
+#include "baphy/util/module/debug_overlay.hpp"
 #include "baphy/util/module/thread_pool.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
 #include "baphy/util/module/tween_mgr.hpp"
@@ -22,6 +23,7 @@ public:
   std::shared_ptr<GfxContext> gfx{nullptr};
   std::shared_ptr<PrimitiveBatcher> primitives{nullptr};
   std::shared_ptr<SurfaceMgr> surfaces{nullptr};
+  std::shared_ptr<DebugOverlay> debug{nullptr};
   std::shared_ptr<ThreadPool> pool{nullptr};
   std::shared_ptr<TimerMgr> timer{nullptr};
   std::shared_ptr<TweenMgr> tween{nullptr};
@@ -33,6 +35,7 @@ public:
       EPI<GfxContext>::name,
       EPI<PrimitiveBatcher>::name,
       EPI<SurfaceMgr>::name,
+      EPI<DebugOverlay>::name,
       EPI<ThreadPool>::name,
       EPI<TimerMgr>::name,
       EPI<TweenMgr>::name,

@@ -2,6 +2,7 @@
 #define BAPHY_UTIL_MODULE_DEBUG_OVERLAY_HPP
 
 #include "baphy/core/module/dear_imgui.hpp"
+#include "baphy/core/module/input_mgr.hpp"
 #include "baphy/core/module/window.hpp"
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
@@ -15,12 +16,14 @@ namespace baphy {
 class DebugOverlay : public Module<DebugOverlay> {
 public:
   std::shared_ptr<DearImgui> dear{nullptr};
+  std::shared_ptr<InputMgr> input{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
   std::shared_ptr<ShaderMgr> shader_mgr{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
   DebugOverlay() : Module<DebugOverlay>({
       EPI<DearImgui>::name,
+      EPI<InputMgr>::name,
       EPI<GfxContext>::name,
       EPI<ShaderMgr>::name,
       EPI<Window>::name,
@@ -33,10 +36,21 @@ public:
 
   void log_draw(const char *title, bool *p_open = nullptr);
 
+  void set_cmd_key(const std::string &binding);
+  void set_cmd_callback(const std::string &prefix, std::function<void(std::string)> callback);
+
 private:
   double fps_{};
   std::deque<std::uint64_t> timestamps_{};
   std::deque<double> dts_{};
+
+  struct {
+    bool show{false};
+    std::string binding{};
+
+    std::array<char, 512> buf{};
+    std::unordered_map<std::string, std::function<void(std::string)>> callbacks{};
+  } cmd_{};
 
   struct {
     bool show_fps{true};
