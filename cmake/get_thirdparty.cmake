@@ -61,6 +61,12 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME nfd
+        GITHUB_REPOSITORY btzy/nativefiledialog-extended
+        GIT_TAG 800f58283fbc1f3950abd881357fb44c22f3f44e
+)
+
+CPMAddPackage(
         NAME pcg-cpp
         GITHUB_REPOSITORY imneme/pcg-cpp
         GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
@@ -164,6 +170,7 @@ target_link_libraries(baphy_thirdparty PUBLIC
         glfw
         glfw
         glm::glm
+        nfd
         nlohmann_json::nlohmann_json
         range-v3::range-v3
         rapidcsv
