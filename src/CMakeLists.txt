@@ -10,7 +10,9 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
 
         src/baphy/gfx/internal/gl/buffer.cpp
         src/baphy/gfx/internal/gl/framebuffer.cpp
+        src/baphy/gfx/internal/gl/renderbuffer.cpp
         src/baphy/gfx/internal/gl/shader.cpp
+        src/baphy/gfx/internal/gl/texture_unit.cpp
         src/baphy/gfx/internal/gl/vertex_array.cpp
 
         src/baphy/gfx/internal/opaque_primitive_batcher.cpp

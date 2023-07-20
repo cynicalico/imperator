@@ -15,8 +15,10 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
 
         include/baphy/gfx/internal/gl/buffer.hpp
         include/baphy/gfx/internal/gl/framebuffer.hpp
+        include/baphy/gfx/internal/gl/renderbuffer.hpp
         include/baphy/gfx/internal/gl/shader.hpp
         include/baphy/gfx/internal/gl/static_buffer.hpp
+        include/baphy/gfx/internal/gl/texture_unit.hpp
         include/baphy/gfx/internal/gl/vec_buffer.hpp
         include/baphy/gfx/internal/gl/vertex_array.hpp
 
