@@ -154,6 +154,8 @@ add_library(baphy_thirdparty STATIC
 
 if (MSVC)
     target_compile_definitions(baphy_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+else ()
+    set(NFD_PORTAL ON CACHE STRING "" FORCE)
 endif ()
 
 target_include_directories(baphy_thirdparty PUBLIC

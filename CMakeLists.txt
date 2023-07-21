@@ -36,6 +36,11 @@ else ()
     target_link_libraries(baphy PUBLIC X11::X11)
 endif (WIN32)
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(baphy PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
 add_subdirectory(example)
 
 if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/scratch)

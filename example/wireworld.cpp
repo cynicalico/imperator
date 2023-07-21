@@ -1,5 +1,7 @@
 #include "baphy/baphy.hpp"
 #include <array>
+#include <fstream>
+#include <vector>
 
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
 
@@ -15,12 +17,14 @@ enum class CellState {
 
 class WireWorldRYGB {
 public:
-  const static int rows{100}, cols{100};
+  const static int rows{903}, cols{601 - 33};
+//  const static int rows{10}, cols{10};
 
   WireWorldRYGB() {
     for (std::size_t r = 0; r < rows; ++r) {
       cells_[r] = std::array<CellState, cols>();
       prev_cells_[r] = std::array<CellState, cols>();
+      visited_cells_[r] = std::array<bool, cols>();
 
       cells_[r].fill(CellState::empty);
     }
@@ -30,92 +34,186 @@ public:
     for (std::size_t r = 0; r < rows; ++r)
       for (std::size_t c = 0; c < cols; ++c)
         set(r, c, CellState::empty);
+
+    clear_active_cells_();
   }
 
   void set(std::size_t r, std::size_t c, CellState s) {
-    if (r < rows && c < cols)
+    if (r < rows && c < cols) {
       cells_[r][c] = s;
+
+      if (s != CellState::empty && s != CellState::r_wire && s != CellState::y_wire && s != CellState::g_wire && s != CellState::b_wire)
+        add_active_cells_(r, c);
+    }
   }
 
   CellState get(std::size_t r, std::size_t c) {
     return (r < rows && c < cols) ? cells_[r][c] : CellState::empty;
   }
 
-  void step() {
-    for (std::size_t r = 0; r < rows; ++r)
-      for (std::size_t c = 0; c < cols; ++c)
-        prev_cells_[r][c] = cells_[r][c];
-
-    for (std::size_t r = 0; r < rows; ++r)
-      for (std::size_t c = 0; c < cols; ++c) {
-        switch (prev_cells_[r][c]) {
-          case CellState::empty: continue;
-          case CellState::r_wire: {
-            auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
-            if (xor_3(
-                ((r_n == 1 || r_n == 2) && (g_n >= 0 && g_n <= 7)) && (y_n + b_n == 0),
-                b_n == 1 && (r_n + y_n + g_n == 0),
-                y_n == 2 && (r_n + g_n + b_n == 0)
-            ))
-              cells_[r][c] = CellState::r_head;
-          }
-            break;
-          case CellState::y_wire: {
-            auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
-            if (
-                (((y_n == 1 || y_n == 2) && (b_n >= 0 && b_n <= 7)) && (r_n + g_n == 0)) ^
-                ((r_n == 1 || r_n == 2) && (y_n + g_n + b_n == 0))
-            )
-              cells_[r][c] = CellState::y_head;
-          }
-            break;
-          case CellState::g_wire: {
-            auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
-            if (xor_3(
-                ((g_n == 1 || g_n == 2) && (r_n >= 0 && r_n <= 7)) && (y_n + b_n == 0),
-                y_n == 1 && (r_n + g_n + b_n == 0),
-                b_n == 2 && (r_n + y_n + g_n == 0)
-            ))
-              cells_[r][c] = CellState::g_head;
-          }
-            break;
-          case CellState::b_wire: {
-            auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
-            if (
-                (((b_n == 1 || b_n == 2) && (y_n >= 0 && y_n <= 7)) && (r_n + g_n == 0)) ^
-                ((g_n == 1 || g_n == 2) && (r_n + y_n + b_n == 0))
-            )
-              cells_[r][c] = CellState::b_head;
-          }
-            break;
-          case CellState::r_head: cells_[r][c] = CellState::r_tail; break;
-          case CellState::y_head: cells_[r][c] = CellState::y_tail; break;
-          case CellState::g_head: cells_[r][c] = CellState::g_tail; break;
-          case CellState::b_head: cells_[r][c] = CellState::b_tail; break;
-          case CellState::r_tail: cells_[r][c] = CellState::r_wire; break;
-          case CellState::y_tail: cells_[r][c] = CellState::y_wire; break;
-          case CellState::g_tail: cells_[r][c] = CellState::g_wire; break;
-          case CellState::b_tail: cells_[r][c] = CellState::b_wire; break;
+  void step(std::size_t n = 1) {
+    for (std::size_t i = 0; i < n; ++i) {
+      for (std::size_t r = 0; r < rows; ++r)
+        for (std::size_t c = 0; c < cols; ++c) {
+          prev_cells_[r][c] = cells_[r][c];
+          visited_cells_[r][c] = false;
         }
+
+      switch_active_cells_();
+      clear_active_cells_();
+      for (const auto &[r, c] : prev_active_cells_()) {
+        adjust_cell_(r, c);
+
+        auto s = prev_cells_[r][c];
+        if (s == CellState::r_head || s == CellState::y_head || s == CellState::g_head || s == CellState::b_head)
+          for (const auto &o: offsets_) {
+            std::size_t o_r = r + o.x;
+            std::size_t o_c = c + o.y;
+            if (o_r >= rows || o_c >= cols) continue;
+            adjust_cell_(o_r, o_c);
+          }
       }
+    }
   }
 
 private:
+  constexpr static std::array<glm::ivec2, 8> offsets_{{
+      {-1, -1}, {-1, 0}, {-1, 1},
+      { 0, -1},          { 0, 1},
+      { 1, -1}, { 1, 0}, { 1, 1}
+  }};
+
+  std::vector<std::array<std::size_t, 2>> active_cells_1{};
+  std::vector<std::array<std::size_t, 2>> active_cells_2{};
+  std::size_t active_cells_n_{0};
+
+  inline std::vector<std::array<std::size_t, 2>>& prev_active_cells_() {
+    if (active_cells_n_ == 0)
+      return active_cells_2;
+    return active_cells_1;
+  }
+
+  void switch_active_cells_() {
+    active_cells_n_ = active_cells_n_ == 0 ? 1 : 0;
+  }
+
+  void clear_active_cells_() {
+    if (active_cells_n_ == 0)
+      active_cells_1.clear();
+    else
+      active_cells_2.clear();
+  }
+
+  void clear_prev_active_cells_() {
+    if (active_cells_n_ == 0)
+      active_cells_2.clear();
+    else
+      active_cells_1.clear();
+  }
+
+  void add_active_cells_(std::size_t r, std::size_t c) {
+    if (active_cells_n_ == 0)
+      active_cells_1.emplace_back(std::array<std::size_t, 2>{r, c});
+    else
+      active_cells_2.emplace_back(std::array<std::size_t, 2>{r, c});
+  }
+
+  void adjust_cell_(std::size_t r, std::size_t c) {
+    if (visited_cells_[r][c])
+      return;
+    visited_cells_[r][c] = true;
+
+    switch (prev_cells_[r][c]) {
+      case CellState::r_wire: {
+        auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
+        if (xor_3(
+            ((r_n == 1 || r_n == 2) && (g_n >= 0 && g_n <= 7)) && (y_n + b_n == 0),
+            b_n == 1 && (r_n + y_n + g_n == 0),
+            y_n == 2 && (r_n + g_n + b_n == 0)
+        )) {
+          cells_[r][c] = CellState::r_head;
+          add_active_cells_(r, c);
+        }
+      }
+        break;
+      case CellState::y_wire: {
+        auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
+        if (
+            (((y_n == 1 || y_n == 2) && (b_n >= 0 && b_n <= 7)) && (r_n + g_n == 0)) ^
+            ((r_n == 1 || r_n == 2) && (y_n + g_n + b_n == 0))
+        ) {
+          cells_[r][c] = CellState::y_head;
+          add_active_cells_(r, c);
+        }
+      }
+        break;
+      case CellState::g_wire: {
+        auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
+        if (xor_3(
+            ((g_n == 1 || g_n == 2) && (r_n >= 0 && r_n <= 7)) && (y_n + b_n == 0),
+            y_n == 1 && (r_n + g_n + b_n == 0),
+            b_n == 2 && (r_n + y_n + g_n == 0)
+        )) {
+          cells_[r][c] = CellState::g_head;
+          add_active_cells_(r, c);
+        }
+      }
+        break;
+      case CellState::b_wire: {
+        auto [r_n, y_n, g_n, b_n] = count_neighbor_heads(r, c);
+        if (
+            (((b_n == 1 || b_n == 2) && (y_n >= 0 && y_n <= 7)) && (r_n + g_n == 0)) ^
+            ((g_n == 1 || g_n == 2) && (r_n + y_n + b_n == 0))
+        ) {
+          cells_[r][c] = CellState::b_head;
+          add_active_cells_(r, c);
+        }
+      }
+        break;
+      case CellState::r_head:
+        cells_[r][c] = CellState::r_tail;
+        add_active_cells_(r, c);
+        break;
+      case CellState::y_head:
+        cells_[r][c] = CellState::y_tail;
+        add_active_cells_(r, c);
+        break;
+      case CellState::g_head:
+        cells_[r][c] = CellState::g_tail;
+        add_active_cells_(r, c);
+        break;
+      case CellState::b_head:
+        cells_[r][c] = CellState::b_tail;
+        add_active_cells_(r, c);
+        break;
+      case CellState::r_tail:
+        cells_[r][c] = CellState::r_wire;
+        break;
+      case CellState::y_tail:
+        cells_[r][c] = CellState::y_wire;
+        break;
+      case CellState::g_tail:
+        cells_[r][c] = CellState::g_wire;
+        break;
+      case CellState::b_tail:
+        cells_[r][c] = CellState::b_wire;
+        break;
+      case CellState::empty:
+        // Nothing
+        break;
+    }
+  }
+
   std::array<std::array<CellState, cols>, rows> cells_{};
   std::array<std::array<CellState, cols>, rows> prev_cells_{};
+  std::array<std::array<bool, cols>, rows> visited_cells_{};
 
   std::array<int, 4> count_neighbor_heads(std::size_t r, std::size_t c) {
-    static std::array<glm::ivec2, 8> offsets{{
-        {-1, -1}, {-1, 0}, {-1, 1},
-        { 0, -1},          { 0, 1},
-        { 1, -1}, { 1, 0}, { 1, 1}
-    }};
-
     int r_n{0};
     int y_n{0};
     int g_n{0};
     int b_n{0};
-    for (const auto &o: offsets) {
+    for (const auto &o: offsets_) {
       std::size_t o_r = r + o.x;
       std::size_t o_c = c + o.y;
       if (o_r >= rows || o_c >= cols) continue;
@@ -162,7 +260,7 @@ class WireWorldRYBGApp : public baphy::Application {
 public:
   WireWorldRYGB ww{};
 
-  int cell_size = 10;
+  int cell_size = 1;
   int x_off{};
   int y_off{};
 
@@ -206,7 +304,7 @@ public:
     x_off = std::floor((window->w() - (ww.cols * cell_size)) / 2.0f);
     y_off = std::floor((window->h() - (ww.rows * cell_size)) / 2.0f);
 
-    sim_timer = timer->every(0.1, [&] { ww.step(); });
+    sim_timer = timer->every(0, [&] { ww.step(100); });
     timer->pause(sim_timer);
 
     debug->set_cmd_key("f10");
@@ -214,10 +312,38 @@ public:
       auto i = std::stod(cmd);
       bool is_paused = timer->is_paused(sim_timer);
       timer->cancel(sim_timer);
-      sim_timer = timer->every(i, [&] { ww.step(); });
+      sim_timer = timer->every(i, [&] { ww.step(100); });
       if (is_paused)
         timer->pause(sim_timer);
     });
+
+    auto ifs = std::ifstream(HERE / "primes.wi");
+    if (ifs.is_open()) {
+      std::string line;
+      std::size_t r = 0;
+      while (r++ < 28)
+        std::getline(ifs, line);
+      r = 0;
+      std::size_t skip_c = 34;
+      while (std::getline(ifs, line)) {
+        for (const auto &[c, ch]: baphy::enumerate(line)) {
+          if (c < skip_c) continue;
+          if (ch == '#')
+            ww.set(r, c - skip_c, CellState::r_wire);
+          else if (ch == '@')
+            ww.set(r, c - skip_c, CellState::r_head);
+          else if (ch == '~')
+            ww.set(r, c - skip_c, CellState::r_tail);
+          if (c == 601)
+            break;
+        }
+        if (r++ == 902)
+          break;
+      }
+
+    } else
+      BAPHY_LOG_WARN("Failed to open wireworld computer");
+    ifs.close();
   }
 
   void update(double dt) override {
@@ -303,7 +429,10 @@ public:
       for (std::size_t c = 0; c < ww.cols; ++c) {
         int x = x_off + (c * cell_size);
         int y = y_off + (r * cell_size);
-        primitives->rect(x, y, cell_size, cell_size, cell_colors[ww.get(r, c)]);
+        if (cell_size > 1)
+            primitives->rect(x, y, cell_size, cell_size, cell_colors[ww.get(r, c)]);
+        else
+            primitives->point(x, y, cell_colors[ww.get(r, c)]);
       }
   }
 
@@ -341,7 +470,7 @@ public:
 
 BAPHY_RUN(WireWorldRYBGApp,
     .title = "WireWorldRYGB",
-    .size = {1100, 1100},
+    .size = {700, 1000},
     .flags = baphy::WindowFlags::centered,
     .debug_overlay_options_path = HERE / "debug_overlay_options.json"
 )
