@@ -13,7 +13,9 @@ public:
   void draw() override {
     gfx->clear(baphy::rgba(0x00000000));
 
+    primitives->tri_equilateral(100, 100, 100, baphy::rgba("red", 128));
     primitives->tri_equilateral(input->mouse_x(), input->mouse_y(), 100, baphy::rgb("yellow"));
+    primitives->tri_equilateral(400, 400, 100, baphy::rgba("green", 128));
   }
 };
 

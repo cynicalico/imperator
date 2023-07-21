@@ -22,9 +22,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/internal/gl/vec_buffer.hpp
         include/baphy/gfx/internal/gl/vertex_array.hpp
 
-        include/baphy/gfx/internal/opaque_primitive_batcher.hpp
-        include/baphy/gfx/internal/trans_primitive_batcher.hpp
-
+        include/baphy/gfx/module/batcher.hpp
         include/baphy/gfx/module/gfx_context.hpp
         include/baphy/gfx/module/primitive_batcher.hpp
         include/baphy/gfx/module/shader_mgr.hpp

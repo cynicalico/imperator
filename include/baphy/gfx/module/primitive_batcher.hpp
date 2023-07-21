@@ -2,16 +2,16 @@
 #define BAPHY_GFX_MODULE_PRIMTIIVE_BATCHER_HPP
 
 #include "baphy/core/module_mgr.hpp"
-#include "baphy/gfx/internal/opaque_primitive_batcher.hpp"
-#include "baphy/gfx/internal/trans_primitive_batcher.hpp"
+#include "baphy/gfx/module/batcher.hpp"
 
 namespace baphy {
 
 class PrimitiveBatcher : public Module<PrimitiveBatcher> {
 public:
   std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<Batcher> batcher{nullptr};
 
-  PrimitiveBatcher() : Module<PrimitiveBatcher>({EPI<GfxContext>::name, EPI<ShaderMgr>::name}) {}
+  PrimitiveBatcher() : Module<PrimitiveBatcher>({EPI<Batcher>::name}) {}
   ~PrimitiveBatcher() override = default;
 
   void rect(float x, float y, float w, float h, float rx, float ry, float angle, const RGB &color);
@@ -37,19 +37,8 @@ public:
   void point(float x, float y, const RGB &color);
 
 private:
-  float z_{1.0f};
-
-  std::unique_ptr<OpaquePrimitiveBatcher> o_primitive_batcher_{nullptr};
-  std::unique_ptr<TransPrimitiveBatcher> t_primitive_batcher_{nullptr};
-
-  void draw_(glm::mat4 projection);
-
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
-
-  void e_primitives_req_z_(const EPrimitivesReqZ &e);
-  void e_primitives_req_and_inc_z_(const EPrimitivesReqAndIncZ &e);
-  void e_flush_(const EFlush &e);
 };
 
 } // namespace baphy

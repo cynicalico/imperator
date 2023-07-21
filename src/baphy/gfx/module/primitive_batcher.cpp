@@ -1,24 +1,19 @@
 #include "baphy/gfx/module/primitive_batcher.hpp"
 
-#include "baphy/core/module/application.hpp"
-
 namespace baphy {
 
 void PrimitiveBatcher::rect(float x, float y, float w, float h, float rx, float ry, float angle, const RGB &color) {
   auto cv = color.vec4();
-  std::initializer_list<float> data = {
-      x,     y,     z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x + w, y,     z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x + w, y + h, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x,     y,     z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x + w, y + h, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x,     y + h, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+  auto data = std::initializer_list<float>{
+      x,     y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x + w, y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x + w, y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x,     y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x + w, y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x,     y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
   };
-
-  if (color.a < 255) t_primitive_batcher_->add_tri(data);
-  else               o_primitive_batcher_->add_tri(data);
-
-  z_ += 1.0f;
+  if (cv.a < 1.0f) batcher->t_add_tri(data);
+  else             batcher->o_add_tri(data);
 }
 
 void PrimitiveBatcher::rect(float x, float y, float w, float h, float angle, const RGB &color) {
@@ -43,16 +38,13 @@ void PrimitiveBatcher::square(float x, float y, float side_l, const RGB &color) 
 
 void PrimitiveBatcher::tri(float x0, float y0, float x1, float y1, float x2, float y2, float rx, float ry, float angle, const RGB &color) {
   auto cv = color.vec4();
-  std::initializer_list<float> data = {
-      x0, y0, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x1, y1, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x2, y2, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+  auto data = std::initializer_list<float>{
+      x0, y0, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x1, y1, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x2, y2, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
   };
-
-  if (color.a < 255) t_primitive_batcher_->add_tri(data);
-  else               o_primitive_batcher_->add_tri(data);
-
-  z_ += 1.0f;
+  if (cv.a < 1.0f) batcher->t_add_tri(data);
+  else             batcher->o_add_tri(data);
 }
 
 void PrimitiveBatcher::tri(float x0, float y0, float x1, float y1, float x2, float y2, float angle, const RGB &color) {
@@ -83,15 +75,12 @@ void PrimitiveBatcher::tri_equilateral(float cx, float cy, float radius, const R
 
 void PrimitiveBatcher::line(float x0, float y0, float x1, float y1, float rx, float ry, float angle, const RGB &color) {
   auto cv = color.vec4();
-  std::initializer_list<float> data = {
-      x0, y0, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
-      x1, y1, z_,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+  auto data = std::initializer_list<float>{
+      x0, y0, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
+      x1, y1, batcher->z,  cv.r, cv.g, cv.b, cv.a,  rx, ry, -glm::radians(angle),
   };
-
-  if (color.a < 255) t_primitive_batcher_->add_line(data);
-  else               o_primitive_batcher_->add_line(data);
-
-  z_ += 1.0f;
+  if (cv.a < 1.0f) batcher->t_add_line(data);
+  else             batcher->o_add_line(data);
 }
 
 void PrimitiveBatcher::line(float x0, float y0, float x1, float y1, float angle, const RGB &color) {
@@ -104,57 +93,20 @@ void PrimitiveBatcher::line(float x0, float y0, float x1, float y1, const RGB &c
 
 void PrimitiveBatcher::point(float x, float y, const RGB &color) {
   auto cv = color.vec4();
-  std::initializer_list<float> data = {x, y, z_,  cv.r, cv.g, cv.b, cv.a};
-
-  if (color.a < 255) t_primitive_batcher_->add_point(data);
-  else               o_primitive_batcher_->add_point(data);
-
-  z_ += 1.0f;
-}
-
-void PrimitiveBatcher::draw_(glm::mat4 projection) {
-  o_primitive_batcher_->draw(projection, z_);
-
-  gfx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha, BlendFunc::one);
-  gfx->enable(Capability::blend);
-  gfx->depth_mask(false);
-
-  t_primitive_batcher_->draw(projection, z_);
-
-  gfx->depth_mask(true);
-  gfx->disable(Capability::blend);
-
-  z_ = 1.0f;
+  auto data = std::initializer_list<float>{x, y, batcher->z,  cv.r, cv.g, cv.b, cv.a};
+  if (cv.a < 1.0f) batcher->t_add_point(data);
+  else             batcher->o_add_point(data);
 }
 
 void PrimitiveBatcher::e_initialize_(const baphy::EInitialize &e) {
   gfx = module_mgr->get<GfxContext>();
-
-  o_primitive_batcher_ = std::make_unique<OpaquePrimitiveBatcher>(*module_mgr);
-  t_primitive_batcher_ = std::make_unique<TransPrimitiveBatcher>(*module_mgr);
-
-  EventBus::sub<EPrimitivesReqZ>(module_name, [&](const auto &e) { e_primitives_req_z_(e); });
-  EventBus::sub<EPrimitivesReqAndIncZ>(module_name, [&](const auto &e) { e_primitives_req_and_inc_z_(e); });
-  EventBus::sub<EFlush>(module_name, [&](const auto &e) { e_flush_(e); });
+  batcher = module_mgr->get<Batcher>();
 
   Module::e_initialize_(e);
 }
 
 void PrimitiveBatcher::e_shutdown_(const baphy::EShutdown &e) {
   Module::e_shutdown_(e);
-}
-
-void PrimitiveBatcher::e_primitives_req_z_(const EPrimitivesReqZ &e) {
-  EventBus::send_nowait<EPrimitivesRespZ>(z_);
-}
-
-void PrimitiveBatcher::e_primitives_req_and_inc_z_(const EPrimitivesReqAndIncZ &e) {
-  EventBus::send_nowait<EPrimitivesRespZ>(z_);
-  z_ += 1.0f;
-}
-
-void PrimitiveBatcher::e_flush_(const EFlush &e) {
-  draw_(e.projection);
 }
 
 } // namespace baphy

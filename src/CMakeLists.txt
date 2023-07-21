@@ -15,9 +15,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/internal/gl/texture_unit.cpp
         src/baphy/gfx/internal/gl/vertex_array.cpp
 
-        src/baphy/gfx/internal/opaque_primitive_batcher.cpp
-        src/baphy/gfx/internal/trans_primitive_batcher.cpp
-
+        src/baphy/gfx/module/batcher.cpp
         src/baphy/gfx/module/gfx_context.cpp
         src/baphy/gfx/module/primitive_batcher.cpp
         src/baphy/gfx/module/shader_mgr.cpp
