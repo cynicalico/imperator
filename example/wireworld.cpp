@@ -317,7 +317,7 @@ public:
         timer->pause(sim_timer);
     });
 
-    auto ifs = std::ifstream(HERE / "primes.wi");
+    auto ifs = std::ifstream(HERE / "res" / "ww_progs" / "primes.wi");
     if (ifs.is_open()) {
       std::string line;
       std::size_t r = 0;

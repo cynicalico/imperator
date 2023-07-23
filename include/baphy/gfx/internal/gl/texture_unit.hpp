@@ -116,7 +116,7 @@ public:
   TextureUnit &operator=(const TextureUnit &) = delete;
 
   TextureUnit(TextureUnit &&other) noexcept;
-  TextureUnit &operator=(TextureUnit &&other);
+  TextureUnit &operator=(TextureUnit &&other) noexcept;
 
   void bind(int unit = 0);
   void unbind();

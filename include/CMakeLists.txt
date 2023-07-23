@@ -27,6 +27,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/module/primitive_batcher.hpp
         include/baphy/gfx/module/shader_mgr.hpp
         include/baphy/gfx/module/surface_mgr.hpp
+        include/baphy/gfx/module/texture_batcher.hpp
 
         include/baphy/gfx/color.hpp
         include/baphy/gfx/gfx_enum_types.hpp

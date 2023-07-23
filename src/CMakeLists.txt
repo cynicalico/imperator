@@ -20,6 +20,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/module/primitive_batcher.cpp
         src/baphy/gfx/module/shader_mgr.cpp
         src/baphy/gfx/module/surface_mgr.cpp
+        src/baphy/gfx/module/texture_batcher.cpp
 
         src/baphy/gfx/color.cpp
 

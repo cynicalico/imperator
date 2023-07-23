@@ -4,7 +4,14 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 
 class Indev : public baphy::Application {
 public:
-  void initialize() override {}
+  std::shared_ptr<baphy::Batcher> batcher{nullptr};
+  std::shared_ptr<baphy::Texture> tex{nullptr};
+
+  void initialize() override {
+    batcher = module_mgr->get<baphy::Batcher>();
+
+    tex = textures->load(HERE / "res" / "img" / "tile005.png", true);
+  }
 
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
@@ -13,9 +20,12 @@ public:
   void draw() override {
     gfx->clear(baphy::rgba(0x00000000));
 
-    primitives->tri_equilateral(100, 100, 100, baphy::rgba("red", 128));
-    primitives->tri_equilateral(input->mouse_x(), input->mouse_y(), 100, baphy::rgb("yellow"));
-    primitives->tri_equilateral(400, 400, 100, baphy::rgba("green", 128));
+    primitives->tri_equilateral(window->w() / 2, window->h() / 2, 100, 90, baphy::rgb("red"));
+
+    tex->draw(input->mouse_x(), input->mouse_y());
+    tex->draw(input->mouse_x() + 20, input->mouse_y());
+    tex->draw(input->mouse_x() + 40, input->mouse_y());
+    tex->draw(input->mouse_x() + 60, input->mouse_y());
   }
 };
 

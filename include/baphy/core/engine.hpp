@@ -11,6 +11,7 @@
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/shader_mgr.hpp"
 #include "baphy/gfx/module/surface_mgr.hpp"
+#include "baphy/gfx/module/texture_batcher.hpp"
 #include "baphy/util/module/debug_overlay.hpp"
 #include "baphy/util/module/thread_pool.hpp"
 #include "baphy/util/module/timer_mgr.hpp"
@@ -52,6 +53,7 @@ void Engine::run_application(const InitializeParams &window_open_params) {
   module_mgr_->create<GfxContext>();
   module_mgr_->create<ShaderMgr>();
   module_mgr_->create<SurfaceMgr>();
+  module_mgr_->create<TextureBatcher>();
 
   module_mgr_->create<DebugOverlay>();
   module_mgr_->create<ThreadPool>();

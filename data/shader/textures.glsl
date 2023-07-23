@@ -1,4 +1,4 @@
-#pragma name(fbos)
+#pragma name(textures)
 
 #pragma vertex
 

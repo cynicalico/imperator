@@ -81,7 +81,7 @@ TextureUnit::TextureUnit(TextureUnit &&other) noexcept
   other.fully_opaque = false;
 }
 
-TextureUnit &TextureUnit::operator=(TextureUnit &&other) {
+TextureUnit &TextureUnit::operator=(TextureUnit &&other) noexcept {
   if (this != &other) {
     del_id_();
 
