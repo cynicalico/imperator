@@ -164,7 +164,7 @@ DrawCall OTexBatch::get_draw_call(GLuint id) {
     gl.ActiveTexture(GL_TEXTURE0);
     gl.BindTexture(GL_TEXTURE_2D, id);
     vao_.draw_arrays(draw_mode_, count / draw_divisor_, first / draw_divisor_);
-//    gl.BindTexture(GL_TEXTURE_2D, 0);
+    gl.BindTexture(GL_TEXTURE_2D, 0);
   };
 }
 
@@ -240,7 +240,7 @@ DrawCall TTexBatch::get_draw_call(GLuint id) {
     shader_->uniform_mat4f("mvp", projection);
     shader_->uniform_1f("z_max", z_max);
 
-    gl.ActiveTexture(GL_TEXTURE0);
+//    gl.ActiveTexture(GL_TEXTURE0 + 1);
     gl.BindTexture(GL_TEXTURE_2D, id);
     vao_.draw_arrays(draw_mode_, count / draw_divisor_, first / draw_divisor_);
     gl.BindTexture(GL_TEXTURE_2D, 0);
@@ -357,21 +357,21 @@ void Batcher::check_get_draw_calls_(TBatchType t, GLuint id) {
       case TBatchType::point: new_draw_calls = t_point_batches_->get_draw_calls(); break;
       case TBatchType::tex:   new_draw_calls = t_tex_batches_->get_draw_calls(last_t_tex_id_); break;
     }
-    t_draw_calls_.insert(t_draw_calls_.begin(), new_draw_calls.begin(), new_draw_calls.end());
+    t_draw_calls_.insert(t_draw_calls_.end(), new_draw_calls.begin(), new_draw_calls.end());
   }
 }
 
 void Batcher::draw_(glm::mat4 projection) {
-  static auto do_draw_calls_ = [&](TBatchList &batch) {
+  auto do_draw_calls_ = [&](TBatchList &batch) {
     std::ranges::for_each(batch.get_draw_calls(), [&](auto fn) { fn(gfx->gl, projection, z); });
   };
 
-  static auto do_t_tex_draw_calls_ = [&](TTexBatchList &batch) {
-    std::ranges::for_each(batch.get_draw_calls(last_t_tex_id_), [&](auto fn) { fn(gfx->gl, projection, z); });
+  auto do_o_tex_draw_calls_ = [&](OTexBatchList &batch) {
+    std::ranges::for_each(batch.get_draw_calls(last_o_tex_id_), [&](auto fn) { fn(gfx->gl, projection, z); });
   };
 
-  static auto do_o_tex_draw_calls_ = [&](OTexBatchList &batch) {
-    std::ranges::for_each(batch.get_draw_calls(last_o_tex_id_), [&](auto fn) { fn(gfx->gl, projection, z); });
+  auto do_t_tex_draw_calls_ = [&](TTexBatchList &batch) {
+    std::ranges::for_each(batch.get_draw_calls(last_t_tex_id_), [&](auto fn) { fn(gfx->gl, projection, z); });
   };
 
   o_tri_batches_->draw(projection, z);
@@ -405,6 +405,9 @@ void Batcher::draw_(glm::mat4 projection) {
     case TBatchType::tex:   do_t_tex_draw_calls_(*t_tex_batches_); break;
   }
 
+  gfx->depth_mask(true);
+  gfx->disable(Capability::blend);
+
   t_tri_batches_->clear();
   t_line_batches_->clear();
   t_point_batches_->clear();
@@ -413,9 +416,6 @@ void Batcher::draw_(glm::mat4 projection) {
   last_batch_type_ = TBatchType::none;
   last_t_tex_id_ = 0;
   t_draw_calls_.clear();
-
-  gfx->depth_mask(true);
-  gfx->disable(Capability::blend);
 
   z = 1.0f;
 }
@@ -450,8 +450,6 @@ void Batcher::e_initialize_(const EInitialize &e) {
   t_point_batches_ = std::make_unique<TBatchList>(gfx, point_shader_, 7 * 1, "in_pos:3f in_color:4f", DrawMode::points, 7);
   t_tex_batches_ = std::make_unique<TTexBatchList>(gfx, tex_shader_, 12 * 6, "in_pos:3f in_color:4f in_tex_coords:2f in_trans:3f", DrawMode::triangles, 12);
 
-  EventBus::sub<EPrimitivesReqZ>(module_name, [&](const auto &e) { e_primitives_req_z_(e); });
-  EventBus::sub<EPrimitivesReqAndIncZ>(module_name, [&](const auto &e) { e_primitives_req_and_inc_z_(e); });
   EventBus::sub<EFlush>(module_name, [&](const auto &e) { e_flush_(e); });
 
   Module::e_initialize_(e);
@@ -459,15 +457,6 @@ void Batcher::e_initialize_(const EInitialize &e) {
 
 void Batcher::e_shutdown_(const EShutdown &e) {
   Module::e_shutdown_(e);
-}
-
-void Batcher::e_primitives_req_z_(const EPrimitivesReqZ &e) {
-  EventBus::send_nowait<EPrimitivesRespZ>(z);
-}
-
-void Batcher::e_primitives_req_and_inc_z_(const EPrimitivesReqAndIncZ &e) {
-  EventBus::send_nowait<EPrimitivesRespZ>(z);
-  z += 1.0f;
 }
 
 void Batcher::e_flush_(const EFlush &e) {

@@ -81,36 +81,27 @@ void Framebuffer::copy_to_default_framebuffer(GLint window_width, GLint window_h
   gl.BindFramebuffer(unwrap(FboTarget::draw), 0);
 }
 
-void Framebuffer::use_texture(const std::string &tex_name) {
-  // TODO: error check
-  tex_attachments_[tex_name]->bind();
+std::shared_ptr<Texture> Framebuffer::get_texture(const std::string &tex_name) {
+  return tex_attachments_[tex_name];
 }
 
 void Framebuffer::del_id_() {
   if (id != 0) {
-//    for (auto &p: tex_attachments_) {
-//      BAPHY_LOG_DEBUG("FBO/Deleting texture ({} / {})", p.second, id);
-//      gl.DeleteTextures(1, &p.second);
-//    }
     tex_attachments_.clear();
-//    for (auto &p: rbo_attachments_) {
-//      BAPHY_LOG_DEBUG("FBO/Deleting renderbuffer ({} / {})", p.second, id);
-//      gl.DeleteRenderbuffers(1, &p.second);
-//    }
     rbo_attachments_.clear();
     gl.DeleteFramebuffers(1, &id);
     BAPHY_LOG_DEBUG("DEL_ID({}): Framebuffer", id);
   }
 }
 
-FramebufferBuilder::FramebufferBuilder(GfxContext &gfx, GLsizei width, GLsizei height)
-    : gfx(gfx), gl(gfx.gl), width_(width), height_(height) {
+FramebufferBuilder::FramebufferBuilder(GfxContext &gfx, TextureBatcher &textures, GLsizei width, GLsizei height)
+    : gfx(gfx), textures(textures), gl(gfx.gl), width_(width), height_(height) {
   gen_id_();
   gl.BindFramebuffer(GL_FRAMEBUFFER, id_);
 }
 
 FramebufferBuilder &FramebufferBuilder::texture(const std::string &tag, TexFormat internalformat, bool retro) {
-  tex_attachments_[tag] = std::make_unique<TextureUnit>(gfx, internalformat, width_, height_, retro);
+  tex_attachments_[tag] = textures.create(internalformat, width_, height_, retro);
   gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_attachments_[tag]->id, 0);
 
   return *this;

@@ -4,13 +4,12 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 
 class Indev : public baphy::Application {
 public:
-  std::shared_ptr<baphy::Batcher> batcher{nullptr};
   std::shared_ptr<baphy::Texture> tex{nullptr};
+  std::shared_ptr<baphy::Surface> surf{nullptr};
 
   void initialize() override {
-    batcher = module_mgr->get<baphy::Batcher>();
-
     tex = textures->load(HERE / "res" / "img" / "tile005.png", true);
+    surf = surfaces->create(48 * 2, 48 * 2);
   }
 
   void update(double dt) override {
@@ -18,14 +17,16 @@ public:
   }
 
   void draw() override {
-    gfx->clear(baphy::rgba(0x00000000));
+    surf->draw_on([&]{
+      gfx->clear(baphy::rgb("green"));
+      primitives->tri_equilateral(50, 50, 20, 90, baphy::rgb("blue"));
+    });
 
-    primitives->tri_equilateral(window->w() / 2, window->h() / 2, 100, 90, baphy::rgb("red"));
+    gfx->clear(baphy::rgba(0xff0000ff));
 
-    tex->draw(input->mouse_x(), input->mouse_y());
-    tex->draw(input->mouse_x() + 20, input->mouse_y());
-    tex->draw(input->mouse_x() + 40, input->mouse_y());
-    tex->draw(input->mouse_x() + 60, input->mouse_y());
+    tex->draw((window->w() / 2) - (tex->width / 2), (window->h() / 2) - (tex->height / 2));
+    surf->draw(input->mouse_x(), input->mouse_y());
+    primitives->tri_equilateral(3 * window->w() / 4, 3 * window->h() / 4, 100, 90, baphy::rgba("yellow", 128));
   }
 };
 

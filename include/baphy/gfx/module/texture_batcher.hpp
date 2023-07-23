@@ -34,7 +34,6 @@ public:
   void draw(float x, float y);
 
 private:
-
   std::unique_ptr<TextureUnit> gl_obj_{nullptr};
 };
 
@@ -50,11 +49,13 @@ public:
 
   std::shared_ptr<Texture> load(const std::filesystem::path &path, bool retro = false);
 
+  std::shared_ptr<Texture> create(TexFormat format, GLuint width, GLuint height, bool retro = false);
+
 private:
   std::vector<std::shared_ptr<Texture>> textures_{};
 
   void draw_texture_(
-      GLuint id, bool fully_opaque,
+      GLuint id, bool fully_opaque, bool flipped,
       float x, float y, float w, float h,
       float tx, float ty, float tw, float th,
       float rx, float ry, float angle,

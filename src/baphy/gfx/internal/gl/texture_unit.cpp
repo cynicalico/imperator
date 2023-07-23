@@ -60,9 +60,12 @@ TextureUnit::TextureUnit(GfxContext &gfx, TexFormat format, GLuint width, GLuint
   gen_id_();
   bind();
 
-  gl.TexStorage2D(GL_TEXTURE_2D, 1, unwrap(format), width, height);
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, retro ? GL_NEAREST : GL_LINEAR);
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, retro ? GL_NEAREST : GL_LINEAR);
+  gl.TexStorage2D(GL_TEXTURE_2D, 1, unwrap(format), width, height);
+  gl.GenerateMipmap(GL_TEXTURE_2D);
+  fully_opaque = false;
+  flipped = true;
 
   BAPHY_LOG_DEBUG("Created texture ({}x{})", width, height);
 

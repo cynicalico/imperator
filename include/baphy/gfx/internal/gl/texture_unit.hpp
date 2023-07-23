@@ -107,6 +107,7 @@ public:
   GLuint width{0};
   GLuint height{0};
   bool fully_opaque{true};
+  bool flipped{false};
 
   TextureUnit(GfxContext &gfx, const std::filesystem::path &path, bool retro = false);
   TextureUnit(GfxContext &gfx, TexFormat format, GLuint width, GLuint height, bool retro = false);

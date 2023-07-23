@@ -7,7 +7,7 @@
 #undef RGB
 
 #include "glm/glm.hpp"
-#include "fmt/format.h"
+#include "fmt/core.h"
 
 #include <cstdint>
 #include <string>
@@ -245,17 +245,19 @@ private:
 
 } // namespace baphy
 
-template<> struct fmt::formatter<baphy::RGB>: formatter<string_view> {
-  template <typename FormatContext>
-  auto format(baphy::RGB c, FormatContext& ctx) const {
-    return fmt::format_to(ctx.out(), "RGB({:.2f},{:.2f},{:.2f},{:.2f})", c.r, c.g, c.b, c.a);
+template<> struct fmt::formatter<baphy::RGB> {
+  constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator { return ctx.begin(); }
+
+  auto format(const baphy::RGB &c, format_context& ctx) const -> format_context::iterator {
+    return fmt::format_to(ctx.out(), "RGB({},{},{},{})", c.r, c.g, c.b, c.a);
   }
 };
 
 template<> struct fmt::formatter<baphy::HSV>: formatter<string_view> {
-  template <typename FormatContext>
-  auto format(baphy::HSV c, FormatContext& ctx) const {
-    return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{:.2f})", c.h, c.s, c.v, c.a);
+  constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator { return ctx.begin(); }
+
+  auto format(const baphy::HSV &c, format_context& ctx) const -> format_context::iterator {
+    return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.v, c.a);
   }
 };
 

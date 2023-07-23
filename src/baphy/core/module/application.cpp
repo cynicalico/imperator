@@ -72,7 +72,6 @@ void Application::e_end_frame_(const EEndFrame &e) {
   });
   imgui_surf_->draw(0, 0);
 
-  EventBus::send_nowait<EFlushSurfaceDrawCalls>();
   EventBus::send_nowait<EFlush>(gfx->ortho_projection());
 }
 

@@ -1,7 +1,7 @@
 CPMAddPackage(
         NAME fmt
         GITHUB_REPOSITORY fmtlib/fmt
-        GIT_TAG 0de789cf294ae59582e7372884bbdb7158e90b8d
+        GIT_TAG a0b8a92e3d1532361c2f7feb63babc5c18d00ef2
 )
 
 CPMAddPackage(
@@ -22,9 +22,9 @@ CPMAddPackage(
         GITHUB_REPOSITORY glfw/glfw
         GIT_TAG 3.3.8
         OPTIONS
-        "GLFW_BUILD_TESTS OFF"
-        "GLFW_BUILD_EXAMPLES OFF"
-        "GLFW_BULID_DOCS OFF"
+            "GLFW_BUILD_TESTS OFF"
+            "GLFW_BUILD_EXAMPLES OFF"
+            "GLFW_BULID_DOCS OFF"
 )
 
 CPMAddPackage(
@@ -90,15 +90,15 @@ CPMAddPackage(
         GITHUB_REPOSITORY google/re2
         GIT_TAG 11073deb73b3d01018308863c0bcdfd0d51d3e70
         OPTIONS
-        "RE2_BUILD_TESTING OFF"
+            "RE2_BUILD_TESTING OFF"
 )
 
 CPMAddPackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
-        GIT_TAG 0ca574ae168820da0268b3ec7607ca7b33024d05
+        GIT_TAG 7e635fca68d014934b4af8a1cf874f63989352b7
         OPTIONS
-        "SPDLOG_FMT_EXTERNAL ON"
+            "SPDLOG_FMT_EXTERNAL ON"
 )
 
 CPMAddPackage(

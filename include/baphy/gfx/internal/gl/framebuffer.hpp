@@ -4,6 +4,7 @@
 #include "baphy/gfx/internal/gl/renderbuffer.hpp"
 #include "baphy/gfx/internal/gl/texture_unit.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
+#include "baphy/gfx/module/texture_batcher.hpp"
 #include <functional>
 #include <memory>
 #include <string>
@@ -43,10 +44,10 @@ public:
   void copy_to_default_framebuffer(bool retro = false);
   void copy_to_default_framebuffer(GLint window_width, GLint window_height, bool retro = false);
 
-  void use_texture(const std::string &tex_name);
+  std::shared_ptr<Texture> get_texture(const std::string &tex_name);
 
 private:
-  std::unordered_map<std::string, std::unique_ptr<TextureUnit>> tex_attachments_{};
+  std::unordered_map<std::string, std::shared_ptr<Texture>> tex_attachments_{};
   std::unordered_map<std::string, std::unique_ptr<Renderbuffer>> rbo_attachments_{};
 
   void del_id_();
@@ -55,9 +56,10 @@ private:
 class FramebufferBuilder {
 public:
   GfxContext &gfx;
+  TextureBatcher &textures;
   GladGLContext &gl;
 
-  FramebufferBuilder(GfxContext &gfx, GLsizei width, GLsizei height);
+  FramebufferBuilder(GfxContext &gfx, TextureBatcher &textures, GLsizei width, GLsizei height);
 
   ~FramebufferBuilder() = default;
 
@@ -79,7 +81,7 @@ private:
   GLuint id_{0};
   GLsizei width_{0}, height_{0};
 
-  std::unordered_map<std::string, std::unique_ptr<TextureUnit>> tex_attachments_{};
+  std::unordered_map<std::string, std::shared_ptr<Texture>> tex_attachments_{};
   std::unordered_map<std::string, std::unique_ptr<Renderbuffer>> rbo_attachments_{};
 
   void gen_id_();

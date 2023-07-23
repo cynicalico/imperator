@@ -43,11 +43,18 @@ Texture &Texture::operator=(Texture &&other) noexcept {
 }
 
 void Texture::draw(float x, float y) {
-  mgr->draw_texture_(id, fully_opaque, x, y, width, height, 0, 0, 1, 1, 0, 0, 0);
+  mgr->draw_texture_(id, fully_opaque, gl_obj_->flipped, x, y, width, height, 0, 0, 1, 1, 0, 0, 0);
 }
 
 std::shared_ptr<Texture> TextureBatcher::load(const std::filesystem::path &path, bool retro) {
   auto gl_obj = std::make_unique<TextureUnit>(*gfx, path, retro);
+  textures_.emplace_back(std::make_shared<Texture>(shared_from_this(), gl_obj));
+
+  return textures_.back();
+}
+
+std::shared_ptr<Texture> TextureBatcher::create(TexFormat format, GLuint width, GLuint height, bool retro) {
+  auto gl_obj = std::make_unique<TextureUnit>(*gfx, format, width, height, retro);
   textures_.emplace_back(std::make_shared<Texture>(shared_from_this(), gl_obj));
 
   return textures_.back();
@@ -65,7 +72,7 @@ void TextureBatcher::e_shutdown_(const EShutdown &e) {
 }
 
 void TextureBatcher::draw_texture_(
-    GLuint id, bool fully_opaque,
+    GLuint id, bool fully_opaque, bool flipped,
     float x, float y, float w, float h,
     float tx, float ty, float tw, float th,
     float rx, float ry, float angle,
@@ -73,12 +80,12 @@ void TextureBatcher::draw_texture_(
 ) {
   auto cv = color.vec4();
   std::initializer_list<float> data{
-      x,     y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx,      ty,       rx, ry, -glm::radians(angle),
-      x + w, y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx + tw, ty,       rx, ry, -glm::radians(angle),
-      x + w, y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx + tw, ty + th,  rx, ry, -glm::radians(angle),
-      x,     y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx,      ty,       rx, ry, -glm::radians(angle),
-      x + w, y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx + tw, ty + th,  rx, ry, -glm::radians(angle),
-      x,     y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx,      ty + th,  rx, ry, -glm::radians(angle),
+      x,     y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx,      flipped ? ty + th : ty,  rx, ry, -glm::radians(angle),
+      x + w, y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx + tw, flipped ? ty + th : ty,  rx, ry, -glm::radians(angle),
+      x + w, y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx + tw, flipped ? ty : ty + th,  rx, ry, -glm::radians(angle),
+      x,     y,     batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx,      flipped ? ty + th : ty,  rx, ry, -glm::radians(angle),
+      x + w, y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx + tw, flipped ? ty : ty + th,  rx, ry, -glm::radians(angle),
+      x,     y + h, batcher->z,  cv.r, cv.g, cv.b, cv.a,  tx,      flipped ? ty : ty + th,  rx, ry, -glm::radians(angle),
   };
   if (cv.a < 1.0f || !fully_opaque) batcher->t_add_tex(id, data);
   else                              batcher->o_add_tex(id, data);
