@@ -22,7 +22,7 @@ enum class WindowFlags {
 struct InitializeParams {
   std::string title{"Baphy Window"};
 
-  glm::ivec2 size{0, 0};
+  glm::ivec2 size{1, 1};
   glm::ivec2 pos{0, 0};
 
   int monitor_num{0};

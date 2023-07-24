@@ -12,6 +12,7 @@
 
 #include "baphy/gfx/color.hpp"
 #include "baphy/gfx/gfx_enum_types.hpp"
+#include "baphy/gfx/spritesheet.hpp"
 
 #include "baphy/util/module/thread_pool.hpp"
 

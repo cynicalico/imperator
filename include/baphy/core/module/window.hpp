@@ -49,6 +49,7 @@ public:
   void set_x(int x);
   void set_y(int y);
   void set_pos(int x, int y);
+  void center(int monitor_num = 0);
   void set_w(int w);
   void set_h(int h);
   void set_size(int w, int h);

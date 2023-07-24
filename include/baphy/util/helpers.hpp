@@ -5,6 +5,7 @@
 #include <optional>
 #include <ranges>
 #include <string>
+#include "nlohmann/json.hpp"
 
 namespace baphy {
 namespace internal {
@@ -101,6 +102,13 @@ template<typename T>
 std::optional<unsigned long long> stoull(const T &str, std::size_t *idx = nullptr, int base = 10) {
   unsigned long long (*f)(const T &, size_t *, int) = std::stoull;
   return internal::sto_opt<unsigned long long>(f, str, idx, base);
+}
+
+template<typename T>
+std::optional<T> json_get(const nlohmann::json &j, const std::string &key) {
+  if (!j.contains(key))
+    return std::nullopt;
+  return j[key].get<T>();
 }
 
 template<typename T>

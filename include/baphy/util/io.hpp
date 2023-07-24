@@ -2,6 +2,8 @@
 #define BAPHY_UTIL_IO_H
 
 #include <filesystem>
+#include <optional>
+#include "nlohmann/json.hpp"
 
 namespace baphy {
 
@@ -13,6 +15,8 @@ const std::filesystem::path DATA_FOLDER =
         .parent_path()
         .parent_path()
     / "data";
+
+std::optional<nlohmann::json> read_json(const std::filesystem::path &path);
 
 } // namespace baphy
 

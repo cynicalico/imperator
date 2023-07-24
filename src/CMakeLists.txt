@@ -23,6 +23,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/module/texture_batcher.cpp
 
         src/baphy/gfx/color.cpp
+        src/baphy/gfx/spritesheet.cpp
 
         src/baphy/util/module/debug_overlay.cpp
         src/baphy/util/module/thread_pool.cpp
@@ -34,6 +35,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
 
         src/baphy/util/averagers.cpp
         src/baphy/util/helpers.cpp
+        src/baphy/util/io.cpp
         src/baphy/util/log.cpp
         src/baphy/util/memusage.cpp
         src/baphy/util/platform.cpp

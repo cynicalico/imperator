@@ -31,6 +31,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
 
         include/baphy/gfx/color.hpp
         include/baphy/gfx/gfx_enum_types.hpp
+        include/baphy/gfx/spritesheet.hpp
 
         include/baphy/util/module/debug_overlay.hpp
         include/baphy/util/module/thread_pool.hpp

@@ -198,6 +198,21 @@ void Window::set_pos(int x, int y) {
   glfwSetWindowPos(glfw_handle_, x, y);
 }
 
+void Window::center(int monitor_num) {
+  // TODO: center on whatever monitor was opened on by default
+
+  GLFWmonitor *monitor = get_monitor_(monitor_num);
+  const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+  int base_x, base_y;
+  glfwGetMonitorPos(monitor, &base_x, &base_y);
+  glfwSetWindowPos(
+      glfw_handle_,
+      base_x + (mode->width - w()) / 2,
+      base_y + (mode->height - h()) / 2
+  );
+}
+
 void Window::set_w(int w) {
   glfwSetWindowSize(glfw_handle_, w, h());
 }
