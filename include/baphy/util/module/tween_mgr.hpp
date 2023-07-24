@@ -63,7 +63,7 @@ public:
 
   template <typename T> requires std::convertible_to<T, double>
   std::string begin(T start, T end, double duration, Easing easing, std::function<void(double)> &&f) {
-    return begin(base58(11), start, end, duration, easing, std::forward<std::function<void(double)>>(f));
+    return begin(rnd::base58(11), start, end, duration, easing, std::forward<std::function<void(double)>>(f));
   }
 
   template <typename T> requires std::convertible_to<T, double>

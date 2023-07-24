@@ -193,7 +193,7 @@ std::optional<ShaderSrc> ShaderSrc::parse(const std::filesystem::path &path) {
 }
 
 Shader::Shader(GfxContext &gfx, const ShaderSrc &src)
-    : gl(gfx.gl), name(src.name.value_or(base58(11))) {
+    : gl(gfx.gl), name(src.name.value_or(rnd::base58(11))) {
   gen_id_();
   compile_shader_src_(src);
 }

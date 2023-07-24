@@ -2,7 +2,7 @@
 
 #include "baphy/util/log.hpp"
 
-namespace baphy {
+namespace baphy::rnd {
 
 void gen_seed_vals() {
   pcg_extras::pcg128_t seed_vals[4];
@@ -94,4 +94,4 @@ std::string uuidv4() {
   return uuids::to_string(gen());
 }
 
-} // namespace baphy
+} // namespace baphy::rnd

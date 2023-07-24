@@ -121,7 +121,7 @@ private:
 template<JobFunc F>
 JobRes<std::invoke_result_t<F, WaitFunc>>
 ThreadPool::add_job(F &&f) {
-  return add_job(base58(11), std::forward<F>(f));
+  return add_job(rnd::base58(11), std::forward<F>(f));
 }
 
 template<JobFunc F>

@@ -127,7 +127,7 @@ private:
     std::int64_t count, count_acc{0};
 
     EveryTimer(const std::vector<double> &delay_opts, std::int64_t count, EveryFunc &&f)
-        : TimerI(choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<EveryFunc>(f)) {}
+        : TimerI(rnd::choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<EveryFunc>(f)) {}
 
     void update(double dt) override;
     void fire() override;
@@ -140,7 +140,7 @@ private:
     std::int64_t count, count_acc{0};
 
     UntilTimer(const std::vector<double> &delay_opts, std::int64_t count, UntilFunc &&f)
-        : TimerI(choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<UntilFunc>(f)) {}
+        : TimerI(rnd::choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<UntilFunc>(f)) {}
 
     void update(double dt) override;
     void fire() override;
@@ -162,7 +162,7 @@ std::string TimerMgr::after(const std::string &tag, double delay, T &&f) {
 
 template<AfterFunc T>
 std::string TimerMgr::after(double delay, T &&f) {
-  return after(base58(11), delay, std::forward<T>(f));
+  return after(rnd::base58(11), delay, std::forward<T>(f));
 }
 
 template<EveryFunc T>
@@ -188,22 +188,22 @@ std::string TimerMgr::every(const std::string &tag, double delay, T &&f) {
 
 template<EveryFunc T>
 std::string TimerMgr::every(const std::vector<double> &delay_opts, std::int64_t count, T &&f) {
-  return every(base58(11), delay_opts, count, std::forward<T>(f));
+  return every(rnd::base58(11), delay_opts, count, std::forward<T>(f));
 }
 
 template<EveryFunc T>
 std::string TimerMgr::every(double delay, std::int64_t count, T &&f) {
-  return every(base58(11), std::vector{delay}, count, std::forward<T>(f));
+  return every(rnd::base58(11), std::vector{delay}, count, std::forward<T>(f));
 }
 
 template<EveryFunc T>
 std::string TimerMgr::every(const std::vector<double> &delay_opts, T &&f) {
-  return every(base58(11), delay_opts, -1, std::forward<T>(f));
+  return every(rnd::base58(11), delay_opts, -1, std::forward<T>(f));
 }
 
 template<EveryFunc T>
 std::string TimerMgr::every(double delay, T &&f) {
-  return every(base58(11), std::vector{delay}, -1, std::forward<T>(f));
+  return every(rnd::base58(11), std::vector{delay}, -1, std::forward<T>(f));
 }
 
 template<UntilFunc T>
@@ -229,22 +229,22 @@ std::string TimerMgr::until(const std::string &tag, double delay, T &&f) {
 
 template<UntilFunc T>
 std::string TimerMgr::until(const std::vector<double> &delay_opts, std::int64_t count, T &&f) {
-  return until(base58(11), delay_opts, count, std::forward<T>(f));
+  return until(rnd::base58(11), delay_opts, count, std::forward<T>(f));
 }
 
 template<UntilFunc T>
 std::string TimerMgr::until(double delay, std::int64_t count, T &&f) {
-  return until(base58(11), std::vector{delay}, count, std::forward<T>(f));
+  return until(rnd::base58(11), std::vector{delay}, count, std::forward<T>(f));
 }
 
 template<UntilFunc T>
 std::string TimerMgr::until(const std::vector<double> &delay_opts, T &&f) {
-  return until(base58(11), delay_opts, -1, std::forward<T>(f));
+  return until(rnd::base58(11), delay_opts, -1, std::forward<T>(f));
 }
 
 template<UntilFunc T>
 std::string TimerMgr::until(double delay, T &&f) {
-  return until(base58(11), std::vector{delay}, -1, std::forward<T>(f));
+  return until(rnd::base58(11), std::vector{delay}, -1, std::forward<T>(f));
 }
 
 template<typename T>
@@ -275,7 +275,7 @@ void TimerMgr::EveryTimer<T>::fire() {
   f();
   should_fire = false;
   acc -= delay;
-  delay = choose(delay_opts);
+  delay = rnd::choose(delay_opts);
 
   count_acc++;
   if (count_acc == count)
@@ -298,7 +298,7 @@ void TimerMgr::UntilTimer<T>::fire() {
 
   should_fire = false;
   acc -= delay;
-  delay = choose(delay_opts);
+  delay = rnd::choose(delay_opts);
 
   count_acc++;
   if (count_acc == count)

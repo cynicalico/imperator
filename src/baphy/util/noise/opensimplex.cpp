@@ -5,7 +5,7 @@
 
 namespace baphy {
 
-std::int64_t opensimplex::seed_{get<std::int64_t>()};
+std::int64_t opensimplex::seed_{rnd::get<std::int64_t>()};
 
 void opensimplex::set_seed(std::int64_t seed) {
   seed_ = seed;
@@ -16,7 +16,7 @@ std::int64_t opensimplex::get_seed() {
 }
 
 void opensimplex::reseed() {
-  seed_ = get<std::int64_t>();
+  seed_ = rnd::get<std::int64_t>();
 }
 
 ////////////////////

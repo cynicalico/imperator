@@ -8,7 +8,7 @@
 #include <random>
 #include <ranges>
 
-namespace baphy {
+namespace baphy::rnd {
 namespace internal {
 
 pcg64 &generator();
@@ -153,6 +153,6 @@ std::string base58(std::size_t length);
 
 std::string uuidv4();
 
-} // namespace baphy
+} // namespace baphy::rnd
 
 #endif//BAPHY_UTIL_RND_H

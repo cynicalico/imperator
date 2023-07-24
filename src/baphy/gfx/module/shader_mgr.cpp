@@ -19,7 +19,7 @@ std::shared_ptr<Shader> ShaderMgr::compile(const std::string &name, const Shader
 }
 
 std::shared_ptr<Shader> ShaderMgr::compile(const ShaderSrc &src) {
-  return compile(src.name.value_or(base58(11)), src);
+  return compile(src.name.value_or(rnd::base58(11)), src);
 }
 
 void ShaderMgr::recompile(const std::string &name, const ShaderSrc &src) {
