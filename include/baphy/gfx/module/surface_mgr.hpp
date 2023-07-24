@@ -64,6 +64,8 @@ private:
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
+
+  void e_glfw_window_size_(const EGlfwWindowSize &e);
 };
 
 template<std::invocable T>

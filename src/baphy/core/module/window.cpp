@@ -479,7 +479,6 @@ LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM
   if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_)
     set_win32_titlebar_color_(hwnd);
 
-
   return CallWindowProc(window->win32_saved_WndProc_, hwnd, message, wParam, lParam);
 }
 #endif

@@ -78,11 +78,18 @@ void SurfaceMgr::e_initialize_(const EInitialize &e) {
   projection_stack_.emplace_back(gfx->ortho_projection());
   viewport_stack_.emplace_back(gfx->window->w(), gfx->window->h());
 
+  EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
+
   Module::e_initialize_(e);
 }
 
 void SurfaceMgr::e_shutdown_(const EShutdown &e) {
   Module::e_shutdown_(e);
+}
+
+void SurfaceMgr::e_glfw_window_size_(const EGlfwWindowSize &e) {
+  projection_stack_[0] = gfx->ortho_projection();
+  viewport_stack_[0] = {e.width, e.height};
 }
 
 } // namespace baphy

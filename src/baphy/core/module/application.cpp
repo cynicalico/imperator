@@ -23,6 +23,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EStartFrame>(module_name, {EPI<Window>::name}, [&](const auto &e) { e_start_frame_(e); });
   EventBus::sub<EDraw>(module_name, [&](const auto &e) { e_draw_(e); });
   EventBus::sub<EEndFrame>(module_name, [&](const auto &e) { e_end_frame_(e); });
+  EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
 
   dear = module_mgr->get<DearImgui>();
   input = module_mgr->get<InputMgr>();
@@ -73,6 +74,11 @@ void Application::e_end_frame_(const EEndFrame &e) {
   imgui_surf_->draw(0, 0);
 
   EventBus::send_nowait<EFlush>(gfx->ortho_projection());
+}
+
+void Application::e_glfw_window_size_(const EGlfwWindowSize &e) {
+  window_surf_ = surfaces->create(e.width, e.height);
+  imgui_surf_ = surfaces->create(e.width, e.height);
 }
 
 } // namespace baphy

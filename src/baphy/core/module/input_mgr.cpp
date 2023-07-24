@@ -62,6 +62,18 @@ bool InputMgr::mouse_got_first_event() const {
   return mouse_info_.got_first_event;
 }
 
+void InputMgr::show_cursor() {
+  glfwSetInputMode(window->handle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void InputMgr::hide_cursor() {
+  glfwSetInputMode(window->handle(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void InputMgr::lock_cursor() {
+  glfwSetInputMode(window->handle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
 bool InputMgr::pressed(const std::string &binding) {
   return ranges::any_of(bindings_[binding], [&](const auto &action) {
     return state_[action].pressed && !state_[action].last_pressed;

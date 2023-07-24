@@ -178,24 +178,11 @@ void GfxContext::e_initialize_(const baphy::EInitialize &e) {
   gl.DebugMessageCallback(gl_message_callback_, nullptr);
 #endif
 
-  gl.Enable(GL_BLEND);
-  gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  gl.Enable(GL_DEPTH_TEST);
-
-  gl.DepthMask(GL_TRUE);
-
-  EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
-
   Module::e_initialize_(e);
 }
 
 void GfxContext::e_shutdown_(const baphy::EShutdown &e) {
   Module::e_shutdown_(e);
-}
-
-void GfxContext::e_glfw_window_size_(const EGlfwWindowSize &e) {
-  gl.Viewport(0, 0, e.width, e.height);
 }
 
 void GfxContext::gl_message_callback_(

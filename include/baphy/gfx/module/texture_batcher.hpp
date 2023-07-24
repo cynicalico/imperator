@@ -19,9 +19,6 @@ public:
   std::shared_ptr<TextureBatcher> mgr{nullptr};
 
   GLuint id;
-  GLuint width{0};
-  GLuint height{0};
-  bool fully_opaque{true};
 
   Texture(std::shared_ptr<TextureBatcher> mgr, std::unique_ptr<TextureUnit> &gl_obj);
 
@@ -31,10 +28,22 @@ public:
   Texture(Texture &&other) noexcept;
   Texture &operator=(Texture &&other) noexcept;
 
-  void draw(float x, float y);
+  GLsizei w() const;
+  GLsizei h() const;
+
+  void draw(float x, float y, float w, float h, float tx, float ty, float tw, float th, float rx, float ry, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, float w, float h, float tx, float ty, float tw, float th, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, float w, float h, float tx, float ty, float tw, float th, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, float w, float h, float rx, float ry, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, float w, float h, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, float w, float h, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(float x, float y, const baphy::RGB &color = baphy::rgb("white"));
 
 private:
   std::unique_ptr<TextureUnit> gl_obj_{nullptr};
+  float px_w{};
+  float px_h{};
 };
 
 class TextureBatcher : public Module<TextureBatcher>, public std::enable_shared_from_this<TextureBatcher> {
@@ -58,8 +67,9 @@ private:
       GLuint id, bool fully_opaque, bool flipped,
       float x, float y, float w, float h,
       float tx, float ty, float tw, float th,
+      float x_px_unit, float y_px_unit,
       float rx, float ry, float angle,
-      const baphy::RGB &color = baphy::rgb("white")
+      const baphy::RGB &color
   );
 
   void e_initialize_(const EInitialize &e) override;

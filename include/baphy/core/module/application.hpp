@@ -63,6 +63,8 @@ private:
   void e_start_frame_(const EStartFrame &e);
   void e_draw_(const EDraw &e);
   void e_end_frame_(const EEndFrame &e);
+
+  void e_glfw_window_size_(const EGlfwWindowSize &e);
 };
 
 } // namespace baphy

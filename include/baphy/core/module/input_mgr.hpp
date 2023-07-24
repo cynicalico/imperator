@@ -32,6 +32,10 @@ public:
   bool mouse_entered() const;
   bool mouse_got_first_event() const;
 
+  void show_cursor();
+  void hide_cursor();
+  void lock_cursor();
+
   bool pressed(const std::string &binding);
   bool released(const std::string &binding);
   bool down(const std::string &binding, double interval = 0.0, double delay = 0.0);

@@ -104,13 +104,13 @@ public:
   GladGLContext &gl;
 
   GLuint id{0};
-  GLuint width{0};
-  GLuint height{0};
+  GLsizei w{0};
+  GLsizei h{0};
   bool fully_opaque{true};
   bool flipped{false};
 
   TextureUnit(GfxContext &gfx, const std::filesystem::path &path, bool retro = false);
-  TextureUnit(GfxContext &gfx, TexFormat format, GLuint width, GLuint height, bool retro = false);
+  TextureUnit(GfxContext &gfx, TexFormat format, GLsizei w, GLsizei h, bool retro = false);
   ~TextureUnit();
 
   TextureUnit(const TextureUnit &) = delete;

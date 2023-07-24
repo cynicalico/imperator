@@ -15,13 +15,10 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, retro ? GL_NEAREST : GL_LINEAR);
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, retro ? GL_NEAREST : GL_LINEAR);
 
-  int w, h, comp;
+  int comp;
   auto bytes = stbi_load(path.string().c_str(), &w, &h, &comp, 0);
 
   if (bytes) {
-    width = w;
-    height = h;
-
     GLenum format = GL_NONE;
     if (comp == 3)
       format = GL_RGB;
@@ -34,7 +31,7 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
       gl.TexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, bytes);
       gl.GenerateMipmap(GL_TEXTURE_2D);
 
-      BAPHY_LOG_DEBUG("Loaded texture '{}' ({}x{})", path.string(), width, height);
+      BAPHY_LOG_DEBUG("Loaded texture '{}' ({}x{})", path.string(), w, h);
     }
 
     if (comp == 4) {
@@ -56,18 +53,18 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
   unbind();
 }
 
-TextureUnit::TextureUnit(GfxContext &gfx, TexFormat format, GLuint width, GLuint height, bool retro) : gl(gfx.gl), width(width), height(height) {
+TextureUnit::TextureUnit(GfxContext &gfx, TexFormat format, GLsizei w, GLsizei h, bool retro) : gl(gfx.gl), w(w), h(h) {
   gen_id_();
   bind();
 
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, retro ? GL_NEAREST : GL_LINEAR);
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, retro ? GL_NEAREST : GL_LINEAR);
-  gl.TexStorage2D(GL_TEXTURE_2D, 1, unwrap(format), width, height);
+  gl.TexStorage2D(GL_TEXTURE_2D, 1, unwrap(format), w, h);
   gl.GenerateMipmap(GL_TEXTURE_2D);
   fully_opaque = false;
   flipped = true;
 
-  BAPHY_LOG_DEBUG("Created texture ({}x{})", width, height);
+  BAPHY_LOG_DEBUG("Created texture ({}x{})", w, h);
 
   unbind();
 }
@@ -77,10 +74,10 @@ TextureUnit::~TextureUnit() {
 }
 
 TextureUnit::TextureUnit(TextureUnit &&other) noexcept
-    : gl(other.gl), id(other.id), width(other.width), height(other.height), fully_opaque(other.fully_opaque) {
+    : gl(other.gl), id(other.id), w(other.w), h(other.h), fully_opaque(other.fully_opaque) {
   other.id = 0;
-  other.width = 0;
-  other.height = 0;
+  other.w = 0;
+  other.h = 0;
   other.fully_opaque = false;
 }
 
@@ -90,13 +87,13 @@ TextureUnit &TextureUnit::operator=(TextureUnit &&other) noexcept {
 
     gl = other.gl;
     id = other.id;
-    width = other.width;
-    height = other.height;
+    w = other.w;
+    h = other.h;
     fully_opaque = other.fully_opaque;
 
     other.id = 0;
-    other.width = 0;
-    other.height = 0;
+    other.w = 0;
+    other.h = 0;
     other.fully_opaque = false;
   }
   return *this;

@@ -5,34 +5,39 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 class Indev : public baphy::Application {
 public:
   std::shared_ptr<baphy::Texture> tex{nullptr};
-  std::shared_ptr<baphy::Surface> surf{nullptr};
+  int tx{0};
+  int ty{0};
+  float theta{0.0f};
 
   void initialize() override {
-    tex = textures->load(HERE / "res" / "img" / "tile005.png", true);
-    surf = surfaces->create(48 * 2, 48 * 2);
+    input->hide_cursor();
+
+    tex = textures->load(HERE / "res" / "img" / "fruits.png", true);
   }
 
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
+
+    if (input->pressed("mb_left")) {
+      tx = baphy::get<int>(5);
+      ty = baphy::get<int>(5);
+    }
+
+    theta += dt * 90.0f;
   }
 
   void draw() override {
-    surf->draw_on([&]{
-      gfx->clear(baphy::rgb("green"));
-      primitives->tri_equilateral(50, 50, 20, 90, baphy::rgb("blue"));
-    });
+    gfx->clear(baphy::rgb("black"));
 
-    gfx->clear(baphy::rgba(0xff0000ff));
-
-    tex->draw((window->w() / 2) - (tex->width / 2), (window->h() / 2) - (tex->height / 2));
-    surf->draw(input->mouse_x(), input->mouse_y());
-    primitives->tri_equilateral(3 * window->w() / 4, 3 * window->h() / 4, 100, 90, baphy::rgba("yellow", 128));
+    float w = 16 * 8;
+    float h = 16 * 8;
+    tex->draw(input->mouse_x() - w, input->mouse_y() - h, w, h, tx * 16, ty * 16, 16, 16, theta);
   }
 };
 
 BAPHY_RUN(Indev,
     .title = "Indev",
-    .size = {500, 500},
+    .size = {1280, 720},
     .monitor_num = 0,
     .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync,
     .debug_overlay_options_path = HERE / "debug_overlay_options.json"
