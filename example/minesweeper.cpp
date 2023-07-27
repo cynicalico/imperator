@@ -1,11 +1,12 @@
 #include "baphy/baphy.hpp"
 #include "glm/gtx/hash.hpp"
+#include <mutex>
 #include <unordered_set>
 
-const int ROWS = 10;
-const int COLS = 10;
-const int MINE_COUNT = 10;
-const float SCALE = 3.0f;
+const int ROWS = 30;
+const int COLS = 40;
+const int MINE_COUNT = std::floor((ROWS * COLS) * 0.1);
+const float SCALE = 2.0f;
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
 const auto IMG = HERE / "res" / "img" / "minesweeper";
 
@@ -21,7 +22,6 @@ public:
       visible_.emplace_back(COLS, false);
       visited_.emplace_back(COLS, false);
     }
-    initialize_();
   }
 
   int get(int r, int c) {
@@ -36,7 +36,7 @@ public:
 
   void flag(int r, int c) {
     if (!in_bounds_(r, c)) return;
-    if (visible_[r][c]) return;
+    if (visible_[r][c] && !flag_pos_.contains({r, c})) return;
 
     if (flag_pos_.contains({r, c}))
       flag_pos_.erase({r, c});
@@ -48,9 +48,13 @@ public:
   }
 
   void reveal(int r, int c) {
+    std::call_once(initialized_, [&]{ initialize_(r, c); });
+
     if (!in_bounds_(r, c)) return;
 
     if (mine_pos_.contains({r, c})) {
+      if (flag_pos_.contains({r, c})) return;
+
       set_(r, c, 10);
       for (const auto &pos: mine_pos_)
         visible_[pos.x][pos.y] = true;
@@ -87,6 +91,8 @@ public:
   }
 
 private:
+  std::once_flag initialized_{};
+
   std::vector<glm::ivec2> offsets_{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
   std::vector<std::vector<int>> cells_{};
@@ -95,9 +101,15 @@ private:
   std::unordered_set<glm::ivec2> mine_pos_{};
   std::unordered_set<glm::ivec2> flag_pos_{};
 
-  void initialize_() {
+  void initialize_(int r, int c) {
+    std::unordered_set<glm::ivec2> bad_mine_pos_{};
+    for (const auto &o: offsets_)
+      bad_mine_pos_.insert({r + o.x, c + o.y});
+    bad_mine_pos_.insert({r, c});
+
     while (mine_pos_.size() < MINE_COUNT) {
       auto new_pos = glm::ivec2{baphy::rnd::get(ROWS - 1), baphy::rnd::get(COLS - 1)};
+      if (bad_mine_pos_.contains(new_pos)) continue;
       mine_pos_.insert(new_pos);
       set_(new_pos.x, new_pos.y, 9);
     }
@@ -127,10 +139,8 @@ private:
 
     visible_[r][c] = true;
     if (get_(r, c) == 0) {
-      reveal_(r - 1, c);
-      reveal_(r, c - 1);
-      reveal_(r + 1, c);
-      reveal_(r, c + 1);
+      for (const auto &o: offsets_)
+        reveal_(r + o.x, c + o.y);
     }
   }
 
