@@ -61,6 +61,14 @@ Spritesheet::Spritesheet(
   }
 }
 
+float Spritesheet::w(const std::string &sprite_name) {
+  return regions_[sprite_name][2];
+}
+
+float Spritesheet::h(const std::string &sprite_name) {
+  return regions_[sprite_name][3];
+}
+
 void Spritesheet::draw(const std::string &sprite_name, float x, float y, float w, float h, const RGB &color) {
   auto r = regions_[sprite_name];
   tex_->draw(x, y, w, h, r[0], r[1], r[2], r[3], 0, 0, 0, color);

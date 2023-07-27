@@ -1,7 +1,7 @@
 {
   "general": {
     "fps": true,
-    "mem": true,
+    "mem": false,
     "latency": false
   },
   "log": {

@@ -15,6 +15,9 @@ public:
       bool retro = false
   );
 
+  float w(const std::string &sprite_name);
+  float h(const std::string &sprite_name);
+
   void draw(const std::string &sprite_name, float x, float y, float w, float h, const baphy::RGB &color = baphy::rgb("white"));
   void draw(const std::string &sprite_name, float x, float y, float scale, const baphy::RGB &color = baphy::rgb("white"));
   void draw(const std::string &sprite_name, float x, float y, const baphy::RGB &color = baphy::rgb("white"));
