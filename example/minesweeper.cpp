@@ -6,7 +6,7 @@
 const int ROWS = 30;
 const int COLS = 40;
 const int MINE_COUNT = std::floor((ROWS * COLS) * 0.1);
-const float SCALE = 2.0f;
+const float SCALE = 3.0f;
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
 const auto IMG = HERE / "res" / "img" / "minesweeper";
 
@@ -15,6 +15,7 @@ enum class GameStatus { playing, win, lose };
 class Minesweeper {
 public:
   GameStatus status{GameStatus::playing};
+  baphy::Ticker timer{};
 
   Minesweeper() {
     for (int r = 0; r < ROWS; ++r) {
@@ -22,6 +23,11 @@ public:
       visible_.emplace_back(COLS, false);
       visited_.emplace_back(COLS, false);
     }
+  }
+
+  void update_timer() {
+    if (initialized && status == GameStatus::playing)
+      timer.tick();
   }
 
   int get(int r, int c) {
@@ -48,7 +54,10 @@ public:
   }
 
   void reveal(int r, int c) {
-    std::call_once(initialized_, [&]{ initialize_(r, c); });
+    std::call_once(initialized_, [&]{
+      initialize_(r, c);
+      timer.reset();
+    });
 
     if (!in_bounds_(r, c)) return;
 
@@ -91,6 +100,7 @@ public:
   }
 
 private:
+  bool initialized{false};
   std::once_flag initialized_{};
 
   std::vector<glm::ivec2> offsets_{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
@@ -125,6 +135,8 @@ private:
         set_(r, c, n);
       }
     }
+
+    initialized = true;
   }
 
   inline bool in_bounds_(int r, int c) {
@@ -176,10 +188,11 @@ public:
   void initialize() override {
     ss = std::make_unique<baphy::Spritesheet>(
         *textures, IMG / "sheet.png", IMG / "sheet.json", true);
+    ss->set_scale(SCALE);
 
     auto window_w = ss->w("border_tl") + COLS * ss->w("border_t") + ss->w("border_tr");
     auto window_h = ss->h("border_tl") + (ROWS + 2) * ss->h("border_l") + ss->h("border_bl");
-    window->set_size(window_w * SCALE, window_h * SCALE);
+    window->set_size(window_w, window_h);
     window->center();
 
     window->set_icon_dir(IMG / "icon");
@@ -189,6 +202,8 @@ public:
 
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
+
+    ms.update_timer();
 
     if (ms.status == GameStatus::playing) {
       if (input->pressed("mb_right")) {
@@ -219,72 +234,73 @@ public:
     draw_field();
     draw_mines_remaining();
     draw_status();
+    draw_timer();
   }
 
   bool in_minefield(double x, double y) {
-    return x >= ss->w("border_l") * SCALE &&
-           x < window->w() - ss->w("border_r") * SCALE &&
-           y >= ss->h("border_t") * SCALE + ss->h("title") * SCALE &&
-           y < window->h() - ss->h("border_b") * SCALE + ss->h("border_m") * SCALE;
+    return x >= ss->w("border_l") &&
+           x < window->w() - ss->w("border_r") &&
+           y >= ss->h("border_t") + ss->h("title") &&
+           y < window->h() - ss->h("border_b") + ss->h("border_m");
   }
 
   glm::ivec2 minefield_coords(double x, double y) {
-    return {std::floor((x - ss->w("border_l") * SCALE) / SCALE / ss->w("empty")),
-            std::floor((y - ss->h("border_t") * SCALE - ss->h("title") * SCALE) / SCALE / ss->h("empty"))};
+    return {std::floor((x - ss->w("border_l")) / ss->w("empty")),
+            std::floor((y - ss->h("border_t") - ss->h("title")) / ss->h("empty"))};
   }
 
   void draw_border() {
     int x, y;
 
-    x = ss->w("border_tl") * SCALE;
+    x = ss->w("border_tl");
     y = 0;
-    for (; x < window->w() - ss->w("border_tr") * SCALE;
-         x += ss->w("border_t") * SCALE)
-      ss->draw("border_t", x, y, SCALE);
+    for (; x < window->w() - ss->w("border_tr");
+         x += ss->w("border_t"))
+      ss->draw("border_t", x, y);
 
     x = 0;
     y = 0;
-    ss->draw("border_tl", x, y, SCALE);
-    for (y = ss->h("border_tl") * SCALE;
-         y < window->h() - ss->h("border_bl") * SCALE;
-         y += ss->h("border_l") * SCALE)
-      ss->draw("border_l", x, y, SCALE);
-    ss->draw("border_bl", x, y, SCALE);
+    ss->draw("border_tl", x, y);
+    for (y = ss->h("border_tl");
+         y < window->h() - ss->h("border_bl");
+         y += ss->h("border_l"))
+      ss->draw("border_l", x, y);
+    ss->draw("border_bl", x, y);
 
-    x = window->w() - ss->w("border_tr") * SCALE;
+    x = window->w() - ss->w("border_tr");
     y = 0;
-    ss->draw("border_tr", x, y, SCALE);
-    for (y = ss->h("border_tr") * SCALE;
-         y < window->h() - ss->h("border_br") * SCALE;
-         y += ss->h("border_r") * SCALE)
-      ss->draw("border_r", x, y, SCALE);
-    ss->draw("border_br", x, y, SCALE);
+    ss->draw("border_tr", x, y);
+    for (y = ss->h("border_tr");
+         y < window->h() - ss->h("border_br");
+         y += ss->h("border_r"))
+      ss->draw("border_r", x, y);
+    ss->draw("border_br", x, y);
 
-    x = ss->w("border_br") * SCALE;
-    y = window->h() - ss->h("border_b") * SCALE - ss->h("border_m") * SCALE;
-    for (; x < window->w() - ss->w("border_br") * SCALE;
-           x += ss->w("border_m") * SCALE)
-      ss->draw("border_m", x, y, SCALE);
+    x = ss->w("border_br");
+    y = window->h() - ss->h("border_b") - ss->h("border_m");
+    for (; x < window->w() - ss->w("border_br");
+           x += ss->w("border_m"))
+      ss->draw("border_m", x, y);
 
-    x = ss->w("border_br") * SCALE;
-    y = window->h() - ss->h("border_b") * SCALE;
-    for (; x < window->w() - ss->w("border_br") * SCALE;
-         x += ss->w("border_b") * SCALE)
-      ss->draw("border_b", x, y, SCALE);
+    x = ss->w("border_br");
+    y = window->h() - ss->h("border_b");
+    for (; x < window->w() - ss->w("border_br");
+         x += ss->w("border_b"))
+      ss->draw("border_b", x, y);
   }
 
   void draw_title() {
-    ss->draw("title", ss->w("border_tl") * SCALE, ss->h("border_tl") * SCALE, SCALE);
+    ss->draw("title", ss->w("border_tl"), ss->h("border_tl"));
 
-    int x = x = ss->w("border_l") * SCALE + ss->w("title") * SCALE;
-    int y = ss->h("border_t") * SCALE;
-    for (; x < window->w() - ss->w("border_r") * SCALE; x += ss->w("border_m") * SCALE)
-      ss->draw("border_m", x, y, SCALE);
+    int x = x = ss->w("border_l") + ss->w("title");
+    int y = ss->h("border_t");
+    for (; x < window->w() - ss->w("border_r"); x += ss->w("border_m"))
+      ss->draw("border_m", x, y);
   }
 
   void draw_field() {
-    float x_off = ss->w("border_tl") * SCALE;
-    float y_off = ss->h("border_tl") * SCALE + ss->h("title") * SCALE;
+    float x_off = ss->w("border_tl");
+    float y_off = ss->h("border_tl") + ss->h("title");
 
     for (int r = 0; r < ROWS; ++r) {
       for (int c = 0; c < COLS; ++c) {
@@ -306,7 +322,7 @@ public:
           case 12: sprite_name = "hidden"; break;
         }
 
-        ss->draw(sprite_name, x_off + c * ss->w(sprite_name) * SCALE, y_off + r * ss->h(sprite_name) * SCALE, SCALE);
+        ss->draw(sprite_name, x_off + c * ss->w(sprite_name), y_off + r * ss->h(sprite_name));
       }
     }
   }
@@ -315,12 +331,12 @@ public:
     int n = ms.mines_remaining();
     auto ns = fmt::format("{}", n);
 
-    float x = window->w() - ss->w("border_r") * SCALE;
-    float y = window->h() - ss->h("border_b") * SCALE - SCALE;
+    float x = window->w() - ss->w("border_r");
+    float y = window->h() - ss->h("border_b") - SCALE;
     for (const auto &c : ns | std::views::reverse) {
       auto s = std::string(1, c);
-      x -= ss->w(s) * SCALE;
-      ss->draw(s, x, y - ss->h(s) * SCALE, SCALE);
+      x -= ss->w(s);
+      ss->draw(s, x, y - ss->h(s));
     }
   }
 
@@ -332,7 +348,22 @@ public:
       case GameStatus::lose: sprite_name = "indicator_lose"; break;
     }
 
-    ss->draw(sprite_name, window->w() - ss->w("border_r") * SCALE - ss->w(sprite_name) * SCALE, ss->h("border_t") * SCALE, SCALE);
+    ss->draw(sprite_name, window->w() - ss->w("border_r") - ss->w(sprite_name), ss->h("border_t"));
+  }
+
+  void draw_timer() {
+    auto sec = static_cast<int>(std::floor(ms.timer.elapsed_sec()));
+    auto m = sec / 60;
+    sec -= m * 60;
+    auto ns = fmt::format("{:02}:{:02}", m, sec);
+
+    float x = ss->w("border_l") + SCALE;
+    float y = window->h() - ss->h("border_b") - SCALE;
+    for (const auto &c : ns) {
+      auto s = std::string(1, c);
+      ss->draw(s, x, y - ss->h(s));
+      x += ss->w(s);
+    }
   }
 };
 

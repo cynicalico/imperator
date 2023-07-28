@@ -15,14 +15,26 @@ public:
       bool retro = false
   );
 
+  void set_scale(float s);
+
   float w(const std::string &sprite_name);
   float h(const std::string &sprite_name);
 
-  void draw(const std::string &sprite_name, float x, float y, float w, float h, const baphy::RGB &color = baphy::rgb("white"));
-  void draw(const std::string &sprite_name, float x, float y, float scale, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(const std::string &sprite_name, float x, float y, float rx, float ry, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw(const std::string &sprite_name, float x, float y, float angle, const baphy::RGB &color = baphy::rgb("white"));
   void draw(const std::string &sprite_name, float x, float y, const baphy::RGB &color = baphy::rgb("white"));
 
+  void draw_scale(const std::string &sprite_name, float x, float y, float scale, float rx, float ry, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw_scale(const std::string &sprite_name, float x, float y, float scale, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw_scale(const std::string &sprite_name, float x, float y, float scale, const baphy::RGB &color = baphy::rgb("white"));
+
+  void draw_wh(const std::string &sprite_name, float x, float y, float w, float h, float rx, float ry, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw_wh(const std::string &sprite_name, float x, float y, float w, float h, float angle, const baphy::RGB &color = baphy::rgb("white"));
+  void draw_wh(const std::string &sprite_name, float x, float y, float w, float h, const baphy::RGB &color = baphy::rgb("white"));
+
 private:
+  float scale_{1.0f};
+
   std::shared_ptr<Texture> tex_{nullptr};
   std::unordered_map<std::string, std::array<float, 4>> regions_{};
 };

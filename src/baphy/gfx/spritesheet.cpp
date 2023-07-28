@@ -61,27 +61,61 @@ Spritesheet::Spritesheet(
   }
 }
 
+void Spritesheet::set_scale(float s) {
+  scale_ = s;
+}
+
 float Spritesheet::w(const std::string &sprite_name) {
-  return regions_[sprite_name][2];
+  return regions_[sprite_name][2] * scale_;
 }
 
 float Spritesheet::h(const std::string &sprite_name) {
-  return regions_[sprite_name][3];
+  return regions_[sprite_name][3] * scale_;
 }
 
-void Spritesheet::draw(const std::string &sprite_name, float x, float y, float w, float h, const RGB &color) {
+void Spritesheet::draw(const std::string &sprite_name, float x, float y, float rx, float ry, float angle, const RGB &color) {
   auto r = regions_[sprite_name];
-  tex_->draw(x, y, w, h, r[0], r[1], r[2], r[3], 0, 0, 0, color);
+  tex_->draw(x, y, r[2] * scale_, r[3] * scale_, r[0], r[1], r[2], r[3], rx, ry, angle, color);
 }
 
-void Spritesheet::draw(const std::string &sprite_name, float x, float y, float scale, const RGB &color) {
+void Spritesheet::draw(const std::string &sprite_name, float x, float y, float angle, const RGB &color) {
   auto r = regions_[sprite_name];
-  tex_->draw(x, y, r[2] * scale, r[3] * scale, r[0], r[1], r[2], r[3], 0, 0, 0, color);
+  tex_->draw(x, y, r[2] * scale_, r[3] * scale_, r[0], r[1], r[2], r[3], x + (r[2] * scale_) / 2, y + (r[3] * scale_) / 2, angle, color);
 }
 
 void Spritesheet::draw(const std::string &sprite_name, float x, float y, const RGB &color) {
   auto r = regions_[sprite_name];
-  tex_->draw(x, y, r[2], r[3], r[0], r[1], r[2], r[3], 0, 0, 0, color);
+  tex_->draw(x, y, r[2] * scale_, r[3] * scale_, r[0], r[1], r[2], r[3], 0, 0, 0, color);
+}
+
+void Spritesheet::draw_scale(const std::string &sprite_name, float x, float y, float scale, float rx, float ry, float angle, const RGB &color) {
+  auto r = regions_[sprite_name];
+  tex_->draw(x, y, r[2] * scale, r[3] * scale, r[0], r[1], r[2], r[3], rx, ry, angle, color);
+}
+
+void Spritesheet::draw_scale(const std::string &sprite_name, float x, float y, float scale, float angle, const RGB &color) {
+  auto r = regions_[sprite_name];
+  tex_->draw(x, y, r[2] * scale, r[3] * scale, r[0], r[1], r[2], r[3], x + (r[2] * scale) / 2, y + (r[3] * scale) / 2, angle, color);
+}
+
+void Spritesheet::draw_scale(const std::string &sprite_name, float x, float y, float scale, const RGB &color) {
+  auto r = regions_[sprite_name];
+  tex_->draw(x, y, r[2] * scale, r[3] * scale, r[0], r[1], r[2], r[3], 0, 0, 0, color);
+}
+
+void Spritesheet::draw_wh(const std::string &sprite_name, float x, float y, float w, float h, float rx, float ry, float angle, const RGB &color) {
+  auto r = regions_[sprite_name];
+  tex_->draw(x, y, w, h, r[0], r[1], r[2], r[3], rx, ry, angle, color);
+}
+
+void Spritesheet::draw_wh(const std::string &sprite_name, float x, float y, float w, float h, float angle, const RGB &color) {
+  auto r = regions_[sprite_name];
+  tex_->draw(x, y, w, h, r[0], r[1], r[2], r[3], x + w / 2, y + h / 2, angle, color);
+}
+
+void Spritesheet::draw_wh(const std::string &sprite_name, float x, float y, float w, float h, const RGB &color) {
+  auto r = regions_[sprite_name];
+  tex_->draw(x, y, w, h, r[0], r[1], r[2], r[3], 0, 0, 0, color);
 }
 
 } // namespace baphy
