@@ -25,6 +25,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EEndFrame>(module_name, [&](const auto &e) { e_end_frame_(e); });
   EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
 
+  cursors = module_mgr->get<CursorMgr>();
   dear = module_mgr->get<DearImgui>();
   input = module_mgr->get<InputMgr>();
   window = module_mgr->get<Window>();

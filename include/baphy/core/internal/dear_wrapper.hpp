@@ -7,6 +7,7 @@
 #ifndef BAPHY_DEAR_WRAPPER_HPP
 #define BAPHY_DEAR_WRAPPER_HPP
 
+#include "baphy/core/event_bus.hpp"
 #include "imgui.h"
 
 namespace baphy {
@@ -35,8 +36,15 @@ public:
 
   template<typename Body>
   constexpr bool operator, (Body body) const noexcept {
-    if (should_begin_)
+    if (should_begin_) {
       body();
+
+      if (ImGui::IsWindowHovered())
+        EventBus::send_nowait<EImguiWindowHovered>();
+      auto cursor = ImGui::GetMouseCursor();
+      if (cursor != ImGuiMouseCursor_Arrow)
+        EventBus::send_nowait<EImguiCursor>(cursor);
+    }
     return should_begin_;
   }
 

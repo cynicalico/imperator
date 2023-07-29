@@ -1,6 +1,7 @@
 #ifndef BAPHY_CORE_MODULE_APPLICATION_HPP
 #define BAPHY_CORE_MODULE_APPLICATION_HPP
 
+#include "baphy/core/module/cursor_mgr.hpp"
 #include "baphy/core/module/dear_imgui.hpp"
 #include "baphy/core/module/input_mgr.hpp"
 #include "baphy/core/module/window.hpp"
@@ -18,6 +19,7 @@ namespace baphy {
 
 class Application : public Module<Application> {
 public:
+  std::shared_ptr<CursorMgr> cursors{nullptr};
   std::shared_ptr<DearImgui> dear{nullptr};
   std::shared_ptr<InputMgr> input{nullptr};
   std::shared_ptr<Window> window{nullptr};
@@ -31,6 +33,7 @@ public:
   std::shared_ptr<TweenMgr> tween{nullptr};
 
   Application() : Module<Application>({
+      EPI<CursorMgr>::name,
       EPI<DearImgui>::name,
       EPI<InputMgr>::name,
       EPI<Window>::name,

@@ -2,6 +2,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/core/internal/dear_wrapper.hpp
 
         include/baphy/core/module/application.hpp
+        include/baphy/core/module/cursor_mgr.hpp
         include/baphy/core/module/dear_imgui.hpp
         include/baphy/core/module/input_mgr.hpp
         include/baphy/core/module/window.hpp

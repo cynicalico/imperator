@@ -5,6 +5,7 @@
 #include "baphy/core/msgs_types.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
+#include "imgui.h"
 #include "spdlog/common.h"
 #include <cstdint>
 #include <memory>
@@ -55,6 +56,12 @@ struct EEndFrame {};
 struct ELogMsg {
   std::string text;
   spdlog::level::level_enum level;
+};
+
+struct EImguiWindowHovered {};
+
+struct EImguiCursor {
+  ImGuiMouseCursor cursor;
 };
 
 /* GLFW CALLBACKS */

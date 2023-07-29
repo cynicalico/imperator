@@ -185,7 +185,15 @@ public:
   Minesweeper ms{};
   std::unique_ptr<baphy::Spritesheet> ss{};
 
+  baphy::ImageData *image;
+  GLFWcursor *cursor;
+
   void initialize() override {
+//    image = new baphy::ImageData(IMG / "cursor.png");
+//    auto glfw_image = image->glfw_image();
+//    cursor = glfwCreateCursor(&glfw_image, 7, 7);
+//    glfwSetCursor(window->handle(), cursor);
+
     ss = std::make_unique<baphy::Spritesheet>(
         *textures, IMG / "sheet.png", IMG / "sheet.json", true);
     ss->set_scale(SCALE);
@@ -229,9 +237,28 @@ public:
   void draw() override {
     gfx->clear(baphy::rgb(0x291d2b));
 
+    // New Event: mouse hover
+    // Sent when user is hovered over *any* imgui window
+    dear->begin("mouse info"), [&]{
+      static std::unordered_map<int, std::string> cursor_names = {
+          {-1, "none"},
+          {0, "arrow"},
+          {1, "text input"},
+          {2, "resize all"},
+          {3, "resize ns"},
+          {4, "resize ew"},
+          {5, "resize nesw"},
+          {6, "resize nwse"},
+          {7, "hand"},
+          {8, "not allowed"}
+      };
+      dear->text("mouse: {} {}", cursor_names[cursors->imgui_cursor()], cursors->imgui_hovered());
+    };
+
     draw_border();
     draw_title();
     draw_field();
+    draw_selected();
     draw_mines_remaining();
     draw_status();
     draw_timer();
@@ -241,7 +268,7 @@ public:
     return x >= ss->w("border_l") &&
            x < window->w() - ss->w("border_r") &&
            y >= ss->h("border_t") + ss->h("title") &&
-           y < window->h() - ss->h("border_b") + ss->h("border_m");
+           y < window->h() - ss->h("border_b") - ss->h("border_m");
   }
 
   glm::ivec2 minefield_coords(double x, double y) {
@@ -324,6 +351,17 @@ public:
 
         ss->draw(sprite_name, x_off + c * ss->w(sprite_name), y_off + r * ss->h(sprite_name));
       }
+    }
+  }
+
+  void draw_selected() {
+    auto x = input->mouse_x();
+    auto y = input->mouse_y();
+    if (ms.status == GameStatus::playing && in_minefield(x, y)) {
+      auto c = minefield_coords(x, y);
+      float x_off = ss->w("border_tl");
+      float y_off = ss->h("border_tl") + ss->h("title");
+      ss->draw("selected", x_off + c.x * ss->w("selected"), y_off + c.y * ss->h("selected"));
     }
   }
 

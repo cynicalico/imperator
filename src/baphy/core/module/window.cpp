@@ -1,10 +1,8 @@
 #include "baphy/core/module/window.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "baphy/core/module/application.hpp"
 #include "baphy/core/glfw_callbacks.hpp"
 #include "baphy/util/io.hpp"
-#include "stb_image.h"
 #include <set>
 
 #if defined(BAPHY_PLATFORM_WINDOWS)
@@ -167,15 +165,14 @@ void Window::set_icon_dir(const std::filesystem::path &dir) {
 }
 
 void Window::set_icon(const std::vector<std::filesystem::path> &paths) {
-  std::vector<GLFWimage> images{};
-  for (const auto &p : paths) {
-    images.emplace_back();
-    images.back().pixels = stbi_load(p.string().c_str(), &images.back().width, &images.back().height, 0, 4);
-  }
-  glfwSetWindowIcon(glfw_handle_, images.size(), &images[0]);
+  std::vector<ImageData> images{};
+  for (const auto &p: paths)
+    images.emplace_back(p, 4);
 
-  for (auto &i : images)
-    stbi_image_free(i.pixels);
+  std::vector<GLFWimage> glfw_images{};
+  for (auto &i: images)
+    glfw_images.emplace_back(i.glfw_image());
+  glfwSetWindowIcon(glfw_handle_, glfw_images.size(), &glfw_images[0]);
 }
 
 void Window::set_icon(const std::filesystem::path &path) {

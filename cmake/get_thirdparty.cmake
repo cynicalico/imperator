@@ -20,7 +20,7 @@ endif ()
 CPMAddPackage(
         NAME glfw
         GITHUB_REPOSITORY glfw/glfw
-        GIT_TAG 3.3.8
+        GIT_TAG 3.3.7
         OPTIONS
             "GLFW_BUILD_TESTS OFF"
             "GLFW_BUILD_EXAMPLES OFF"

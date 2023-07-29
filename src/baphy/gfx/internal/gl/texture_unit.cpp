@@ -1,6 +1,6 @@
 #include "baphy/gfx/internal/gl/texture_unit.hpp"
 
-#include "stb_image.h"
+#include "baphy/util/io.hpp"
 
 namespace baphy {
 
@@ -15,41 +15,38 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, retro ? GL_NEAREST : GL_LINEAR);
   gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, retro ? GL_NEAREST : GL_LINEAR);
 
-  int comp;
-  auto bytes = stbi_load(path.string().c_str(), &w, &h, &comp, 0);
-
-  if (bytes) {
+  auto image_data = ImageData(path);
+  if (image_data.bytes()) {
     GLenum format = GL_NONE;
-    if (comp == 3)
+    if (image_data.comp() == 3)
       format = GL_RGB;
-    else if (comp == 4)
+    else if (image_data.comp() == 4)
       format = GL_RGBA;
     else
-      BAPHY_LOG_ERROR("Can't handle images with comp '{}', only 3 or 4 channels supported", comp);
+      BAPHY_LOG_ERROR("Can't handle images with comp '{}', only 3 or 4 channels supported", image_data.comp());
 
     if (format != GL_NONE) {
-      gl.TexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, bytes);
+      gl.TexImage2D(GL_TEXTURE_2D, 0, format, image_data.w(), image_data.h(), 0, format, GL_UNSIGNED_BYTE, &image_data[0]);
       gl.GenerateMipmap(GL_TEXTURE_2D);
 
       BAPHY_LOG_DEBUG("Loaded texture '{}' ({}x{})", path.string(), w, h);
     }
+    w = image_data.w();
+    h = image_data.h();
 
-    if (comp == 4) {
+    if (image_data.comp() == 4) {
       for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
           int alpha_ch = (y * w * 4) + (x * 4) + 3;
-          if (bytes[alpha_ch] < 255)
+          if (image_data[alpha_ch] < 255)
             fully_opaque = false;
         }
         if (!fully_opaque)
           break;
       }
     }
+  }
 
-  } else
-    BAPHY_LOG_ERROR("Failed to load texture unit '{}': {}", path.string(), stbi_failure_reason());
-
-  stbi_image_free(bytes);
   unbind();
 }
 
