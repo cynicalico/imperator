@@ -58,12 +58,6 @@ struct ELogMsg {
   spdlog::level::level_enum level;
 };
 
-struct EImguiWindowHovered {};
-
-struct EImguiCursor {
-  ImGuiMouseCursor cursor;
-};
-
 /* GLFW CALLBACKS */
 
 struct EGlfwWindowClose {

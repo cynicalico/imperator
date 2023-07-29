@@ -184,19 +184,15 @@ class MinesweeperApp : public baphy::Application {
 public:
   Minesweeper ms{};
   std::unique_ptr<baphy::Spritesheet> ss{};
-
-  baphy::ImageData *image;
-  GLFWcursor *cursor;
+  std::shared_ptr<baphy::Cursor> cursor{};
 
   void initialize() override {
-//    image = new baphy::ImageData(IMG / "cursor.png");
-//    auto glfw_image = image->glfw_image();
-//    cursor = glfwCreateCursor(&glfw_image, 7, 7);
-//    glfwSetCursor(window->handle(), cursor);
-
     ss = std::make_unique<baphy::Spritesheet>(
         *textures, IMG / "sheet.png", IMG / "sheet.json", true);
     ss->set_scale(SCALE);
+
+    cursor = cursors->create(IMG / "cursor.png", 7, 7);
+    cursor->set();
 
     auto window_w = ss->w("border_tl") + COLS * ss->w("border_t") + ss->w("border_tr");
     auto window_h = ss->h("border_tl") + (ROWS + 2) * ss->h("border_l") + ss->h("border_bl");
@@ -236,24 +232,6 @@ public:
 
   void draw() override {
     gfx->clear(baphy::rgb(0x291d2b));
-
-    // New Event: mouse hover
-    // Sent when user is hovered over *any* imgui window
-    dear->begin("mouse info"), [&]{
-      static std::unordered_map<int, std::string> cursor_names = {
-          {-1, "none"},
-          {0, "arrow"},
-          {1, "text input"},
-          {2, "resize all"},
-          {3, "resize ns"},
-          {4, "resize ew"},
-          {5, "resize nesw"},
-          {6, "resize nwse"},
-          {7, "hand"},
-          {8, "not allowed"}
-      };
-      dear->text("mouse: {} {}", cursor_names[cursors->imgui_cursor()], cursors->imgui_hovered());
-    };
 
     draw_border();
     draw_title();

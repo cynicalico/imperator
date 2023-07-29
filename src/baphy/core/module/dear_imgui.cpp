@@ -24,7 +24,7 @@ void DearImgui::e_initialize_(const baphy::EInitialize &e) {
   ctx_ = ImGui::CreateContext();
   ImGui::StyleColorsDark();
   io_ = &ImGui::GetIO();
-//  io_->ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+  io_->ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
   io_->IniFilename = nullptr;
 
   ImGui_ImplGlfw_InitForOpenGL(window->handle(), true);
