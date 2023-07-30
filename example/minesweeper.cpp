@@ -1,6 +1,5 @@
 #include "baphy/baphy.hpp"
 #include "glm/gtx/hash.hpp"
-#include <mutex>
 #include <unordered_set>
 
 const int ROWS = 10;
@@ -14,15 +13,28 @@ enum class GameStatus { playing, win, lose };
 
 class Minesweeper {
 public:
-  GameStatus status{GameStatus::playing};
+  GameStatus status{};
   baphy::Ticker timer{};
 
-  Minesweeper() {
+  Minesweeper() { reset(); }
+
+  void reset() {
+    cells_.clear();
+    visible_.clear();
+    visited_.clear();
     for (int r = 0; r < ROWS; ++r) {
       cells_.emplace_back(COLS, 0);
       visible_.emplace_back(COLS, false);
       visited_.emplace_back(COLS, false);
     }
+
+    flag_pos_.clear();
+    mine_pos_.clear();
+
+    timer.reset();
+    initialized = false;
+
+    status = GameStatus::playing;
   }
 
   void update_timer() {
@@ -41,6 +53,11 @@ public:
   }
 
   bool flag(int r, int c) {
+    if (!initialized) {
+      initialize_(r, c);
+      timer.reset();
+    }
+
     if (!in_bounds_(r, c)) return false;
     if (visible_[r][c] && !flag_pos_.contains({r, c})) return false;
 
@@ -58,12 +75,14 @@ public:
   }
 
   bool reveal(int r, int c) {
-    std::call_once(initialized_, [&]{
+    if (!initialized) {
       initialize_(r, c);
       timer.reset();
-    });
+    }
 
     if (!in_bounds_(r, c)) return false;
+
+    if (flag_pos_.contains({r, c})) return false;
 
     if (mine_pos_.contains({r, c})) {
       if (flag_pos_.contains({r, c})) return false;
@@ -108,7 +127,6 @@ public:
 
 private:
   bool initialized{false};
-  std::once_flag initialized_{};
 
   std::vector<glm::ivec2> offsets_{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
@@ -191,8 +209,8 @@ class MinesweeperApp : public baphy::Application {
 public:
   Minesweeper ms{};
 
-  std::shared_ptr<baphy::Texture> ss_tex{nullptr};
-  std::unique_ptr<baphy::Spritesheet> ss{nullptr};
+  std::shared_ptr<baphy::Texture> ssheet_tex{nullptr};
+  std::unique_ptr<baphy::Spritesheet> ssheet{nullptr};
   std::shared_ptr<baphy::Cursor> cursor{nullptr};
 
   std::shared_ptr<baphy::Sound> startup{nullptr};
@@ -201,6 +219,12 @@ public:
   std::shared_ptr<baphy::Sound> explosion{nullptr};
 
   void initialize() override {
+    debug->set_cmd_key("1");
+    debug->set_cmd_callback("restart", [&](const auto &s) {
+      ms.reset();
+      startup->play();
+    });
+
     audio->open_device();
     audio->open_context();
     audio->make_current();
@@ -210,22 +234,21 @@ public:
     win = audio->load(IMG / "sound" / "win.wav");
     explosion = audio->load(IMG / "sound" / "explosion.wav");
 
-    ss_tex = textures->load(IMG / "sheet.png", true);
-    ss = std::make_unique<baphy::Spritesheet>(ss_tex, IMG / "sheet.json");
-    ss->set_scale(SCALE);
+    ssheet_tex = textures->load(IMG / "sheet.png", true);
+    ssheet = std::make_unique<baphy::Spritesheet>(ssheet_tex, IMG / "sheet.json");
+    ssheet->set_scale(SCALE);
 
     cursor = cursors->create(IMG / "cursor.png", 7, 7);
     cursor->set();
 
-    auto window_w = ss->w("border_tl") + COLS * ss->w("border_t") + ss->w("border_tr");
-    auto window_h = ss->h("border_tl") + (ROWS + 2) * ss->h("border_l") + ss->h("border_bl");
+    auto window_w = ssheet->w("border_tl") + COLS * ssheet->w("border_t") + ssheet->w("border_tr");
+    auto window_h = ssheet->h("border_tl") + (ROWS + 2) * ssheet->h("border_l") + ssheet->h("border_bl");
     window->set_size(window_w, window_h);
     window->center();
 
     window->set_icon_dir(IMG / "icon");
 
     window->show();
-
     startup->play();
   }
 
@@ -272,69 +295,69 @@ public:
   }
 
   bool in_minefield(double x, double y) {
-    return x >= ss->w("border_l") &&
-           x < window->w() - ss->w("border_r") &&
-           y >= ss->h("border_t") + ss->h("title") &&
-           y < window->h() - ss->h("border_b") - ss->h("border_m");
+    return x >= ssheet->w("border_l") &&
+           x < window->w() - ssheet->w("border_r") &&
+           y >= ssheet->h("border_t") + ssheet->h("title") &&
+           y < window->h() - ssheet->h("border_b") - ssheet->h("border_m");
   }
 
   glm::ivec2 minefield_coords(double x, double y) {
-    return {std::floor((x - ss->w("border_l")) / ss->w("empty")),
-            std::floor((y - ss->h("border_t") - ss->h("title")) / ss->h("empty"))};
+    return {std::floor((x - ssheet->w("border_l")) / ssheet->w("empty")),
+            std::floor((y - ssheet->h("border_t") - ssheet->h("title")) / ssheet->h("empty"))};
   }
 
   void draw_border() {
     int x, y;
 
-    x = ss->w("border_tl");
+    x = ssheet->w("border_tl");
     y = 0;
-    for (; x < window->w() - ss->w("border_tr");
-         x += ss->w("border_t"))
-      ss->draw("border_t", x, y);
+    for (; x < window->w() - ssheet->w("border_tr");
+         x += ssheet->w("border_t"))
+      ssheet->draw("border_t", x, y);
 
     x = 0;
     y = 0;
-    ss->draw("border_tl", x, y);
-    for (y = ss->h("border_tl");
-         y < window->h() - ss->h("border_bl");
-         y += ss->h("border_l"))
-      ss->draw("border_l", x, y);
-    ss->draw("border_bl", x, y);
+    ssheet->draw("border_tl", x, y);
+    for (y = ssheet->h("border_tl");
+         y < window->h() - ssheet->h("border_bl");
+         y += ssheet->h("border_l"))
+      ssheet->draw("border_l", x, y);
+    ssheet->draw("border_bl", x, y);
 
-    x = window->w() - ss->w("border_tr");
+    x = window->w() - ssheet->w("border_tr");
     y = 0;
-    ss->draw("border_tr", x, y);
-    for (y = ss->h("border_tr");
-         y < window->h() - ss->h("border_br");
-         y += ss->h("border_r"))
-      ss->draw("border_r", x, y);
-    ss->draw("border_br", x, y);
+    ssheet->draw("border_tr", x, y);
+    for (y = ssheet->h("border_tr");
+         y < window->h() - ssheet->h("border_br");
+         y += ssheet->h("border_r"))
+      ssheet->draw("border_r", x, y);
+    ssheet->draw("border_br", x, y);
 
-    x = ss->w("border_br");
-    y = window->h() - ss->h("border_b") - ss->h("border_m");
-    for (; x < window->w() - ss->w("border_br");
-           x += ss->w("border_m"))
-      ss->draw("border_m", x, y);
+    x = ssheet->w("border_br");
+    y = window->h() - ssheet->h("border_b") - ssheet->h("border_m");
+    for (; x < window->w() - ssheet->w("border_br");
+           x += ssheet->w("border_m"))
+      ssheet->draw("border_m", x, y);
 
-    x = ss->w("border_br");
-    y = window->h() - ss->h("border_b");
-    for (; x < window->w() - ss->w("border_br");
-         x += ss->w("border_b"))
-      ss->draw("border_b", x, y);
+    x = ssheet->w("border_br");
+    y = window->h() - ssheet->h("border_b");
+    for (; x < window->w() - ssheet->w("border_br");
+         x += ssheet->w("border_b"))
+      ssheet->draw("border_b", x, y);
   }
 
   void draw_title() {
-    ss->draw("title", ss->w("border_tl"), ss->h("border_tl"));
+    ssheet->draw("title", ssheet->w("border_tl"), ssheet->h("border_tl"));
 
-    int x = x = ss->w("border_l") + ss->w("title");
-    int y = ss->h("border_t");
-    for (; x < window->w() - ss->w("border_r"); x += ss->w("border_m"))
-      ss->draw("border_m", x, y);
+    int x = x = ssheet->w("border_l") + ssheet->w("title");
+    int y = ssheet->h("border_t");
+    for (; x < window->w() - ssheet->w("border_r"); x += ssheet->w("border_m"))
+      ssheet->draw("border_m", x, y);
   }
 
   void draw_field() {
-    float x_off = ss->w("border_tl");
-    float y_off = ss->h("border_tl") + ss->h("title");
+    float x_off = ssheet->w("border_tl");
+    float y_off = ssheet->h("border_tl") + ssheet->h("title");
 
     for (int r = 0; r < ROWS; ++r) {
       for (int c = 0; c < COLS; ++c) {
@@ -356,7 +379,7 @@ public:
           case 12: sprite_name = "hidden"; break;
         }
 
-        ss->draw(sprite_name, x_off + c * ss->w(sprite_name), y_off + r * ss->h(sprite_name));
+        ssheet->draw(sprite_name, x_off + c * ssheet->w(sprite_name), y_off + r * ssheet->h(sprite_name));
       }
     }
   }
@@ -366,9 +389,9 @@ public:
     auto y = input->mouse_y();
     if (ms.status == GameStatus::playing && in_minefield(x, y)) {
       auto c = minefield_coords(x, y);
-      float x_off = ss->w("border_tl");
-      float y_off = ss->h("border_tl") + ss->h("title");
-      ss->draw("selected", x_off + c.x * ss->w("selected"), y_off + c.y * ss->h("selected"));
+      float x_off = ssheet->w("border_tl");
+      float y_off = ssheet->h("border_tl") + ssheet->h("title");
+      ssheet->draw("selected", x_off + c.x * ssheet->w("selected"), y_off + c.y * ssheet->h("selected"));
     }
   }
 
@@ -376,12 +399,12 @@ public:
     int n = ms.mines_remaining();
     auto ns = fmt::format("{}", n);
 
-    float x = window->w() - ss->w("border_r");
-    float y = window->h() - ss->h("border_b") - SCALE;
+    float x = window->w() - ssheet->w("border_r");
+    float y = window->h() - ssheet->h("border_b") - SCALE;
     for (const auto &c : ns | std::views::reverse) {
       auto s = std::string(1, c);
-      x -= ss->w(s);
-      ss->draw(s, x, y - ss->h(s));
+      x -= ssheet->w(s);
+      ssheet->draw(s, x, y - ssheet->h(s));
     }
   }
 
@@ -393,7 +416,7 @@ public:
       case GameStatus::lose: sprite_name = "indicator_lose"; break;
     }
 
-    ss->draw(sprite_name, window->w() - ss->w("border_r") - ss->w(sprite_name), ss->h("border_t"));
+    ssheet->draw(sprite_name, window->w() - ssheet->w("border_r") - ssheet->w(sprite_name), ssheet->h("border_t"));
   }
 
   void draw_timer() {
@@ -402,12 +425,12 @@ public:
     sec -= m * 60;
     auto ns = fmt::format("{:02}:{:02}", m, sec);
 
-    float x = ss->w("border_l") + SCALE;
-    float y = window->h() - ss->h("border_b") - SCALE;
+    float x = ssheet->w("border_l") + SCALE;
+    float y = window->h() - ssheet->h("border_b") - SCALE;
     for (const auto &c : ns) {
       auto s = std::string(1, c);
-      ss->draw(s, x, y - ss->h(s));
-      x += ss->w(s);
+      ssheet->draw(s, x, y - ssheet->h(s));
+      x += ssheet->w(s);
     }
   }
 };
