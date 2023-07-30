@@ -5,48 +5,39 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 class Indev : public baphy::Application {
 public:
   std::shared_ptr<baphy::Texture> tex{nullptr};
-  int tx{0};
-  int ty{0};
-  float theta{0.0f};
-  float n{2.0f};
+  std::shared_ptr<baphy::Font> font{nullptr};
 
   void initialize() override {
-    input->hide_cursor();
-
-    tex = textures->load(HERE / "res" / "img" / "fruits.png", true);
-
-    timer->every(1.0, [&]{
-      tx = baphy::rnd::get<int>(5);
-      ty = baphy::rnd::get<int>(5);
-    });
-
-    debug->set_cmd_key("1");
-    debug->set_cmd_callback("n", [&](const auto &cmd) {
-      n = baphy::stof(cmd).value_or(n);
-    });
+    tex = textures->load(HERE / "res" / "img" / "phantasm_10x10.png", true);
+    font = fonts->cp437("f", tex, 10, 10);
   }
 
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
-
-    theta += dt * 90.0f;
   }
 
   void draw() override {
     gfx->clear(baphy::rgb("black"));
 
-    float x = (window->w() / 4) * std::sin(glm::radians(theta * n));
-    float y = (window->h() / 4) * std::cos(glm::radians(theta));
-    float w = 16 * 8;
-    float h = 16 * 8;
-    tex->draw((window->w() / 2) + x - (w / 2), (window->h() / 2) + y - (h / 2), w, h, tx * 16, ty * 16, 16, 16, theta / 4);
+    std::string s = R"(
+Exsuls experimentum in azureus cubiculum!
+Purpose, dogma and an apostolic underworld.
+To the chilled pickles add leek, rhubarb, coffee and sour blood oranges.
+God, taste me lubber, ye sunny jack!
+Dozens of collision courses will be lost in courages like hypnosis in minerals.
+)";
+    s = s.substr(1, s.size() - 1);
+
+    auto bounds = font->bounds(1, s);
+    font->draw(std::floor(window->w() / 2) - std::floor(bounds.x / 2),
+               std::floor(window->h() / 2) - std::floor(bounds.y / 2),
+               1, s);
   }
 };
 
 BAPHY_RUN(Indev,
     .title = "Indev",
-    .size = {500, 500},
-    .monitor_num = 0,
+    .size = {1280, 720},
     .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync,
     .debug_overlay_options_path = HERE / "debug_overlay_options.json"
 )

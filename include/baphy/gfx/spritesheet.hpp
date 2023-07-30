@@ -8,12 +8,7 @@ namespace baphy {
 
 class Spritesheet {
 public:
-  Spritesheet(
-      TextureBatcher &textures,
-      const std::filesystem::path &path_to_texture,
-      const std::filesystem::path &path_to_spec,
-      bool retro = false
-  );
+  Spritesheet(std::shared_ptr<Texture> tex, const std::filesystem::path &path_to_spec);
 
   void set_scale(float s);
 
