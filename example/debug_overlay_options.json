@@ -1,12 +1,12 @@
 {
   "general": {
-    "fps": true,
+    "fps": false,
     "mem": false,
     "latency": false
   },
   "log": {
     "show": false,
-    "collapsed": true
+    "collapsed": false
   },
   "controls": {
     "show": false,

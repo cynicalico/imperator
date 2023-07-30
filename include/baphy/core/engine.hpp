@@ -2,6 +2,7 @@
 #define BAPHY_CORE_ENGINE_HPP
 
 #include "baphy/core/module/application.hpp"
+#include "baphy/core/module/audio_mgr.hpp"
 #include "baphy/core/module/cursor_mgr.hpp"
 #include "baphy/core/module/dear_imgui.hpp"
 #include "baphy/core/module/input_mgr.hpp"
@@ -46,6 +47,7 @@ void Engine::run_application(const InitializeParams &window_open_params) {
   baphy::log_platform();
 
   module_mgr_->create<Application, T>();
+  module_mgr_->create<AudioMgr>();
   module_mgr_->create<CursorMgr>();
   module_mgr_->create<DearImgui>();
   module_mgr_->create<InputMgr>();

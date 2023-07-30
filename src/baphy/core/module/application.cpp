@@ -12,11 +12,12 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EStartApplication>(module_name, [&](const auto &e) { e_start_application_(e); });
   EventBus::sub<EUpdate>(
       module_name, {
-          EPI<Window>::name,
+          EPI<AudioMgr>::name,
           EPI<InputMgr>::name,
           EPI<ThreadPool>::name,
           EPI<TimerMgr>::name,
-          EPI<TweenMgr>::name
+          EPI<TweenMgr>::name,
+          EPI<Window>::name,
       },
       [&](const auto &e) { e_update_(e); }
   );
@@ -25,6 +26,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EEndFrame>(module_name, [&](const auto &e) { e_end_frame_(e); });
   EventBus::sub<EGlfwWindowSize>(module_name, [&](const auto &e) { e_glfw_window_size_(e); });
 
+  audio = module_mgr->get<AudioMgr>();
   cursors = module_mgr->get<CursorMgr>();
   dear = module_mgr->get<DearImgui>();
   input = module_mgr->get<InputMgr>();

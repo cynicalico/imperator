@@ -3,9 +3,9 @@
 #include <mutex>
 #include <unordered_set>
 
-const int ROWS = 16;
-const int COLS = 30;
-const int MINE_COUNT = 99;
+const int ROWS = 10;
+const int COLS = 10;
+const int MINE_COUNT = 10;
 const float SCALE = 3.0f;
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
 const auto IMG = HERE / "res" / "minesweeper";
@@ -40,34 +40,39 @@ public:
     return get_(r, c);
   }
 
-  void flag(int r, int c) {
-    if (!in_bounds_(r, c)) return;
-    if (visible_[r][c] && !flag_pos_.contains({r, c})) return;
+  bool flag(int r, int c) {
+    if (!in_bounds_(r, c)) return false;
+    if (visible_[r][c] && !flag_pos_.contains({r, c})) return false;
 
     if (flag_pos_.contains({r, c}))
       flag_pos_.erase({r, c});
     else
       flag_pos_.insert({r, c});
 
-    if (check_win_())
+    if (check_win_()) {
       status = GameStatus::win;
+      return true;
+    }
+
+    return false;
   }
 
-  void reveal(int r, int c) {
+  bool reveal(int r, int c) {
     std::call_once(initialized_, [&]{
       initialize_(r, c);
       timer.reset();
     });
 
-    if (!in_bounds_(r, c)) return;
+    if (!in_bounds_(r, c)) return false;
 
     if (mine_pos_.contains({r, c})) {
-      if (flag_pos_.contains({r, c})) return;
+      if (flag_pos_.contains({r, c})) return false;
 
       set_(r, c, 10);
       for (const auto &pos: mine_pos_)
         visible_[pos.x][pos.y] = true;
       status = GameStatus::lose;
+      return true;
 
     } else {
       for (int vr = 0; vr < ROWS; ++vr)
@@ -93,6 +98,8 @@ public:
             reveal_(r + o.x, c + o.y);
       }
     }
+
+    return false;
   }
 
   int mines_remaining() {
@@ -188,7 +195,21 @@ public:
   std::unique_ptr<baphy::Spritesheet> ss{nullptr};
   std::shared_ptr<baphy::Cursor> cursor{nullptr};
 
+  std::shared_ptr<baphy::Sound> startup{nullptr};
+  std::shared_ptr<baphy::Sound> game_over{nullptr};
+  std::shared_ptr<baphy::Sound> win{nullptr};
+  std::shared_ptr<baphy::Sound> explosion{nullptr};
+
   void initialize() override {
+    audio->open_device();
+    audio->open_context();
+    audio->make_current();
+
+    startup = audio->load(IMG / "sound" / "startup.wav");
+    game_over = audio->load(IMG / "sound" / "game_over.wav");
+    win = audio->load(IMG / "sound" / "win.wav");
+    explosion = audio->load(IMG / "sound" / "explosion.wav");
+
     ss_tex = textures->load(IMG / "sheet.png", true);
     ss = std::make_unique<baphy::Spritesheet>(ss_tex, IMG / "sheet.json");
     ss->set_scale(SCALE);
@@ -204,6 +225,8 @@ public:
     window->set_icon_dir(IMG / "icon");
 
     window->show();
+
+    startup->play();
   }
 
   void update(double dt) override {
@@ -217,7 +240,8 @@ public:
         auto y = input->mouse_y();
         if (in_minefield(x, y)) {
           auto c = minefield_coords(x, y);
-          ms.flag(c.y, c.x);
+          if (ms.flag(c.y, c.x))
+            win->play();
         }
       }
 
@@ -226,7 +250,10 @@ public:
         auto y = input->mouse_y();
         if (in_minefield(x, y)) {
           auto c = minefield_coords(x, y);
-          ms.reveal(c.y, c.x);
+          if (ms.reveal(c.y, c.x)) {
+            explosion->play();
+            timer->after(1.0, [&] { game_over->play(); });
+          }
         }
       }
     }

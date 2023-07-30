@@ -61,6 +61,14 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME libnyquist
+        GITHUB_REPOSITORY ddiakopoulos/libnyquist
+        GIT_TAG 767efd97cdd7a281d193296586e708490eb6e54f
+        OPTIONS
+            "BUILD_EXAMPLE OFF"
+)
+
+CPMAddPackage(
         NAME magic_enum
         GITHUB_REPOSITORY Neargye/magic_enum
         GIT_TAG v0.9.3
@@ -192,6 +200,7 @@ target_link_libraries(baphy_thirdparty PUBLIC
         glfw
         glfw
         glm::glm
+        libnyquist::libnyquist
         magic_enum::magic_enum
         nfd
         nlohmann_json::nlohmann_json
