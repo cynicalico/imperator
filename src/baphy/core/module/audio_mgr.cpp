@@ -18,6 +18,7 @@ bool AudioMgr::open_context() {
   bool ok = check_alc_errors_(device_);
   if (!ok)
     BAPHY_LOG_ERROR("Failed to create OpenAL context");
+
   return ok;
 }
 
@@ -26,6 +27,9 @@ bool AudioMgr::make_current() {
   bool ok2 = check_alc_errors_(device_);
   if (!ok1 || !ok2)
     BAPHY_LOG_ERROR("Failed to make OpenAL context current");
+
+  alDisable(AL_STOP_SOURCES_ON_DISCONNECT_SOFT);
+
   return ok1 && ok2;
 }
 
@@ -48,16 +52,21 @@ std::vector<std::string> AudioMgr::available_devices() {
 }
 
 bool AudioMgr::open_device(const std::string &device_name) {
+  auto default_device_name = available_devices()[0];
+
   const char *device_cp = nullptr;
   if (!device_name.empty())
     device_cp = device_name.c_str();
+  else
+    device_cp = default_device_name.c_str();
 
   device_ = alcOpenDevice(device_cp);
   if (!device_) {
-    BAPHY_LOG_ERROR("Failed to open audio device: '{}'", device_cp ? device_name : "default");
+    BAPHY_LOG_ERROR("Failed to open audio device: '{}'", device_cp ? device_cp : "default");
     return false;
   } else
-    BAPHY_LOG_DEBUG("Opened audio device: '{}'", device_cp ? device_name : "default");
+    BAPHY_LOG_DEBUG("Opened audio device: '{}'", device_cp ? device_cp : "default");
+  device_specifier_ = std::string(device_cp);
 
   if (alcIsExtensionPresent(device_, "ALC_SOFT_reopen_device"))
     alcReopenDeviceSOFT_ = (ALCboolean (ALC_APIENTRY*)(ALCdevice *device, const ALCchar *name, const ALCint *attribs))alcGetProcAddress(device_, "alcReopenDeviceSOFT");
@@ -68,21 +77,25 @@ bool AudioMgr::open_device(const std::string &device_name) {
 }
 
 bool AudioMgr::reopen_device(const std::string &device_name) {
-  if (!alcReopenDeviceSOFT_) {
-    const char *device_cp = nullptr;
-    if (!device_name.empty())
-      device_cp = device_name.c_str();
+  auto default_device_name = available_devices()[0];
 
+  const char *device_cp = nullptr;
+  if (!device_name.empty())
+    device_cp = device_name.c_str();
+  else
+    device_cp = default_device_name.c_str();
+
+  if (alcReopenDeviceSOFT_) {
     bool ok = alcReopenDeviceSOFT_(device_, device_cp, nullptr);
     check_alc_errors_(device_);
     if (!ok) {
-      BAPHY_LOG_ERROR("Failed to reopen audio device: '{}'", device_cp ? device_name : "default");
+      BAPHY_LOG_ERROR("Failed to reopen audio device: '{}'", device_cp ? device_cp : "default");
       return false;
     } else
-      BAPHY_LOG_DEBUG("Reopened audio device: '{}'", device_cp ? device_name : "default");
+      BAPHY_LOG_DEBUG("Reopened audio device: '{}'", device_cp ? device_cp : "default");
 
   } else {
-    BAPHY_LOG_ERROR("Failed to reopen audio device: '{}'; extension not supported on this system");
+    BAPHY_LOG_ERROR("Failed to reopen audio device: '{}'; extension not supported on this system", device_cp ? device_cp : "default");
     return false;
   }
 
@@ -91,7 +104,8 @@ bool AudioMgr::reopen_device(const std::string &device_name) {
 
 std::shared_ptr<Sound> AudioMgr::load(const std::filesystem::path &path) {
   std::unique_ptr<nqr::AudioData> file_data = std::make_unique<nqr::AudioData>();
-  audio_loader_.Load(file_data.get(), path.string());
+  auto memory = nqr::ReadFile(path.string());
+  audio_loader_.Load(file_data.get(), memory.buffer);
 
   ALuint buffer;
   alGenBuffers(1, &buffer);
@@ -201,16 +215,39 @@ bool AudioMgr::check_alc_errors_() {
 }
 
 void AudioMgr::e_initialize_(const EInitialize &e) {
+  default_device_listener_ = std::jthread([&] {
+    std::string curr_default_dev;
+
+    while (!ctx_); // Wait for context
+
+    BAPHY_LOG_DEBUG("Started listening for default audio device changes");
+    while (!stop_default_dev_listening_) {
+      auto devices = available_devices();
+      if (devices[0] != curr_default_dev)
+        EventBus::send<EDefaultAudioDeviceChanged>(devices[0]);
+      curr_default_dev = devices[0];
+
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    BAPHY_LOG_DEBUG("Stopped listening for default audio device changes");
+  });
+
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
+  EventBus::sub<EDefaultAudioDeviceChanged>(module_name, [&](const auto &e) { e_default_audio_device_changed_(e); });
 
   Module::e_initialize_(e);
 }
 
 void AudioMgr::e_shutdown_(const EShutdown &e) {
+  stop_default_dev_listening_ = true;
+  default_device_listener_.join();
+
   Module::e_shutdown_(e);
 }
 
 void AudioMgr::e_update_(const EUpdate &e) {
+  EventBus::poll<EDefaultAudioDeviceChanged>(module_name);
+
   for (auto s_it = sources_.begin(); s_it != sources_.end(); ) {
     auto &l = s_it->second;
 
@@ -234,6 +271,10 @@ void AudioMgr::e_update_(const EUpdate &e) {
     }
     s_it++;
   }
+}
+
+void AudioMgr::e_default_audio_device_changed_(const EDefaultAudioDeviceChanged &e) {
+  reopen_device();
 }
 
 } // namespace baphy

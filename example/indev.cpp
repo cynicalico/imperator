@@ -16,7 +16,7 @@ public:
     audio->open_context();
     audio->make_current();
 
-    s = audio->load(HERE / "res" / "minesweeper" / "sound" / "explosion.wav");
+    s = audio->load(HERE / "res" / "sound" / "retro_fl.wav");
   }
 
   void update(double dt) override {

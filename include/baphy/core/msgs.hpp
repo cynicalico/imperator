@@ -58,6 +58,10 @@ struct ELogMsg {
   spdlog::level::level_enum level;
 };
 
+struct EDefaultAudioDeviceChanged {
+  std::string name;
+};
+
 /* GLFW CALLBACKS */
 
 struct EGlfwWindowClose {

@@ -9,6 +9,11 @@
 #include <string>
 #include <vector>
 
+#ifndef AL_SOFT_hold_on_disconnect
+#define AL_SOFT_hold_on_disconnect
+#define AL_STOP_SOURCES_ON_DISCONNECT_SOFT       0x19AB
+#endif
+
 namespace baphy {
 
 struct PlayOptions {
@@ -49,7 +54,11 @@ public:
   std::shared_ptr<Sound> load(const std::filesystem::path &path);
 
 private:
+  bool stop_default_dev_listening_{false};
+  std::jthread default_device_listener_;
+
   ALCcontext *ctx_{nullptr};
+  std::string device_specifier_{};
   ALCdevice *device_{nullptr};
 
   nqr::NyquistIO audio_loader_{};
@@ -68,6 +77,7 @@ private:
   void e_shutdown_(const EShutdown &e) override;
 
   void e_update_(const EUpdate &e);
+  void e_default_audio_device_changed_(const EDefaultAudioDeviceChanged &e);
 };
 
 } // namespace baphy
