@@ -14,7 +14,7 @@ class FontMgr : public Module<FontMgr> {
 public:
   FontMgr() : Module<FontMgr>({EPI<TextureBatcher>::name}) {}
 
-  std::shared_ptr<Font> cp437(const std::string &name, std::shared_ptr<Texture> tex, int char_w, int char_h);
+  std::shared_ptr<Font> cp437(const std::string &name, std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offset = 0);
 
 private:
   std::unordered_map<std::string, std::shared_ptr<Font>> fonts_{};

@@ -2,8 +2,11 @@
 
 namespace baphy {
 
-CP437::CP437(std::shared_ptr<Texture> tex, int char_w, int char_h)
-    : tex_(std::move(tex)), char_w_(static_cast<float>(char_w)), char_h_(static_cast<float>(char_h)) {}
+CP437::CP437(std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offset)
+    : tex_(std::move(tex)),
+    char_w_(static_cast<float>(char_w)),
+    char_h_(static_cast<float>(char_h)),
+    row_offset_(row_offset) {}
 
 void CP437::draw(float x, float y, float size, const std::string &text) {
   float ox = x;
@@ -19,7 +22,7 @@ void CP437::draw(float x, float y, float size, const std::string &text) {
     }
 
     auto ch_x = char_w_ * (ch % 16);
-    auto ch_y = char_h_ * ((ch / 16) - 2);
+    auto ch_y = char_h_ * ((ch / 16) - row_offset_);
     tex_->draw(x, y, char_w_ * size, char_h_ * size, ch_x, ch_y, char_w_, char_h_);
     x += char_w_ * size;
   }

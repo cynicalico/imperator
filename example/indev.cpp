@@ -9,7 +9,7 @@ public:
 
   void initialize() override {
     tex = textures->load(HERE / "res" / "img" / "phantasm_10x10.png", true);
-    font = fonts->cp437("f", tex, 10, 10);
+    font = fonts->cp437(baphy::rnd::base58(11), tex, 10, 10, 2);
   }
 
   void update(double dt) override {

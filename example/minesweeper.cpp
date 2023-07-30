@@ -8,7 +8,7 @@ const int COLS = 30;
 const int MINE_COUNT = 99;
 const float SCALE = 3.0f;
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
-const auto IMG = HERE / "res" / "img" / "minesweeper";
+const auto IMG = HERE / "res" / "minesweeper";
 
 enum class GameStatus { playing, win, lose };
 

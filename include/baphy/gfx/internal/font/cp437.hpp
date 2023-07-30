@@ -8,7 +8,7 @@ namespace baphy {
 
 class CP437 : public Font {
 public:
-  CP437(std::shared_ptr<Texture> tex, int char_w, int char_h);
+  CP437(std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offset);
 
   void draw(float x, float y, float size, const std::string &text) override;
 
@@ -18,6 +18,7 @@ private:
   std::shared_ptr<Texture> tex_{nullptr};
   float char_w_{0};
   float char_h_{0};
+  int row_offset_{0};
 };
 
 } // namespace baphy
