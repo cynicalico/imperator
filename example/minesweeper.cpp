@@ -3,9 +3,9 @@
 #include <mutex>
 #include <unordered_set>
 
-const int ROWS = 30;
-const int COLS = 40;
-const int MINE_COUNT = std::floor((ROWS * COLS) * 0.1);
+const int ROWS = 16;
+const int COLS = 30;
+const int MINE_COUNT = 99;
 const float SCALE = 3.0f;
 const auto HERE = std::filesystem::path(__FILE__).parent_path();
 const auto IMG = HERE / "res" / "img" / "minesweeper";
@@ -183,12 +183,14 @@ private:
 class MinesweeperApp : public baphy::Application {
 public:
   Minesweeper ms{};
-  std::unique_ptr<baphy::Spritesheet> ss{};
-  std::shared_ptr<baphy::Cursor> cursor{};
+
+  std::shared_ptr<baphy::Texture> ss_tex{nullptr};
+  std::unique_ptr<baphy::Spritesheet> ss{nullptr};
+  std::shared_ptr<baphy::Cursor> cursor{nullptr};
 
   void initialize() override {
-    ss = std::make_unique<baphy::Spritesheet>(
-        *textures, IMG / "sheet.png", IMG / "sheet.json", true);
+    ss_tex = textures->load(IMG / "sheet.png", true);
+    ss = std::make_unique<baphy::Spritesheet>(ss_tex, IMG / "sheet.json");
     ss->set_scale(SCALE);
 
     cursor = cursors->create(IMG / "cursor.png", 7, 7);

@@ -61,9 +61,29 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME magic_enum
+        GITHUB_REPOSITORY Neargye/magic_enum
+        GIT_TAG v0.9.3
+)
+
+CPMAddPackage(
         NAME nfd
         GITHUB_REPOSITORY btzy/nativefiledialog-extended
         GIT_TAG 800f58283fbc1f3950abd881357fb44c22f3f44e
+)
+
+CPMAddPackage(
+        NAME openal-soft
+        GITHUB_REPOSITORY kcat/openal-soft
+        GIT_TAG 4227cb83ced45b7a25e3720fe9d75381a40fe0ab
+        OPTIONS
+            "ALSOFT_UTILS OFF"
+            "ALSOFT_EXAMPLES OFF"
+            "ALSOFT_INSTALL OFF"
+            "ALSOFT_INSTALL_HRTF_DATA OFF"
+            "ALSOFT_INSTALL_AMBDEC_PRESETS OFF"
+            "ALSOFT_INSTALL_EXAMPLES OFF"
+            "ALSOFT_INSTALL_UTILS OFF"
 )
 
 CPMAddPackage(
@@ -172,8 +192,10 @@ target_link_libraries(baphy_thirdparty PUBLIC
         glfw
         glfw
         glm::glm
+        magic_enum::magic_enum
         nfd
         nlohmann_json::nlohmann_json
+        OpenAL::OpenAL
         range-v3::range-v3
         rapidcsv
         re2::re2

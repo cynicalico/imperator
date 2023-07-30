@@ -9,6 +9,8 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/core/event_bus.cpp
         src/baphy/core/glfw_callbacks.cpp
 
+        src/baphy/gfx/internal/font/cp437.cpp
+
         src/baphy/gfx/internal/gl/buffer.cpp
         src/baphy/gfx/internal/gl/framebuffer.cpp
         src/baphy/gfx/internal/gl/renderbuffer.cpp
@@ -17,6 +19,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/internal/gl/vertex_array.cpp
 
         src/baphy/gfx/module/batcher.cpp
+        src/baphy/gfx/module/font_mgr.cpp
         src/baphy/gfx/module/gfx_context.cpp
         src/baphy/gfx/module/primitive_batcher.cpp
         src/baphy/gfx/module/shader_mgr.cpp

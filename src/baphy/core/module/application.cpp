@@ -29,6 +29,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   dear = module_mgr->get<DearImgui>();
   input = module_mgr->get<InputMgr>();
   window = module_mgr->get<Window>();
+  fonts = module_mgr->get<FontMgr>();
   gfx = module_mgr->get<GfxContext>();
   primitives = module_mgr->get<PrimitiveBatcher>();
   surfaces = module_mgr->get<SurfaceMgr>();

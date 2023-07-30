@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "baphy/gfx/spritesheet.hpp"
 
 #include "baphy/util/io.hpp"
@@ -13,14 +15,7 @@ void from_json(const nlohmann::json &j, Rect &p) {
   j.at("h").get_to(p.h);
 }
 
-Spritesheet::Spritesheet(
-    TextureBatcher &textures,
-    const std::filesystem::path &path_to_texture,
-    const std::filesystem::path &path_to_spec,
-    bool retro
-) {
-  tex_ = textures.load(path_to_texture, retro);
-
+Spritesheet::Spritesheet(std::shared_ptr<Texture> tex, const std::filesystem::path &path_to_spec) : tex_(std::move(tex)) {
   auto spec = read_json(path_to_spec);
   if (spec) {
     auto frames = json_get<nlohmann::json>(*spec, "frames");

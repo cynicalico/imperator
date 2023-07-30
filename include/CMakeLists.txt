@@ -14,6 +14,9 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/core/msgs.hpp
         include/baphy/core/prio_list.hpp
 
+        include/baphy/gfx/internal/font/cp437.hpp
+        include/baphy/gfx/internal/font/font.hpp
+
         include/baphy/gfx/internal/gl/buffer.hpp
         include/baphy/gfx/internal/gl/framebuffer.hpp
         include/baphy/gfx/internal/gl/renderbuffer.hpp
@@ -24,6 +27,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/internal/gl/vertex_array.hpp
 
         include/baphy/gfx/module/batcher.hpp
+        include/baphy/gfx/module/font_mgr.hpp
         include/baphy/gfx/module/gfx_context.hpp
         include/baphy/gfx/module/primitive_batcher.hpp
         include/baphy/gfx/module/shader_mgr.hpp
