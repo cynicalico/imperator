@@ -10,6 +10,8 @@ class Spritesheet {
 public:
   Spritesheet(std::shared_ptr<Texture> tex, const std::filesystem::path &path_to_spec);
 
+  std::vector<std::string> sprite_names();
+
   void set_scale(float s);
 
   float w(const std::string &sprite_name);

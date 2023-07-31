@@ -18,51 +18,56 @@ std::size_t ParticleSystem::live_count() {
   return live_count_;
 }
 
-void ParticleSystem::set_emitter_pos(float x, float y) {
-  params_.emitter_pos = {x, y};
+void ParticleSystem::set_pos(float x, float y) {
+  params_.position = {x, y};
+  params_.prev_position = params_.position;
 }
 
-void ParticleSystem::set_emitter_rate(float particles_per_second) {
+void ParticleSystem::set_rate(float particles_per_second) {
   params_.emitter_rate = particles_per_second;
 }
 
-void ParticleSystem::set_particle_limit(std::size_t particle_limit) {
+void ParticleSystem::set_limit(std::size_t particle_limit) {
   params_.particle_limit = particle_limit;
   particles_.reserve(particle_limit);
 }
 
-void ParticleSystem::set_ttl(double min, double max) {
+void ParticleSystem::set_ttl(float min, float max) {
   params_.ttl_min = min;
   params_.ttl_max = max;
 }
 
-void ParticleSystem::set_spread(float min, float max) {
-  params_.angle_min = min;
-  params_.angle_max = max;
+void ParticleSystem::set_dir(float dir) {
+  params_.direction = -dir;
 }
 
-void ParticleSystem::set_radial_vel(float min, float max) {
-  params_.delta_min = min;
-  params_.delta_max = max;
+void ParticleSystem::set_spread(float spread) {
+  params_.spread = spread;
+}
+
+void ParticleSystem::set_speed(float min, float max) {
+  params_.speed_min = min;
+  params_.speed_max = max;
 }
 
 void ParticleSystem::set_radial_accel(float min, float max) {
-  params_.accel_min = min;
-  params_.accel_max = max;
+  params_.radial_accel_min = min;
+  params_.radial_accel_max = max;
 }
 
-void ParticleSystem::set_linear_vel(float xmin, float xmax, float ymin, float ymax) {
-  params_.ldx_min = xmin;
-  params_.ldx_max = xmax;
-  params_.ldy_min = ymin;
-  params_.ldy_max = ymax;
+void ParticleSystem::set_tangent_accel(float min, float max) {
+  params_.tangent_accel_min = min;
+  params_.tangent_accel_max = max;
 }
 
 void ParticleSystem::set_linear_accel(float xmin, float xmax, float ymin, float ymax) {
-  params_.lax_min = xmin;
-  params_.lax_max = xmax;
-  params_.lay_min = ymin;
-  params_.lay_max = ymax;
+  params_.linear_accel_min = {xmin, ymin};
+  params_.linear_accel_max = {xmax, ymax};
+}
+
+void ParticleSystem::set_linear_damping(float min, float max) {
+  params_.linear_damping_min = min;
+  params_.linear_damping_max = max;
 }
 
 void ParticleSystem::set_spin(float min, float max) {
@@ -81,158 +86,153 @@ void ParticleSystem::set_colors(const std::vector<RGB> &colors) {
   }
 }
 
-void ParticleSystem::emit_count(std::size_t count, float x, float y) {
-  if (live_count_ >= params_.particle_limit)
-    return;
-
-  for (std::size_t i = 0; i < count && live_count_ < params_.particle_limit; ++i)
-    find_insert_particle_(x, y);
-}
-
-void ParticleSystem::emit_count(std::size_t count) {
-  emit_count(count, params_.emitter_pos.x, params_.emitter_pos.y);
-}
-
-void ParticleSystem::emit(double dt, float x, float y) {
-  if (live_count_ >= params_.particle_limit)
-    return;
-
-  auto acc_step = 1.0 / params_.emitter_rate;
-
-  params_.emitter_acc += dt;
-  while (params_.emitter_acc >= acc_step && live_count_ < params_.particle_limit) {
-    find_insert_particle_(x, y);
-    params_.emitter_acc -= acc_step;
-  }
-
-  // If this is true, we hit the particle limit, but still reduce
-  // our acc until we wouldn't be emitting any more particles
-  while (params_.emitter_acc >= acc_step) {
-    params_.emitter_acc -= acc_step;
-  }
-}
-
-void ParticleSystem::emit(double dt) {
-  emit(dt, params_.emitter_pos.x, params_.emitter_pos.y);
-}
-
 void ParticleSystem::draw() {
   for (const auto &p: particles_)
     if (p.alive) {
       if (ssheet_)
-        ssheet_->draw_wh(p.sprite_name, p.x - (p.w / 2.0), p.y - (p.h / 2.0), p.w, p.h, p.x, p.y, p.tex_angle, p.color);
+        ssheet_->draw_wh(p.sprite_name, p.pos.x - (p.w / 2.0), p.pos.y - (p.h / 2.0), p.w, p.h, p.pos.x, p.pos.y, p.tex_angle, p.color);
       else
-        tex_->draw(p.x - (p.w / 2.0), p.y - (p.h / 2.0), p.w, p.h, p.x, p.y, p.tex_angle, p.color);
+        tex_->draw(p.pos.x - (p.w / 2.0), p.pos.y - (p.h / 2.0), p.w, p.h, p.pos.x, p.pos.y, p.tex_angle, p.color);
     }
 }
 
-void ParticleSystem::find_insert_particle_(float x, float y) {
+void ParticleSystem::move_to(float x, float y) {
+  params_.position = {x, y};
+}
+
+void ParticleSystem::find_insert_particle_(float t) {
   if (live_count_ >= params_.particle_limit)
     return;
-
-  float w, h;
-  std::string sprite_name;
-  if (ssheet_) {
-    sprite_name = rnd::choose(sprite_names_);
-    w = ssheet_->w(sprite_name);
-    h = ssheet_->h(sprite_name);
-  } else {
-    w = tex_->w();
-    h = tex_->h();
-  }
 
   if (!dead_positions_.empty()) {
     std::size_t i = dead_positions_.top();
     dead_positions_.pop();
-
-    particles_[i].ttl = rnd::get<float>(params_.ttl_min, params_.ttl_max);
-    particles_[i].angle = rnd::get<float>(params_.angle_min, params_.angle_max);
-    particles_[i].radial_vel = rnd::get<float>(params_.delta_min, params_.delta_max);
-    particles_[i].radial_accel = rnd::get<float>(params_.accel_min, params_.accel_max);
-    particles_[i].ldx = rnd::get<float>(params_.ldx_min, params_.ldx_max);
-    particles_[i].ldy = rnd::get<float>(params_.ldy_min, params_.ldy_max);
-    particles_[i].lax = rnd::get<float>(params_.lax_min, params_.lax_max);
-    particles_[i].lay = rnd::get<float>(params_.lay_min, params_.lay_max);
-    particles_[i].spin = rnd::get<float>(params_.spin_min, params_.spin_max);
-    particles_[i].x = x;
-    particles_[i].y = y;
-    particles_[i].w = w;
-    particles_[i].h = h;
-    particles_[i].tex_angle = 0.0f;
-    particles_[i].color = std::get<1>(params_.colors[0]);
-    particles_[i].color_idx = 0;
-    particles_[i].acc = 0;
-    particles_[i].alive = true;
-    particles_[i].sprite_name = sprite_name;
+    init_particle_(particles_[i], t);
 
   } else {
-    particles_.emplace_back(
-        rnd::get<float>(params_.ttl_min, params_.ttl_max),
-        rnd::get<float>(params_.angle_min, params_.angle_max),
-        rnd::get<float>(params_.delta_min, params_.delta_max),
-        rnd::get<float>(params_.accel_min, params_.accel_max),
-        rnd::get<float>(params_.ldx_min, params_.ldx_max),
-        rnd::get<float>(params_.ldy_min, params_.ldy_max),
-        rnd::get<float>(params_.lax_min, params_.lax_max),
-        rnd::get<float>(params_.lay_min, params_.lay_max),
-        rnd::get<float>(params_.spin_min, params_.spin_max),
-        x,
-        y,
-        w,
-        h,
-        0.0f,
-        std::get<1>(params_.colors[0]),
-        sprite_name
-    );
+    particles_.emplace_back();
+    init_particle_(particles_.back(), t);
   }
 
   live_count_++;
 }
 
+void ParticleSystem::init_particle_(Particle &p, float t) {
+  p.ttl = rnd::get<float>(params_.ttl_min, params_.ttl_max);
+  p.acc = 0;
+
+  auto pos = params_.prev_position + (params_.position - params_.prev_position) * t;
+  p.pos = pos;
+  p.origin = pos;
+
+  auto dir_min = params_.direction - params_.spread / 2.0f;
+  auto dir_max = params_.direction + params_.spread / 2.0f;
+  auto dir = rnd::get<float>(dir_min, dir_max);
+
+  auto speed = rnd::get<float>(params_.speed_min, params_.speed_max);
+
+  p.vel = glm::vec2{std::cos(glm::radians(dir)), std::sin(glm::radians(dir))} * speed;
+
+  p.linear_accel.x = rnd::get<float>(params_.linear_accel_min.x, params_.linear_accel_max.x);
+  p.linear_accel.y = rnd::get<float>(params_.linear_accel_min.y, params_.linear_accel_max.y);
+
+  p.radial_accel = rnd::get<float>(params_.radial_accel_min, params_.radial_accel_max);
+
+  p.tangent_accel = rnd::get<float>(params_.tangent_accel_min, params_.tangent_accel_max);
+
+  p.linear_damping = rnd::get<float>(params_.linear_damping_min, params_.linear_damping_max);
+
+  if (ssheet_) {
+    p.sprite_name = rnd::choose(sprite_names_);
+    p.w = ssheet_->w(p.sprite_name);
+    p.h = ssheet_->h(p.sprite_name);
+  } else {
+    p.w = tex_->w();
+    p.h = tex_->h();
+  }
+  p.tex_angle = 0;
+
+  p.spin = rnd::get<float>(params_.spin_min, params_.spin_max);
+
+  p.color = std::get<1>(params_.colors[0]);
+  p.color_idx = 0;
+
+  p.alive = true;
+}
+
+void ParticleSystem::emit_(float dt) {
+  auto rate = 1.0f / params_.emitter_rate;
+  params_.emitter_acc += dt;
+  auto tot = params_.emitter_acc - rate;
+
+  while (params_.emitter_acc > rate) {
+    find_insert_particle_(1.0f - (params_.emitter_acc - rate) / tot);
+    params_.emitter_acc -= rate;
+  }
+}
+
 void ParticleSystem::e_update_(const EUpdate &e) {
+  auto dt = static_cast<float>(e.dt);
+
   for (std::size_t i = 0; i < particles_.size(); ++i) {
-    if (!particles_[i].alive)
+    auto &p = particles_[i];
+
+    if (!p.alive)
       continue;
 
-    particles_[i].acc += e.dt;
-    if (particles_[i].acc >= particles_[i].ttl) {
-      particles_[i].alive = false;
+    p.acc += dt;
+    if (p.acc >= p.ttl) {
+      p.alive = false;
       dead_positions_.push(i);
       live_count_--;
 
     } else {
-      // Radial movement
-      particles_[i].radial_vel += particles_[i].radial_accel * e.dt;
-      particles_[i].x += std::cos(particles_[i].angle) * particles_[i].radial_vel * e.dt;
-      particles_[i].y += -std::sin(particles_[i].angle) * particles_[i].radial_vel * e.dt;
+      glm::vec2 radial, tangential;
+      glm::vec2 ppos = p.pos;
 
-      // Linear movement
-      particles_[i].ldx += particles_[i].lax * e.dt;
-      particles_[i].ldy += particles_[i].lay * e.dt;
-      particles_[i].x += particles_[i].ldx * e.dt;
-      particles_[i].y += particles_[i].ldy * e.dt;
+      radial = ppos - p.origin;
+      if (glm::length(radial) != 0)
+        radial = glm::normalize(radial);
+      tangential = radial;
 
-      particles_[i].tex_angle += particles_[i].spin * e.dt;
+      radial *= p.radial_accel;
+
+      float a = tangential.x;
+      tangential.x = -tangential.y;
+      tangential.y = a;
+
+      tangential *= p.tangent_accel;
+
+      p.vel += (radial + tangential + p.linear_accel) * dt;
+      p.vel *= 1.0f / (1.0f + p.linear_damping * dt);
+
+      ppos += p.vel * dt;
+      p.pos = ppos;
+
+      p.tex_angle += p.spin * dt;
 
       // Color modification
-      auto progress = particles_[i].acc / particles_[i].ttl;
-      for (std::size_t j = particles_[i].color_idx; j < params_.colors.size() - 1; ++j) {
+      auto progress = p.acc / p.ttl;
+      for (std::size_t j = p.color_idx; j < params_.colors.size() - 1; ++j) {
         auto [prog1, color1] = params_.colors[j];
         auto [prog2, color2] = params_.colors[j + 1];
         if (progress >= prog1 && progress <= prog2) {
-          double prog = (progress - prog1) / (prog2 - prog1);
-          particles_[i].color = rgba(
+          float prog = (progress - prog1) / (prog2 - prog1);
+          p.color = rgba(
               lerp(prog, color1.r, color2.r),
               lerp(prog, color1.g, color2.g),
               lerp(prog, color1.b, color2.b),
               lerp(prog, color1.a, color2.a)
           );
-          particles_[i].color_idx = j;
+          p.color_idx = j;
           break;
         }
       }
     }
   }
+
+  emit_(dt);
+  params_.prev_position = params_.position;
 }
 
 } // namespace baphy

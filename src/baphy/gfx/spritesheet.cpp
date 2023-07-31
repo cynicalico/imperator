@@ -56,6 +56,11 @@ Spritesheet::Spritesheet(std::shared_ptr<Texture> tex, const std::filesystem::pa
   }
 }
 
+std::vector<std::string> Spritesheet::sprite_names() {
+  auto keys = regions_ | std::ranges::views::keys;
+  return {keys.begin(), keys.end()};
+}
+
 void Spritesheet::set_scale(float s) {
   scale_ = s;
 }

@@ -20,26 +20,29 @@ public:
 
     tex = textures->load(HERE / "res" / "img" / "fruits.png", true);
     ssheet = std::make_unique<baphy::Spritesheet>(tex, HERE / "res" / "img" / "fruits.json");
-    ssheet->set_scale(2);
-    ps = std::make_unique<baphy::ParticleSystem>(ssheet.get(), sprite_names);
-    ps->set_ttl(2.5, 10);
-    ps->set_particle_limit(10000);
-    ps->set_emitter_pos(window->w() / 2, window->h() / 2);
-    ps->set_emitter_rate(5);
-    ps->set_spread(0, 360);
-    ps->set_radial_vel(15, 50);
-    ps->set_radial_accel(0, 10);
+    ps = std::make_unique<baphy::ParticleSystem>(ssheet.get(), ssheet->sprite_names());
+    ps->set_ttl(1, 3);
+    ps->set_limit(200000);
+    ps->set_pos(window->w() / 2, window->h() / 2);
+    ps->set_rate(10000);
+    ps->set_dir(90);
+    ps->set_spread(360);
+    ps->set_speed(50, 150);
+//    ps->set_radial_accel(10, 10);
+//    ps->set_tangent_accel(100, 100);
+    ps->set_linear_damping(2, 2);
     ps->set_spin(-720, 720);
     ps->set_colors({
       baphy::rgba(0xffffffff),
-      baphy::rgba(0xffffff00)
+      baphy::rgba(0xffffffff),
+      baphy::rgba(0x00000000)
     });
   }
 
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
 
-    ps->emit(dt, input->mouse_x(), input->mouse_y());
+    ps->move_to(input->mouse_x(), input->mouse_y());
   }
 
   void draw() override {
