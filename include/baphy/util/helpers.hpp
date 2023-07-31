@@ -111,7 +111,6 @@ std::optional<T> json_get(const nlohmann::json &j, const std::string &key) {
   return j[key].get<T>();
 }
 
-template<typename T>
 double lerp(double t, double min, double max);
 
 double normalize(double x, double min, double max);

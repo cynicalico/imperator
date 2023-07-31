@@ -15,7 +15,10 @@ enum class TBatchType {
 
 using DrawCall = std::function<void(GladGLContext &gl, glm::mat4, float)>;
 
-const inline std::size_t BATCH_SIZE_LIMIT = 600'000;
+// FIXME: Something is wrong, if multiple batches are used it somehow breaks entirely on texture batching (full crash)
+//  Debug showed that the shader->use() statement failed in the lambdas, but I'm guessing that's a red herring
+//  Temporarily increased this number to allow for working on other things until I get around to fixing it
+const inline std::size_t BATCH_SIZE_LIMIT = 12'000'000;
 
 class OBatch {
 public:

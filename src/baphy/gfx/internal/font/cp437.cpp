@@ -43,6 +43,8 @@ glm::vec2 CP437::bounds(float size, const std::string &text) {
   }
   if (b.x < x)
     b.x = x;
+  if (b.x > 0 && b.y == 0)
+    b.y = char_h_ * size;
 
   return b;
 }

@@ -218,7 +218,7 @@ void AudioMgr::e_initialize_(const EInitialize &e) {
   default_device_listener_ = std::jthread([&] {
     std::string curr_default_dev;
 
-    while (!ctx_); // Wait for context
+    while (!ctx_ && !stop_default_dev_listening_); // Wait for context
 
     BAPHY_LOG_DEBUG("Started listening for default audio device changes");
     while (!stop_default_dev_listening_) {

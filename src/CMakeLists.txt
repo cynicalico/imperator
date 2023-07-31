@@ -28,6 +28,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/module/texture_batcher.cpp
 
         src/baphy/gfx/color.cpp
+        src/baphy/gfx/particle_system.cpp
         src/baphy/gfx/spritesheet.cpp
 
         src/baphy/util/module/debug_overlay.cpp
