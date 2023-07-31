@@ -5,7 +5,12 @@
 
 namespace baphy {
 
-ParticleSystem::ParticleSystem(std::shared_ptr<Texture> tex) : tex_(std::move(tex)) {
+ParticleSystem::ParticleSystem(Texture *tex) : tex_(tex) {
+  EventBus::sub<EUpdate>(rnd::base58(11), [&](const auto &e) { e_update_(e); });
+}
+
+ParticleSystem::ParticleSystem(Spritesheet *ssheet, const std::vector<std::string> &sprite_names)
+    : ssheet_(ssheet), sprite_names_(sprite_names) {
   EventBus::sub<EUpdate>(rnd::base58(11), [&](const auto &e) { e_update_(e); });
 }
 
@@ -113,13 +118,28 @@ void ParticleSystem::emit(double dt) {
 
 void ParticleSystem::draw() {
   for (const auto &p: particles_)
-    if (p.alive)
-      tex_->draw(p.x - (p.w / 2.0), p.y - (p.h / 2.0), p.w, p.h, p.x, p.y, p.tex_angle, p.color);
+    if (p.alive) {
+      if (ssheet_)
+        ssheet_->draw_wh(p.sprite_name, p.x - (p.w / 2.0), p.y - (p.h / 2.0), p.w, p.h, p.x, p.y, p.tex_angle, p.color);
+      else
+        tex_->draw(p.x - (p.w / 2.0), p.y - (p.h / 2.0), p.w, p.h, p.x, p.y, p.tex_angle, p.color);
+    }
 }
 
 void ParticleSystem::find_insert_particle_(float x, float y) {
   if (live_count_ >= params_.particle_limit)
     return;
+
+  float w, h;
+  std::string sprite_name;
+  if (ssheet_) {
+    sprite_name = rnd::choose(sprite_names_);
+    w = ssheet_->w(sprite_name);
+    h = ssheet_->h(sprite_name);
+  } else {
+    w = tex_->w();
+    h = tex_->h();
+  }
 
   if (!dead_positions_.empty()) {
     std::size_t i = dead_positions_.top();
@@ -136,13 +156,14 @@ void ParticleSystem::find_insert_particle_(float x, float y) {
     particles_[i].spin = rnd::get<float>(params_.spin_min, params_.spin_max);
     particles_[i].x = x;
     particles_[i].y = y;
-    particles_[i].w = tex_->w();
-    particles_[i].h = tex_->h();
+    particles_[i].w = w;
+    particles_[i].h = h;
     particles_[i].tex_angle = 0.0f;
     particles_[i].color = std::get<1>(params_.colors[0]);
     particles_[i].color_idx = 0;
     particles_[i].acc = 0;
     particles_[i].alive = true;
+    particles_[i].sprite_name = sprite_name;
 
   } else {
     particles_.emplace_back(
@@ -157,10 +178,11 @@ void ParticleSystem::find_insert_particle_(float x, float y) {
         rnd::get<float>(params_.spin_min, params_.spin_max),
         x,
         y,
-        tex_->w(),
-        tex_->h(),
+        w,
+        h,
         0.0f,
-        std::get<1>(params_.colors[0])
+        std::get<1>(params_.colors[0]),
+        sprite_name
     );
   }
 

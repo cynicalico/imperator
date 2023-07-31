@@ -3,8 +3,10 @@
 
 #include "baphy/gfx/module/texture_batcher.hpp"
 #include "baphy/gfx/color.hpp"
+#include "baphy/gfx/spritesheet.hpp"
 #include <numbers>
 #include <stack>
+#include <utility>
 #include <vector>
 
 namespace baphy {
@@ -23,6 +25,7 @@ struct Particle {
   float x, y;
   float w, h;
   float tex_angle;
+  std::string sprite_name;
   RGB color;
 
   std::size_t color_idx{0};
@@ -40,7 +43,8 @@ struct Particle {
       float x, float y,
       float w, float h,
       float tex_angle = 0.0f,
-      RGB color = rgb(0xffffff)
+      RGB color = rgb(0xffffff),
+      std::string sprite_name = ""
   ) : ttl(ttl),
       angle(angle),
       radial_vel(radial_vel),
@@ -51,12 +55,14 @@ struct Particle {
       x(x), y(y),
       w(w), h(h),
       tex_angle(angle),
-      color(color) {};
+      color(color),
+      sprite_name(std::move(sprite_name)) {};
 };
 
 class ParticleSystem {
 public:
-  explicit ParticleSystem(std::shared_ptr<Texture> tex);
+  explicit ParticleSystem(Texture *tex);
+  ParticleSystem(Spritesheet *ssheet, const std::vector<std::string> &sprite_names);
 
   std::size_t live_count();
 
@@ -87,7 +93,10 @@ public:
   void draw();
 
 private:
-  std::shared_ptr<Texture> tex_{nullptr};
+  Texture *tex_{nullptr};
+
+  Spritesheet *ssheet_{nullptr};
+  std::vector<std::string> sprite_names_{};
 
   std::vector<Particle> particles_{};
   std::size_t live_count_{0};
