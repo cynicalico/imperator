@@ -15,9 +15,9 @@ void OBatch::add(std::initializer_list<float> data) {
 void OBatch::draw(glm::mat4 projection, float z_max) {
   vbo_.sync();
 
-  shader_->use();
-  shader_->uniform_mat4f("mvp", projection);
-  shader_->uniform_1f("z_max", z_max);
+  shader_.use();
+  shader_.uniform_mat4f("mvp", projection);
+  shader_.uniform_1f("z_max", z_max);
 
   vao_.draw_arrays(draw_mode_, vbo_.size() / draw_divisor_, vbo_.front() / draw_divisor_);
 }
@@ -27,28 +27,28 @@ void OBatch::clear() {
 }
 
 std::size_t OBatchList::size() const {
-  return batches_[curr_batch_].size();
+  return batches_[curr_batch_]->size();
 }
 
 void OBatchList::clear() {
   for (auto &b: batches_)
-    b.clear();
+    b->clear();
 
   curr_batch_ = 0;
 }
 
 void OBatchList::add(std::initializer_list<float> data) {
   if (batches_.empty())
-    batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+    batches_.emplace_back(std::make_unique<OBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
-  else if (batches_[curr_batch_].size() > BATCH_SIZE_LIMIT) {
+  else if (batches_[curr_batch_]->size() > BATCH_SIZE_LIMIT) {
     if (curr_batch_ == batches_.size() - 1)
-      batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+      batches_.emplace_back(std::make_unique<OBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
     curr_batch_++;
   }
 
-  batches_[curr_batch_].add(data);
+  batches_[curr_batch_]->add(data);
 }
 
 void OBatchList::draw(glm::mat4 projection, float z_max) {
@@ -56,7 +56,7 @@ void OBatchList::draw(glm::mat4 projection, float z_max) {
     return;
 
   for (int i = curr_batch_; i >= 0; --i)
-    batches_[i].draw(projection, z_max);
+    batches_[i]->draw(projection, z_max);
 }
 
 std::size_t TBatch::size() const {
@@ -81,21 +81,21 @@ DrawCall TBatch::get_draw_call() {
   return [&, count, first](GladGLContext &gl, glm::mat4 projection, float z_max) {
     vbo_.sync();
 
-    shader_->use();
-    shader_->uniform_mat4f("mvp", projection);
-    shader_->uniform_1f("z_max", z_max);
+    shader_.use();
+    shader_.uniform_mat4f("mvp", projection);
+    shader_.uniform_1f("z_max", z_max);
 
     vao_.draw_arrays(draw_mode_, count / draw_divisor_, first / draw_divisor_);
   };
 }
 
 std::size_t TBatchList::size() const {
-  return batches_[curr_batch_].size();
+  return batches_[curr_batch_]->size();
 }
 
 void TBatchList::clear() {
   for (auto &b: batches_)
-    b.clear();
+    b->clear();
 
   curr_batch_ = 0;
   stored_draw_calls_.clear();
@@ -103,18 +103,18 @@ void TBatchList::clear() {
 
 void TBatchList::add(std::initializer_list<float> data) {
   if (batches_.empty())
-    batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+    batches_.emplace_back(std::make_unique<TBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
-  else if (batches_[curr_batch_].size() > BATCH_SIZE_LIMIT) {
-    stored_draw_calls_.emplace_back(batches_[curr_batch_].get_draw_call());
+  else if (batches_[curr_batch_]->size() > BATCH_SIZE_LIMIT) {
+    stored_draw_calls_.emplace_back(batches_[curr_batch_]->get_draw_call());
 
     if (curr_batch_ == batches_.size() - 1)
-      batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+      batches_.emplace_back(std::make_unique<TBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
     curr_batch_++;
   }
 
-  batches_[curr_batch_].add(data);
+  batches_[curr_batch_]->add(data);
 }
 
 std::vector<DrawCall> TBatchList::get_draw_calls() {
@@ -126,7 +126,7 @@ std::vector<DrawCall> TBatchList::get_draw_calls() {
   }
 
   if (!batches_.empty())
-    draw_calls.emplace_back(batches_[curr_batch_].get_draw_call());
+    draw_calls.emplace_back(batches_[curr_batch_]->get_draw_call());
 
   return draw_calls;
 }
@@ -157,11 +157,10 @@ DrawCall OTexBatch::get_draw_call(GLuint id) {
   return [&, id, count, first](GladGLContext &gl, glm::mat4 projection, float z_max) {
     vbo_.sync();
 
-    shader_->use();
-    shader_->uniform_mat4f("mvp", projection);
-    shader_->uniform_1f("z_max", z_max);
+    shader_.use();
+    shader_.uniform_mat4f("mvp", projection);
+    shader_.uniform_1f("z_max", z_max);
 
-    gl.ActiveTexture(GL_TEXTURE0);
     gl.BindTexture(GL_TEXTURE_2D, id);
     vao_.draw_arrays(draw_mode_, count / draw_divisor_, first / draw_divisor_);
     gl.BindTexture(GL_TEXTURE_2D, 0);
@@ -169,12 +168,12 @@ DrawCall OTexBatch::get_draw_call(GLuint id) {
 }
 
 std::size_t OTexBatchList::size() const {
-  return batches_[curr_batch_].size();
+  return batches_[curr_batch_]->size();
 }
 
 void OTexBatchList::clear() {
   for (auto &b: batches_)
-    b.clear();
+    b->clear();
 
   curr_batch_ = 0;
   stored_draw_calls_.clear();
@@ -182,18 +181,18 @@ void OTexBatchList::clear() {
 
 void OTexBatchList::add(GLuint id, std::initializer_list<float> data) {
   if (batches_.empty())
-    batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+    batches_.emplace_back(std::make_unique<OTexBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
-  else if (batches_[curr_batch_].size() + data.size() > batches_[curr_batch_].capacity()) {
-    stored_draw_calls_.emplace_back(batches_[curr_batch_].get_draw_call(id));
+  else if (batches_[curr_batch_]->size() + data.size() > batches_[curr_batch_]->capacity()) {
+    stored_draw_calls_.emplace_back(batches_[curr_batch_]->get_draw_call(id));
 
     if (curr_batch_ == batches_.size() - 1)
-      batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+      batches_.emplace_back(std::make_unique<OTexBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
     curr_batch_++;
   }
 
-  batches_[curr_batch_].add(data);
+  batches_[curr_batch_]->add(data);
 }
 
 std::vector<DrawCall> OTexBatchList::get_draw_calls(GLuint id) {
@@ -205,7 +204,7 @@ std::vector<DrawCall> OTexBatchList::get_draw_calls(GLuint id) {
   }
 
   if (!batches_.empty())
-    draw_calls.emplace_back(batches_[curr_batch_].get_draw_call(id));
+    draw_calls.emplace_back(batches_[curr_batch_]->get_draw_call(id));
 
   return draw_calls;
 }
@@ -236,11 +235,10 @@ DrawCall TTexBatch::get_draw_call(GLuint id) {
   return [&, id, count, first](GladGLContext &gl, glm::mat4 projection, float z_max) {
     vbo_.sync();
 
-    shader_->use();
-    shader_->uniform_mat4f("mvp", projection);
-    shader_->uniform_1f("z_max", z_max);
+    shader_.use();
+    shader_.uniform_mat4f("mvp", projection);
+    shader_.uniform_1f("z_max", z_max);
 
-//    gl.ActiveTexture(GL_TEXTURE0 + 1);
     gl.BindTexture(GL_TEXTURE_2D, id);
     vao_.draw_arrays(draw_mode_, count / draw_divisor_, first / draw_divisor_);
     gl.BindTexture(GL_TEXTURE_2D, 0);
@@ -248,12 +246,12 @@ DrawCall TTexBatch::get_draw_call(GLuint id) {
 }
 
 std::size_t TTexBatchList::size() const {
-  return batches_[curr_batch_].size();
+  return batches_[curr_batch_]->size();
 }
 
 void TTexBatchList::clear() {
   for (auto &b: batches_)
-    b.clear();
+    b->clear();
 
   curr_batch_ = 0;
   stored_draw_calls_.clear();
@@ -261,18 +259,18 @@ void TTexBatchList::clear() {
 
 void TTexBatchList::add(GLuint id, std::initializer_list<float> data) {
   if (batches_.empty())
-    batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+    batches_.emplace_back(std::make_unique<TTexBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
-  else if (batches_[curr_batch_].size() > BATCH_SIZE_LIMIT) {
-    stored_draw_calls_.emplace_back(batches_[curr_batch_].get_draw_call(id));
+  else if (batches_[curr_batch_]->size() > BATCH_SIZE_LIMIT) {
+    stored_draw_calls_.emplace_back(batches_[curr_batch_]->get_draw_call(id));
 
     if (curr_batch_ == batches_.size() - 1)
-      batches_.emplace_back(gfx, shader, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_);
+      batches_.emplace_back(std::make_unique<TTexBatch>(*gfx_, *shader_, floats_per_obj_, attrib_format_, draw_mode_, draw_divisor_));
 
     curr_batch_++;
   }
 
-  batches_[curr_batch_].add(data);
+  batches_[curr_batch_]->add(data);
 }
 
 std::vector<DrawCall> TTexBatchList::get_draw_calls(GLuint id) {
@@ -284,7 +282,7 @@ std::vector<DrawCall> TTexBatchList::get_draw_calls(GLuint id) {
   }
 
   if (!batches_.empty())
-    draw_calls.emplace_back(batches_[curr_batch_].get_draw_call(id));
+    draw_calls.emplace_back(batches_[curr_batch_]->get_draw_call(id));
 
   return draw_calls;
 }
@@ -373,6 +371,8 @@ void Batcher::draw_(glm::mat4 projection) {
   auto do_t_tex_draw_calls_ = [&](TTexBatchList &batch) {
     std::ranges::for_each(batch.get_draw_calls(last_t_tex_id_), [&](auto fn) { fn(gfx->gl, projection, z); });
   };
+
+  gfx->enable(Capability::depth_test);
 
   o_tri_batches_->draw(projection, z);
   o_line_batches_->draw(projection, z);

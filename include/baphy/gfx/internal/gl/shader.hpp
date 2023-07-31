@@ -27,8 +27,14 @@ public:
   std::string name{};
 
   Shader(GfxContext &gfx, const ShaderSrc &src);
-
   ~Shader();
+
+  // Copy constructors don't make sense for OpenGL objects
+  Shader(const Shader &) = delete;
+  Shader &operator=(const Shader &) = delete;
+
+  Shader(Shader &&other) noexcept;
+  Shader &operator=(Shader &&other) noexcept;
 
   std::string src() const;
   void recompile(const ShaderSrc &src);

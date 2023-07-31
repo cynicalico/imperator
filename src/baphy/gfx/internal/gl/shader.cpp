@@ -202,6 +202,34 @@ Shader::~Shader() {
   del_id_();
 }
 
+Shader::Shader(Shader &&other) noexcept
+    : gl(other.gl), id(other.id), name(other.name),
+      src_(other.src_),
+      attrib_locs_(std::move(other.attrib_locs_)), uniform_locs_(std::move(other.uniform_locs_))
+{
+  other.id = 0;
+  other.name = "";
+  other.src_ = ShaderSrc{};
+}
+
+Shader &Shader::operator=(Shader &&other) noexcept {
+  if (this != &other) {
+    del_id_();
+
+    gl = other.gl;
+    id = other.id;
+    name = other.name;
+    src_ = other.src_;
+    attrib_locs_ = std::move(other.attrib_locs_);
+    uniform_locs_ = std::move(other.uniform_locs_);
+
+    other.id = 0;
+    other.name = "";
+    other.src_ = ShaderSrc{};
+  }
+  return *this;
+}
+
 std::string Shader::src() const {
   return src_.get();
 }

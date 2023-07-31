@@ -13,24 +13,21 @@ enum class TBatchType {
   none, tri, line, point, tex
 };
 
-using DrawCall = std::function<void(GladGLContext &gl, glm::mat4, float)>;
+using DrawCall = std::function<void(GladGLContext &, glm::mat4, float)>;
 
-// FIXME: Something is wrong, if multiple batches are used it somehow breaks entirely on texture batching (full crash)
-//  Debug showed that the shader->use() statement failed in the lambdas, but I'm guessing that's a red herring
-//  Temporarily increased this number to allow for working on other things until I get around to fixing it
-const inline std::size_t BATCH_SIZE_LIMIT = 12'000'000;
+const inline std::size_t BATCH_SIZE_LIMIT = 600'000;
 
 class OBatch {
 public:
-  OBatch(const std::shared_ptr<GfxContext> &gfx, std::shared_ptr<Shader> shader,
+  OBatch(GfxContext &gfx, Shader &shader,
          std::size_t floats_per_obj, const std::string &attrib_format,
          DrawMode draw_mode, std::size_t draw_divisor)
-      : shader_(std::move(shader)),
-        vao_(*gfx),
-        vbo_(*gfx, floats_per_obj, true, BufTarget::array, BufUsage::dynamic_draw),
+      : shader_(shader),
+        vao_(gfx),
+        vbo_(gfx, floats_per_obj, true, BufTarget::array, BufUsage::dynamic_draw),
         draw_mode_(draw_mode),
         draw_divisor_(draw_divisor) {
-    vao_.attrib(*shader_, vbo_, attrib_format);
+    vao_.attrib(shader_, vbo_, attrib_format);
   }
 
   std::size_t size() const;
@@ -42,7 +39,7 @@ public:
   void draw(glm::mat4 projection, float z_max);
 
 private:
-  std::shared_ptr<Shader> shader_{nullptr};
+  Shader &shader_;
 
   VertexArray vao_;
   FVBuffer vbo_;
@@ -53,13 +50,10 @@ private:
 
 class OBatchList {
 public:
-  std::shared_ptr<GfxContext> gfx;
-  std::shared_ptr<Shader> shader;
-
   OBatchList(std::shared_ptr<GfxContext> gfx, std::shared_ptr<Shader> shader,
              std::size_t floats_per_obj, std::string attrib_format,
              DrawMode draw_mode, std::size_t draw_divisor)
-      : gfx(std::move(gfx)), shader(std::move(shader)),
+      : gfx_(std::move(gfx)), shader_(std::move(shader)),
         floats_per_obj_(floats_per_obj),  attrib_format_(std::move(attrib_format)),
         draw_mode_(draw_mode), draw_divisor_(draw_divisor) {}
 
@@ -72,7 +66,10 @@ public:
   void draw(glm::mat4 projection, float z_max);
 
 private:
-  std::vector<OBatch> batches_{};
+  std::shared_ptr<GfxContext> gfx_;
+  std::shared_ptr<Shader> shader_;
+
+  std::vector<std::unique_ptr<OBatch>> batches_{};
   std::size_t curr_batch_{0};
 
   std::size_t floats_per_obj_;
@@ -84,15 +81,15 @@ private:
 
 class TBatch {
 public:
-  TBatch(const std::shared_ptr<GfxContext> &gfx, std::shared_ptr<Shader> shader,
+  TBatch(GfxContext &gfx, Shader &shader,
          std::size_t floats_per_obj, const std::string &attrib_format,
          DrawMode draw_mode, std::size_t draw_divisor)
-      : shader_(std::move(shader)),
-        vao_(*gfx),
-        vbo_(*gfx, floats_per_obj, false, BufTarget::array, BufUsage::dynamic_draw),
+      : shader_(shader),
+        vao_(gfx),
+        vbo_(gfx, floats_per_obj, false, BufTarget::array, BufUsage::dynamic_draw),
         draw_mode_(draw_mode),
         draw_divisor_(draw_divisor) {
-    vao_.attrib(*shader_, vbo_, attrib_format);
+    vao_.attrib(shader_, vbo_, attrib_format);
   }
 
   std::size_t size() const;
@@ -104,7 +101,7 @@ public:
   DrawCall get_draw_call();
 
 private:
-  std::shared_ptr<Shader> shader_{nullptr};
+  Shader &shader_;
 
   VertexArray vao_;
   FVBuffer vbo_;
@@ -117,13 +114,10 @@ private:
 
 class TBatchList {
 public:
-  std::shared_ptr<GfxContext> gfx;
-  std::shared_ptr<Shader> shader;
-
   TBatchList(std::shared_ptr<GfxContext> gfx, std::shared_ptr<Shader> shader,
              std::size_t floats_per_obj, std::string attrib_format,
              DrawMode draw_mode, std::size_t draw_divisor)
-      : gfx(std::move(gfx)), shader(std::move(shader)),
+      : gfx_(std::move(gfx)), shader_(std::move(shader)),
         floats_per_obj_(floats_per_obj),  attrib_format_(std::move(attrib_format)),
         draw_mode_(draw_mode), draw_divisor_(draw_divisor) {}
 
@@ -136,7 +130,10 @@ public:
   std::vector<DrawCall> get_draw_calls();
 
 private:
-  std::vector<TBatch> batches_{};
+  std::shared_ptr<GfxContext> gfx_;
+  std::shared_ptr<Shader> shader_;
+
+  std::vector<std::unique_ptr<TBatch>> batches_{};
   std::size_t curr_batch_{0};
 
   std::size_t floats_per_obj_;
@@ -150,15 +147,15 @@ private:
 
 class OTexBatch {
 public:
-  OTexBatch(const std::shared_ptr<GfxContext> &gfx, std::shared_ptr<Shader> shader,
+  OTexBatch(GfxContext &gfx, Shader &shader,
          std::size_t floats_per_obj, const std::string &attrib_format,
          DrawMode draw_mode, std::size_t draw_divisor)
-      : shader_(std::move(shader)),
-        vao_(*gfx),
-        vbo_(*gfx, BATCH_SIZE_LIMIT, true, BufTarget::array, BufUsage::dynamic_draw),
+      : shader_(shader),
+        vao_(gfx),
+        vbo_(gfx, BATCH_SIZE_LIMIT, true, BufTarget::array, BufUsage::dynamic_draw),
         draw_mode_(draw_mode),
         draw_divisor_(draw_divisor) {
-    vao_.attrib(*shader_, vbo_, attrib_format);
+    vao_.attrib(shader_, vbo_, attrib_format);
   }
 
   std::size_t size() const;
@@ -171,7 +168,7 @@ public:
   DrawCall get_draw_call(GLuint id);
 
 private:
-  std::shared_ptr<Shader> shader_{nullptr};
+  Shader &shader_;
 
   VertexArray vao_;
   FVBuffer vbo_;
@@ -184,13 +181,10 @@ private:
 
 class OTexBatchList {
 public:
-  std::shared_ptr<GfxContext> gfx;
-  std::shared_ptr<Shader> shader;
-
   OTexBatchList(std::shared_ptr<GfxContext> gfx, std::shared_ptr<Shader> shader,
              std::size_t floats_per_obj, std::string attrib_format,
              DrawMode draw_mode, std::size_t draw_divisor)
-      : gfx(std::move(gfx)), shader(std::move(shader)),
+      : gfx_(std::move(gfx)), shader_(std::move(shader)),
         floats_per_obj_(floats_per_obj),  attrib_format_(std::move(attrib_format)),
         draw_mode_(draw_mode), draw_divisor_(draw_divisor) {}
 
@@ -203,7 +197,10 @@ public:
   std::vector<DrawCall> get_draw_calls(GLuint id);
 
 private:
-  std::vector<OTexBatch> batches_{};
+  std::shared_ptr<GfxContext> gfx_;
+  std::shared_ptr<Shader> shader_;
+
+  std::vector<std::unique_ptr<OTexBatch>> batches_{};
   std::size_t curr_batch_{0};
 
   std::size_t floats_per_obj_;
@@ -217,15 +214,15 @@ private:
 
 class TTexBatch {
 public:
-  TTexBatch(const std::shared_ptr<GfxContext> &gfx, std::shared_ptr<Shader> shader,
+  TTexBatch(GfxContext &gfx, Shader &shader,
             std::size_t floats_per_obj, const std::string &attrib_format,
             DrawMode draw_mode, std::size_t draw_divisor)
-      : shader_(std::move(shader)),
-        vao_(*gfx),
-        vbo_(*gfx, floats_per_obj, false, BufTarget::array, BufUsage::dynamic_draw),
+      : shader_(shader),
+        vao_(gfx),
+        vbo_(gfx, floats_per_obj, false, BufTarget::array, BufUsage::dynamic_draw),
         draw_mode_(draw_mode),
         draw_divisor_(draw_divisor) {
-    vao_.attrib(*shader_, vbo_, attrib_format);
+    vao_.attrib(shader_, vbo_, attrib_format);
   }
 
   std::size_t size() const;
@@ -238,7 +235,7 @@ public:
   DrawCall get_draw_call(GLuint id);
 
 private:
-  std::shared_ptr<Shader> shader_{nullptr};
+  Shader &shader_;
 
   VertexArray vao_;
   FVBuffer vbo_;
@@ -251,13 +248,10 @@ private:
 
 class TTexBatchList {
 public:
-  std::shared_ptr<GfxContext> gfx;
-  std::shared_ptr<Shader> shader;
-
   TTexBatchList(std::shared_ptr<GfxContext> gfx, std::shared_ptr<Shader> shader,
                 std::size_t floats_per_obj, std::string attrib_format,
                 DrawMode draw_mode, std::size_t draw_divisor)
-      : gfx(std::move(gfx)), shader(std::move(shader)),
+      : gfx_(std::move(gfx)), shader_(shader),
         floats_per_obj_(floats_per_obj),  attrib_format_(std::move(attrib_format)),
         draw_mode_(draw_mode), draw_divisor_(draw_divisor) {}
 
@@ -270,7 +264,10 @@ public:
   std::vector<DrawCall> get_draw_calls(GLuint id);
 
 private:
-  std::vector<TTexBatch> batches_{};
+  std::shared_ptr<GfxContext> gfx_{nullptr};
+  std::shared_ptr<Shader> shader_{nullptr};
+
+  std::vector<std::unique_ptr<TTexBatch>> batches_{};
   std::size_t curr_batch_{0};
 
   std::size_t floats_per_obj_;

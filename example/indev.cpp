@@ -18,20 +18,20 @@ public:
 
     tex = textures->load(HERE / "res" / "img" / "spiral.png", true);
     ps = std::make_unique<baphy::ParticleSystem>(tex);
-    ps->set_ttl(2.5, 5);
+    ps->set_ttl(2.5, 10);
     ps->set_particle_limit(200000);
     ps->set_emitter_pos(window->w() / 2, window->h() / 2);
     ps->set_emitter_rate(27000);
     ps->set_spread(0, 360);
     ps->set_radial_vel(-10, 10);
-    ps->set_radial_accel(-10, 10);
+    ps->set_radial_accel(0, 100);
     ps->set_spin(-720, 720);
     ps->set_colors({
-      baphy::rgba(0xffffff80),
-      baphy::rgba(0x80ffff80),
-      baphy::rgba(0xff80ff80),
-      baphy::rgba(0xffff8040),
-      baphy::rgba(0x8080ff00)
+      baphy::rgba(0xffffffff),
+      baphy::rgba(0x80ffffff),
+      baphy::rgba(0xff80ffff),
+      baphy::rgba(0xffff80ff),
+      baphy::rgba(0x8080ffff)
     });
   }
 
@@ -48,6 +48,8 @@ public:
 
     auto str = fmt::format("live particles: {}", ps->live_count());
     auto bb = font->bounds(1, str);
+
+    primitives->rect(1, window->h() - bb.y - 3, bb.x + 2, bb.y + 2, baphy::rgba(0x00000080));
     font->draw(2, window->h() - bb.y - 2, 1, str);
   }
 };
