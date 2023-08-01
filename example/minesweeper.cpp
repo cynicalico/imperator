@@ -209,8 +209,14 @@ class MinesweeperApp : public baphy::Application {
 public:
   Minesweeper ms{};
 
+  std::shared_ptr<baphy::Surface> surf{nullptr};
+  int shake_intensity{0};
+  int draw_off_x{0};
+  int draw_off_y{0};
+
   std::shared_ptr<baphy::Texture> ssheet_tex{nullptr};
   std::unique_ptr<baphy::Spritesheet> ssheet{nullptr};
+  std::unique_ptr<baphy::ParticleSystem> ps{nullptr};
   std::shared_ptr<baphy::Cursor> cursor{nullptr};
 
   std::shared_ptr<baphy::Sound> startup{nullptr};
@@ -238,6 +244,14 @@ public:
     ssheet = std::make_unique<baphy::Spritesheet>(ssheet_tex, IMG / "sheet.json");
     ssheet->set_scale(SCALE);
 
+    ps = std::make_unique<baphy::ParticleSystem>(ssheet.get(),
+        std::vector<std::string>{"shrapnel"});
+    ps->set_ttl(0.5, 2);
+    ps->set_speed(300, 800);
+    ps->set_spread(360);
+    ps->set_radial_accel(100, 300);
+    ps->set_spin(-1080, 1080);
+
     cursor = cursors->create(IMG / "cursor.png", 7, 7);
     cursor->set();
 
@@ -247,6 +261,8 @@ public:
     window->center();
 
     window->set_icon_dir(IMG / "icon");
+
+    surf = surfaces->create(window->w(), window->h());
 
     window->show();
     startup->play();
@@ -274,8 +290,22 @@ public:
         if (in_minefield(x, y)) {
           auto c = minefield_coords(x, y);
           if (ms.reveal(c.y, c.x)) {
+            ps->set_pos(x, y);
+            ps->emit(25);
+
             explosion->play();
             timer->after(1.0, [&] { game_over->play(); });
+
+            shake_intensity = 75;
+            timer->until(0.1, [&] {
+              shake_intensity /= 2;
+              draw_off_x = baphy::rnd::get<int>(-shake_intensity, shake_intensity);
+              draw_off_y = baphy::rnd::get<int>(-shake_intensity, shake_intensity);
+              return shake_intensity != 1;
+            }, [&] {
+              draw_off_x = 0;
+              draw_off_y = 0;
+            });
           }
         }
       }
@@ -285,13 +315,21 @@ public:
   void draw() override {
     gfx->clear(baphy::rgb(0x291d2b));
 
-    draw_border();
-    draw_title();
-    draw_field();
-    draw_selected();
-    draw_mines_remaining();
-    draw_status();
-    draw_timer();
+    surf->draw_on([&] {
+      gfx->clear(baphy::rgba(0x00000000));
+
+      draw_border();
+      draw_title();
+      draw_field();
+      draw_selected();
+      draw_mines_remaining();
+      draw_status();
+      draw_timer();
+    });
+
+    surf->draw(draw_off_x, draw_off_y);
+
+    ps->draw();
   }
 
   bool in_minefield(double x, double y) {
@@ -349,7 +387,7 @@ public:
   void draw_title() {
     ssheet->draw("title", ssheet->w("border_tl"), ssheet->h("border_tl"));
 
-    int x = x = ssheet->w("border_l") + ssheet->w("title");
+    int x = ssheet->w("border_l") + ssheet->w("title");
     int y = ssheet->h("border_t");
     for (; x < window->w() - ssheet->w("border_r"); x += ssheet->w("border_m"))
       ssheet->draw("border_m", x, y);

@@ -26,13 +26,14 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
       BAPHY_LOG_ERROR("Can't handle images with comp '{}', only 3 or 4 channels supported", image_data.comp());
 
     if (format != GL_NONE) {
-      gl.TexImage2D(GL_TEXTURE_2D, 0, format, image_data.w(), image_data.h(), 0, format, GL_UNSIGNED_BYTE, &image_data[0]);
+      w = image_data.w();
+      h = image_data.h();
+
+      gl.TexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, &image_data[0]);
       gl.GenerateMipmap(GL_TEXTURE_2D);
 
       BAPHY_LOG_DEBUG("Loaded texture '{}' ({}x{})", path.string(), w, h);
     }
-    w = image_data.w();
-    h = image_data.h();
 
     if (image_data.comp() == 4) {
       for (int y = 0; y < h; ++y) {

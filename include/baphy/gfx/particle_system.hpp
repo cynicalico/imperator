@@ -46,6 +46,12 @@ public:
 
   std::size_t live_count();
 
+  void set_emitter_lifetime(float t);
+  void start();
+  void stop();
+  void pause();
+  void reset();
+
   void set_pos(float x, float y);
   void set_rate(float particles_per_second);
   void set_limit(std::size_t particle_limit);
@@ -65,6 +71,8 @@ public:
   void set_colors(const std::vector<RGB> &colors);
 
   void move_to(float x, float y);
+
+  void emit(std::size_t num);
 
   void draw();
 

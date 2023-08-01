@@ -18,6 +18,31 @@ std::size_t ParticleSystem::live_count() {
   return live_count_;
 }
 
+void ParticleSystem::set_emitter_lifetime(float t) {
+  params_.lifetime = t;
+  params_.life = t;
+}
+
+void ParticleSystem::start() {
+  params_.active = true;
+}
+
+void ParticleSystem::stop() {
+  params_.active = false;
+  params_.life = params_.lifetime;
+  params_.emitter_acc = 0;
+}
+
+void ParticleSystem::pause() {
+  params_.active = false;
+}
+
+void ParticleSystem::reset() {
+  particles_.clear();
+  params_.life = params_.lifetime;
+  params_.emitter_acc = 0;
+}
+
 void ParticleSystem::set_pos(float x, float y) {
   params_.position = {x, y};
   params_.prev_position = params_.position;
@@ -84,6 +109,14 @@ void ParticleSystem::set_colors(const std::vector<RGB> &colors) {
     params_.colors.emplace_back(acc, color);
     acc += step;
   }
+}
+
+void ParticleSystem::emit(std::size_t num) {
+  if (!params_.active) return;
+
+  num = std::min(num, params_.particle_limit - live_count_);
+  while (num--)
+    find_insert_particle_(1);
 }
 
 void ParticleSystem::draw() {
@@ -161,13 +194,19 @@ void ParticleSystem::init_particle_(Particle &p, float t) {
 }
 
 void ParticleSystem::emit_(float dt) {
-  auto rate = 1.0f / params_.emitter_rate;
-  params_.emitter_acc += dt;
-  auto tot = params_.emitter_acc - rate;
+  if (params_.active) {
+    auto rate = 1.0f / params_.emitter_rate;
+    params_.emitter_acc += dt;
+    auto tot = params_.emitter_acc - rate;
 
-  while (params_.emitter_acc > rate) {
-    find_insert_particle_(1.0f - (params_.emitter_acc - rate) / tot);
-    params_.emitter_acc -= rate;
+    while (params_.emitter_acc > rate) {
+      find_insert_particle_(1.0f - (params_.emitter_acc - rate) / tot);
+      params_.emitter_acc -= rate;
+    }
+
+    params_.life -= dt;
+    if (params_.lifetime != -1 && params_.life < 0)
+      stop();
   }
 }
 
