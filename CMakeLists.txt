@@ -3,6 +3,10 @@ project(baphy VERSION 0.1
         DESCRIPTION "WIP"
         LANGUAGES CXX C)
 
+# This is kind of a workaround to handle the OpenAL DLL... not sure what the real solution is
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 include(cmake/get_cpm.cmake)
 include(cmake/setup_ccache.cmake)
 
@@ -42,23 +46,7 @@ if(OpenMP_CXX_FOUND)
 endif()
 
 add_subdirectory(example)
-if (WIN32)
-    # Copy the OpenAL dll over to the example directory
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${OpenAL_BINARY_DIR}/OpenAL32.dll"
-            "${CMAKE_BINARY_DIR}/example"
-            )
-endif ()
 
 if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/scratch)
     add_subdirectory(scratch)
-    if (WIN32)
-        # Copy the OpenAL dll over to the example directory
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${OpenAL_BINARY_DIR}/OpenAL32.dll"
-                "${CMAKE_BINARY_DIR}/scratch"
-                )
-    endif ()
 endif ()
