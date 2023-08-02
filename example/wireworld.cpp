@@ -309,7 +309,7 @@ public:
 
     debug->set_cmd_key("f10");
     debug->set_cmd_callback("!ww", [&](const std::string &cmd) {
-      auto i = std::stod(cmd);
+      auto i = baphy::stod(cmd).value_or(0);
       bool is_paused = timer->is_paused(sim_timer);
       timer->cancel(sim_timer);
       sim_timer = timer->every(i, [&] { ww.step(100); });

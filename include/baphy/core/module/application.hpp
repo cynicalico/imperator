@@ -36,6 +36,10 @@ public:
   std::shared_ptr<TimerMgr> timer{nullptr};
   std::shared_ptr<TweenMgr> tween{nullptr};
 
+  struct {
+    bool first{true};
+  } frameinfo{};
+
   Application() : Module<Application>({
       EPI<AudioMgr>::name,
       EPI<CursorMgr>::name,

@@ -8,6 +8,7 @@
 #include <numbers>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace baphy {
 
@@ -76,6 +77,8 @@ public:
   void resume(const std::string &tag);
   void toggle(const std::string &tag);
 
+  bool finished(const std::string &tag);
+
 private:
   struct TweenI_ {
   protected:
@@ -134,6 +137,7 @@ private:
   };
 
   std::unordered_map<std::string, std::unique_ptr<TweenI_>> tweens_{};
+  std::unordered_set<std::string> finished_tweens_{};
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;

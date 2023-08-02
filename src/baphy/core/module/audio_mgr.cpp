@@ -73,6 +73,23 @@ bool AudioMgr::open_device(const std::string &device_name) {
   else
     BAPHY_LOG_WARN("Reopen extension not supported on this system; change in audio device will require reloading all audio buffers");
 
+  std::call_once(context_opened_, [&] {
+    default_device_listener_ = std::jthread([&] {
+      std::string curr_default_dev;
+
+      BAPHY_LOG_DEBUG("Started listening for default audio device changes");
+      while (!stop_default_dev_listening_) {
+        auto devices = available_devices();
+        if (devices[0] != curr_default_dev)
+          EventBus::send<EDefaultAudioDeviceChanged>(devices[0]);
+        curr_default_dev = devices[0];
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+      BAPHY_LOG_DEBUG("Stopped listening for default audio device changes");
+    });
+  });
+
   return true;
 }
 
@@ -215,23 +232,6 @@ bool AudioMgr::check_alc_errors_() {
 }
 
 void AudioMgr::e_initialize_(const EInitialize &e) {
-  default_device_listener_ = std::jthread([&] {
-    std::string curr_default_dev;
-
-    while (!ctx_ && !stop_default_dev_listening_); // Wait for context
-
-    BAPHY_LOG_DEBUG("Started listening for default audio device changes");
-    while (!stop_default_dev_listening_) {
-      auto devices = available_devices();
-      if (devices[0] != curr_default_dev)
-        EventBus::send<EDefaultAudioDeviceChanged>(devices[0]);
-      curr_default_dev = devices[0];
-
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-    BAPHY_LOG_DEBUG("Stopped listening for default audio device changes");
-  });
-
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
   EventBus::sub<EDefaultAudioDeviceChanged>(module_name, [&](const auto &e) { e_default_audio_device_changed_(e); });
 
@@ -240,7 +240,8 @@ void AudioMgr::e_initialize_(const EInitialize &e) {
 
 void AudioMgr::e_shutdown_(const EShutdown &e) {
   stop_default_dev_listening_ = true;
-  default_device_listener_.join();
+  if (default_device_listener_.joinable())
+    default_device_listener_.join();
 
   Module::e_shutdown_(e);
 }

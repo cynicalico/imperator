@@ -6,6 +6,7 @@
 #include "AL/alc.h"
 #include "AL/alext.h"
 #include "libnyquist/Decoders.h"
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,7 @@ public:
   std::shared_ptr<Sound> load(const std::filesystem::path &path);
 
 private:
+  std::once_flag context_opened_{};
   bool stop_default_dev_listening_{false};
   std::jthread default_device_listener_;
 

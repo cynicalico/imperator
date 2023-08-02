@@ -12,6 +12,8 @@ public:
   std::shared_ptr<baphy::Texture> font_tex{nullptr};
   std::shared_ptr<baphy::Font> font{nullptr};
 
+  float ps_x{0};
+
   void initialize() override {
     cursors->create(HERE / "res" / "img" / "dot.png", 4, 4)->set();
 
@@ -21,17 +23,17 @@ public:
     tex = textures->load(HERE / "res" / "img" / "fruits.png", true);
     ssheet = std::make_unique<baphy::Spritesheet>(tex, HERE / "res" / "img" / "fruits.json");
     ps = std::make_unique<baphy::ParticleSystem>(ssheet.get(), ssheet->sprite_names());
-    ps->set_ttl(1, 3);
+    ps->set_ttl(1, 5);
     ps->set_limit(200000);
     ps->set_pos(window->w() / 2, window->h() / 2);
-    ps->set_rate(10000);
+    ps->set_rate(40000);
     ps->set_dir(90);
     ps->set_spread(360);
     ps->set_speed(50, 150);
     ps->set_linear_accel(0, 0, 200, 200);
-//    ps->set_radial_accel(10, 10);
-//    ps->set_tangent_accel(100, 100);
-    ps->set_linear_damping(2, 2);
+    ps->set_radial_accel(0, 50);
+    ps->set_tangent_accel(-100, 100);
+    ps->set_linear_damping(0.5, 2);
     ps->set_spin(-720, 720);
     ps->set_colors({
       baphy::rgba(0xffffffff),
@@ -43,7 +45,10 @@ public:
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
 
-    ps->move_to(input->mouse_x(), input->mouse_y());
+    if (tween->finished("ps_move") || frameinfo.first)
+      tween->begin("ps_move", ps_x, (ps_x == 0) ? window->w() : 0.0f, 1.0, baphy::Easing::linear, [&](const auto &v) { ps_x = v; });
+
+    ps->move_to(ps_x, 0);
   }
 
   void draw() override {

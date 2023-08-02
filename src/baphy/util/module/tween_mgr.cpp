@@ -20,6 +20,10 @@ void TweenMgr::toggle(const std::string &tag) {
     it->second->paused = !it->second->paused;
 }
 
+bool TweenMgr::finished(const std::string &tag) {
+  return finished_tweens_.contains(tag);
+}
+
 void TweenMgr::e_initialize_(const baphy::EInitialize &e) {
   EventBus::sub<EUpdate>(module_name, [&](const auto &e) { e_update_(e); });
 
@@ -31,11 +35,14 @@ void TweenMgr::e_shutdown_(const baphy::EShutdown &e) {
 }
 
 void TweenMgr::e_update_(const baphy::EUpdate &e) {
+  finished_tweens_.clear();
+
   for (auto it = tweens_.begin(); it != tweens_.end(); ) {
     auto &tween = it->second;
 
     if (!tween->paused)
       if (tween->update(e.dt)) {
+        finished_tweens_.insert(it->first);
         it = tweens_.erase(it);
         continue;
       }
