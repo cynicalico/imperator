@@ -30,6 +30,7 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/module/batcher.hpp
         include/baphy/gfx/module/font_mgr.hpp
         include/baphy/gfx/module/gfx_context.hpp
+        include/baphy/gfx/module/gui_mgr.hpp
         include/baphy/gfx/module/primitive_batcher.hpp
         include/baphy/gfx/module/shader_mgr.hpp
         include/baphy/gfx/module/surface_mgr.hpp

@@ -247,7 +247,7 @@ public:
     ps = std::make_unique<baphy::ParticleSystem>(ssheet.get(),
         std::vector<std::string>{"shrapnel"});
     ps->set_ttl(0.5, 2);
-    ps->set_speed(300, 800);
+    ps->set_speed(500, 1500);
     ps->set_spread(360);
     ps->set_radial_accel(100, 300);
     ps->set_spin(-1080, 1080);

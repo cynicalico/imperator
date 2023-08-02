@@ -421,7 +421,7 @@ public:
   void draw_empty() {
     int w = ww.cols * cell_size;
     int h = ww.rows * cell_size;
-    primitives->rect(x_off, y_off, w, h, cell_colors[CellState::empty]);
+    primitives->fill_rect(x_off, y_off, w, h, cell_colors[CellState::empty]);
   }
 
   void draw_cells() {
@@ -430,7 +430,7 @@ public:
         int x = x_off + (c * cell_size);
         int y = y_off + (r * cell_size);
         if (cell_size > 1)
-            primitives->rect(x, y, cell_size, cell_size, cell_colors[ww.get(r, c)]);
+            primitives->fill_rect(x, y, cell_size, cell_size, cell_colors[ww.get(r, c)]);
         else
             primitives->point(x, y, cell_colors[ww.get(r, c)]);
       }
@@ -450,7 +450,7 @@ public:
     };
 
     for (const auto &[i, c]: baphy::enumerate(pen.row())) {
-      primitives->rect(base_x + off + 1, base_y + 1, pen_indicator_size, pen_indicator_size, cell_colors[c]);
+      primitives->fill_rect(base_x + off + 1, base_y + 1, pen_indicator_size, pen_indicator_size, cell_colors[c]);
       if (i == pen.col())
         draw_selected();
       off += pen_indicator_size + pen_indicator_padding;

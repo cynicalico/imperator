@@ -22,6 +22,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/module/batcher.cpp
         src/baphy/gfx/module/font_mgr.cpp
         src/baphy/gfx/module/gfx_context.cpp
+        src/baphy/gfx/module/gui_mgr.cpp
         src/baphy/gfx/module/primitive_batcher.cpp
         src/baphy/gfx/module/shader_mgr.cpp
         src/baphy/gfx/module/surface_mgr.cpp

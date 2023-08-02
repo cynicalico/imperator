@@ -12,6 +12,7 @@
 #include "baphy/gfx/module/font_mgr.hpp"
 #include "baphy/gfx/module/primitive_batcher.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
+#include "baphy/gfx/module/gui_mgr.hpp"
 #include "baphy/gfx/module/shader_mgr.hpp"
 #include "baphy/gfx/module/surface_mgr.hpp"
 #include "baphy/gfx/module/texture_batcher.hpp"
@@ -57,6 +58,7 @@ void Engine::run_application(const InitializeParams &window_open_params) {
   module_mgr_->create<FontMgr>();
   module_mgr_->create<PrimitiveBatcher>();
   module_mgr_->create<GfxContext>();
+  module_mgr_->create<GuiMgr>();
   module_mgr_->create<ShaderMgr>();
   module_mgr_->create<SurfaceMgr>();
   module_mgr_->create<TextureBatcher>();
