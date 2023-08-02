@@ -1,6 +1,6 @@
 {
   "general": {
-    "fps": false,
+    "fps": true,
     "mem": false,
     "latency": false
   },

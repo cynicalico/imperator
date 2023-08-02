@@ -28,6 +28,7 @@ public:
     ps->set_dir(90);
     ps->set_spread(360);
     ps->set_speed(50, 150);
+    ps->set_linear_accel(0, 0, 200, 200);
 //    ps->set_radial_accel(10, 10);
 //    ps->set_tangent_accel(100, 100);
     ps->set_linear_damping(2, 2);
@@ -61,6 +62,6 @@ public:
 BAPHY_RUN(Indev,
     .title = "Indev",
     .size = {500, 500},
-    .flags = baphy::WindowFlags::centered,
+    .flags = baphy::WindowFlags::borderless,
     .debug_overlay_options_path = HERE / "debug_overlay_options.json"
 )
