@@ -10,7 +10,7 @@ class CP437 : public Font {
 public:
   CP437(std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offset);
 
-  void draw(float x, float y, float size, const std::string &text) override;
+  void draw(float x, float y, float size, const std::string &text, const RGB &color) override;
 
   glm::vec2 bounds(float size, const std::string &text) override;
 

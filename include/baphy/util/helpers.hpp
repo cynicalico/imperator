@@ -2,6 +2,7 @@
 #define BAPHY_UTIL_HELPERS_H
 
 #include <concepts>
+#include <deque>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -50,6 +51,56 @@ std::optional<R> sto_opt(F &&f, Args &&...args) {
 }
 
 } // namespace internal
+
+template<typename T>
+class History {
+public:
+  explicit History(std::size_t size) : size_(size) {}
+
+  History(std::size_t size, T fill) : History(size) {
+    v_.resize(size, fill);
+  }
+
+  std::size_t size() const;
+
+  void clear();
+
+  void update(T v);
+
+  T &operator[](std::size_t idx);
+  const T &operator[](std::size_t idx) const;
+
+private:
+  std::deque<T> v_{};
+  std::size_t size_;
+};
+
+template<typename T>
+std::size_t History<T>::size() const {
+  return size_;
+}
+
+template<typename T>
+void History<T>::clear() {
+  v_.clear();
+}
+
+template<typename T>
+void History<T>::update(T v) {
+  v_.push_front(v);
+  if (v_.size() > size_)
+    v_.pop_back();
+}
+
+template<typename T>
+T &History<T>::operator[](std::size_t idx) {
+  return v_[idx];
+}
+
+template<typename T>
+const T &History<T>::operator[](std::size_t idx) const {
+  return v_[idx];
+}
 
 template <std::ranges::range T>
 constexpr auto enumerate(T &&iterable) {

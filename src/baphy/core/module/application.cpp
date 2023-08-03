@@ -14,6 +14,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
       module_name, {
           EPI<AudioMgr>::name,
           EPI<InputMgr>::name,
+          EPI<GuiMgr>::name,
           EPI<ThreadPool>::name,
           EPI<TimerMgr>::name,
           EPI<TweenMgr>::name,
@@ -33,6 +34,7 @@ void Application::e_initialize_(const baphy::EInitialize &e) {
   window = module_mgr->get<Window>();
   fonts = module_mgr->get<FontMgr>();
   gfx = module_mgr->get<GfxContext>();
+  gui = module_mgr->get<GuiMgr>();
   primitives = module_mgr->get<PrimitiveBatcher>();
   surfaces = module_mgr->get<SurfaceMgr>();
   textures = module_mgr->get<TextureBatcher>();

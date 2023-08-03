@@ -8,7 +8,7 @@ CP437::CP437(std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offse
     char_h_(static_cast<float>(char_h)),
     row_offset_(row_offset) {}
 
-void CP437::draw(float x, float y, float size, const std::string &text) {
+void CP437::draw(float x, float y, float size, const std::string &text, const RGB &color) {
   float ox = x;
   for (const auto &ch: text) {
     if (ch == '\n') {
@@ -23,7 +23,7 @@ void CP437::draw(float x, float y, float size, const std::string &text) {
 
     auto ch_x = char_w_ * (ch % 16);
     auto ch_y = char_h_ * ((ch / 16) - row_offset_);
-    tex_->draw(x, y, char_w_ * size, char_h_ * size, ch_x, ch_y, char_w_, char_h_);
+    tex_->draw(x, y, char_w_ * size, char_h_ * size, ch_x, ch_y, char_w_, char_h_, color);
     x += char_w_ * size;
   }
 }
