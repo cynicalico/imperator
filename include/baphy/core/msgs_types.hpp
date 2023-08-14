@@ -33,6 +33,7 @@ struct InitializeParams {
 
   bool win32_force_light_mode{false};
   bool win32_force_dark_mode{false};
+  bool win32_force_square_corners{true};
 
   std::filesystem::path debug_overlay_options_path{};
 };

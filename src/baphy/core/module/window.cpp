@@ -10,8 +10,22 @@
 #include "GLFW/glfw3native.h"
 #include <dwmapi.h>
 
+#pragma comment(lib, "ntdll.lib")
+
+extern "C" {
+typedef LONG NTSTATUS, *PNTSTATUS;
+#define STATUS_SUCCESS (0x00000000)
+
+// Windows 2000 and newer
+NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
+}
+
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
+#define DWMWA_WINDOW_CORNER_PREFERENCE 33
 #endif
 #endif
 
@@ -49,6 +63,16 @@ void Window::open_(const baphy::InitializeParams &params) {
   SetWindowLongPtr(win32_hwnd_, GWLP_WNDPROC, (LONG_PTR)WndProc_);
 
   set_win32_titlebar_color_(win32_hwnd_);
+
+  RTL_OSVERSIONINFOEXW win32_os_ver;
+  win32_os_ver.dwOSVersionInfoSize = sizeof(win32_os_ver);
+  NTSTATUS status = RtlGetVersion(&win32_os_ver);
+  assert(status == STATUS_SUCCESS);
+
+  if (win32_os_ver.dwBuildNumber > 22000 && params.win32_force_square_corners) {
+    DWORD p = 1;
+    DwmSetWindowAttribute(win32_hwnd_, DWMWA_WINDOW_CORNER_PREFERENCE, &p, sizeof(p));
+  }
 #endif
 
   set_icon_dir(DATA_FOLDER / "icon");
@@ -494,6 +518,5 @@ LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM
   return CallWindowProc(window->win32_saved_WndProc_, hwnd, message, wParam, lParam);
 }
 #endif
-
 
 } // namespace baphy
