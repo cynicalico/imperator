@@ -9,3 +9,5 @@ build/
 data/log/
 
 scratch/
+
+example/*_buddhabrot.png

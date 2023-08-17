@@ -5,6 +5,7 @@
 #include "baphy/gfx/internal/font/cp437.hpp"
 #include "baphy/gfx/internal/font/font.hpp"
 #include "baphy/gfx/module/texture_batcher.hpp"
+#include <concepts>
 #include <string>
 #include <unordered_map>
 
@@ -14,7 +15,9 @@ class FontMgr : public Module<FontMgr> {
 public:
   FontMgr() : Module<FontMgr>({EPI<TextureBatcher>::name}) {}
 
-  std::shared_ptr<Font> cp437(const std::string &name, std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offset = 0);
+  template<typename T, typename... Args>
+  requires std::derived_from<T, Font>
+  std::shared_ptr<T> load(const std::string &name, Args &&...args);
 
 private:
   std::unordered_map<std::string, std::shared_ptr<Font>> fonts_{};
@@ -22,6 +25,17 @@ private:
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
 };
+
+template<typename T, typename... Args>
+requires std::derived_from<T, Font>
+std::shared_ptr<T> FontMgr::load(const std::string &name, Args &&... args) {
+  if (auto it = fonts_.find(name); it != fonts_.end())
+    return std::dynamic_pointer_cast<T>(it->second);
+
+  auto f = std::make_shared<T>(std::forward<Args>(args)...);
+  fonts_[name] = f;
+  return f;
+}
 
 } // namespace baphy
 

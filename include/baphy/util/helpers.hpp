@@ -164,7 +164,7 @@ std::optional<T> json_get(const nlohmann::json &j, const std::string &key) {
 
 double lerp(double t, double min, double max);
 
-double normalize(double x, double min, double max);
+double normalize(double x, double min, double max, double norm_min = 0, double norm_max = 1);
 
 } // namespace baphy
 

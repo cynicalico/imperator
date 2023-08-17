@@ -8,6 +8,7 @@
 #include "baphy/gfx/module/batcher.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/texture_batcher.hpp"
+#include "baphy/util/io.hpp"
 #include "glm/glm.hpp"
 #include <memory>
 
@@ -30,7 +31,11 @@ public:
   template<std::invocable T>
   void draw_on(T f);
 
+  void draw(float x, float y, float w, float h);
   void draw(float x, float y);
+
+  ImageData read();
+  void write_png(const std::filesystem::path &path);
 
 private:
   float w_;
@@ -61,6 +66,8 @@ private:
 
   void push_(glm::mat4 projection, GLuint fbo_id, GLsizei w, GLsizei h);
   void pop_();
+
+  ImageData read_(GLuint fbo_id, GLsizei w, GLsizei h);
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;

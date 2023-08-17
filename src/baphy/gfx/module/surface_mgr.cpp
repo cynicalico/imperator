@@ -24,8 +24,23 @@ float Surface::h() const {
   return h_;
 }
 
+void Surface::draw(float x, float y, float w, float h) {
+  fbo->get_texture("color")->draw(x, y, w, h);
+}
+
 void Surface::draw(float x, float y) {
   fbo->get_texture("color")->draw(x, y);
+}
+
+ImageData Surface::read() {
+  return mgr->read_(fbo->id, w_, h_);
+}
+
+void Surface::write_png(const std::filesystem::path &path) {
+  auto data = read();
+
+  stbi_flip_vertically_on_write(true);
+  stbi_write_png(path.string().c_str(), data.w(), data.h(), data.comp(), data.bytes(), data.w() * data.comp());
 }
 
 std::shared_ptr<Surface> SurfaceMgr::create(float w, float h) {
@@ -68,6 +83,15 @@ void SurfaceMgr::pop_() {
   // Restore the viewport
   auto viewport = viewport_stack_.back();
   gfx->gl.Viewport(0, 0, viewport.x, viewport.y);
+}
+
+ImageData SurfaceMgr::read_(GLuint fbo_id, GLsizei w, GLsizei h) {
+  gfx->gl.BindFramebuffer(GL_READ_FRAMEBUFFER, fbo_id);
+
+  ImageData data(w, h, 4);
+  gfx->gl.ReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data.bytes());
+
+  return data;
 }
 
 void SurfaceMgr::e_initialize_(const EInitialize &e) {

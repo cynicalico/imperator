@@ -30,6 +30,7 @@
 #include "baphy/util/type_id.hpp"
 
 #include "fmt/format.h"
+#include "fmt/chrono.h"
 #include "fmt/ranges.h"
 
 #include <filesystem>

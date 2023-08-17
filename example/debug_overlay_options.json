@@ -5,7 +5,7 @@
     "latency": false
   },
   "log": {
-    "show": true,
+    "show": false,
     "collapsed": false
   },
   "controls": {

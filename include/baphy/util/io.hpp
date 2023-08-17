@@ -4,6 +4,7 @@
 #include "GLFW/glfw3.h"
 #include "nlohmann/json.hpp"
 #include "stb_image.h"
+#include "stb_image_write.h"
 #include <filesystem>
 #include <optional>
 
@@ -12,6 +13,8 @@ namespace baphy {
 class ImageData {
 public:
   explicit ImageData(const std::filesystem::path &path, int desired_channels = 0);
+  ImageData(int w, int h, int channels = 4);
+
   ~ImageData();
 
   ImageData(const ImageData &) = delete;

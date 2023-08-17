@@ -1,8 +1,10 @@
 #include "baphy/util/io.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "baphy/util/log.hpp"
 #include "stb_image.h"
+#include "stb_image_write.h"
 #include <fstream>
 
 namespace baphy {
@@ -26,6 +28,10 @@ ImageData::ImageData(const std::filesystem::path &path, int desired_channels) {
   bytes_ = stbi_load(path.string().c_str(), &w_, &h_, &comp_, desired_channels);
   if (!bytes_)
     BAPHY_LOG_ERROR("Failed to load image data '{}': {}", path.string(), stbi_failure_reason());
+}
+
+ImageData::ImageData(int w, int h, int channels) : w_(w), h_(h), comp_(channels) {
+  bytes_ = new stbi_uc[w * h * channels];
 }
 
 ImageData::~ImageData() {
