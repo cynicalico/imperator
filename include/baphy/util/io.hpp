@@ -13,7 +13,7 @@ namespace baphy {
 class ImageData {
 public:
   explicit ImageData(const std::filesystem::path &path, int desired_channels = 0);
-  ImageData(int w, int h, int channels = 4);
+  ImageData(std::size_t w, std::size_t h, std::size_t channels = 4);
 
   ~ImageData();
 
@@ -23,8 +23,8 @@ public:
   ImageData(ImageData &&other) noexcept;
   ImageData &operator=(ImageData &&other) noexcept;
 
-  stbi_uc &operator[](int index);
-  const stbi_uc &operator[](int index) const;
+  stbi_uc &operator[](std::size_t index);
+  const stbi_uc &operator[](std::size_t index) const;
 
   stbi_uc *bytes();
 
@@ -35,11 +35,11 @@ public:
   GLFWimage glfw_image();
 
 private:
-  stbi_uc *bytes_{nullptr};
+  std::vector<stbi_uc> bytes_{};
 
-  int w_{0};
-  int h_{0};
-  int comp_{0};
+  std::size_t w_{0};
+  std::size_t h_{0};
+  std::size_t comp_{0};
 };
 
 const std::filesystem::path DATA_FOLDER =
