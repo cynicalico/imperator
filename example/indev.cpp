@@ -12,8 +12,6 @@ public:
   std::shared_ptr<baphy::PrimitiveButton> b1;
   std::shared_ptr<baphy::PrimitiveButton> b2;
 
-  baphy::HSV b1_color{baphy::rgb("red").to_hsv()};
-
   void initialize() override {
     cursors->create(HERE / "res" / "img" / "dot.png", 4, 4)->set();
 
@@ -39,9 +37,6 @@ public:
 
   void update(double dt) override {
     if (input->pressed("escape")) window->set_should_close(true);
-
-    b1_color.h = std::fmod(b1_color.h + dt * 45, 360.0f);
-    b1->set_fg_color(b1_color.to_rgb());
   }
 
   void draw() override {

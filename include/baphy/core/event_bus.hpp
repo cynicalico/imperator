@@ -102,6 +102,19 @@ public:
     }
   }
 
+  // Call the receivers in reverse-dependency order
+  // Useful if you need things to shut down correctly
+  template<typename T, typename... Args>
+  static void send_nowait_rev(Args &&... args) {
+    auto e_idx = type_id<T>;
+
+    if (e_idx < receivers_.size()) {
+      auto pay = std::any(T{std::forward<Args>(args)...});
+      for (const auto &p: receivers_[type_id<T>] | std::views::reverse)
+        p.v->call(pay);
+    }
+  }
+
   template<typename T>
   static void poll(const std::string &name) {
     auto e_idx = type_id<T>;

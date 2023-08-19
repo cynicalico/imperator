@@ -23,6 +23,8 @@ struct EInitialize {
 
 struct EShutdown {};
 
+struct EShutdownEngine {};
+
 struct EStartApplication {};
 
 struct EUpdate {

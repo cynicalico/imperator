@@ -61,6 +61,7 @@ protected:
 
 private:
   std::once_flag is_initialized_;
+  std::once_flag is_shutdown_;
 };
 
 template<class T, class TR, typename... Args>
@@ -85,6 +86,7 @@ std::shared_ptr<T> ModuleMgr::get() const {
 template<typename T>
 Module<T>::Module(std::vector<std::string> &&dependencies) : ModuleI() {
   module_name = EPI<T>::name;
+
   EventBus::sub<EInitialize>(
       module_name,
       std::forward<std::vector<std::string>>(dependencies),
@@ -92,7 +94,14 @@ Module<T>::Module(std::vector<std::string> &&dependencies) : ModuleI() {
         std::call_once(is_initialized_, [&]() { e_initialize_(e); });
       }
   );
-  EventBus::sub<EShutdown>(module_name, [&](const auto &e) { e_shutdown_(e); });
+
+  EventBus::sub<EShutdown>(
+      module_name,
+      std::forward<std::vector<std::string>>(dependencies),
+      [&](const auto &e) {
+        std::call_once(is_shutdown_, [&]() { e_shutdown_(e); });
+      }
+  );
 
   BAPHY_LOG_DEBUG("{} created", module_name);
 }

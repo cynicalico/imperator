@@ -463,7 +463,7 @@ void Window::e_end_frame_(const EEndFrame &e) {
 void Window::e_glfw_window_close_(const EGlfwWindowClose &e) {
   no_more_polling_ = true;
 
-  EventBus::send_nowait<EShutdown>();
+  EventBus::send_nowait<EShutdownEngine>();
 }
 
 /*******************************************************************************

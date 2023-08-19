@@ -5,13 +5,6 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME fpng
-        GITHUB_REPOSITORY richgel999/fpng
-        GIT_TAG 163d5714a0b0044a31d49291ad7da2e2107bf66b
-        DOWNLOAD_ONLY YES
-)
-
-CPMAddPackage(
         NAME glad2
         GITHUB_REPOSITORY Dav1dde/glad
         GIT_TAG v2.0.4
@@ -150,10 +143,6 @@ CPMAddPackage(
 )
 
 add_library(baphy_thirdparty STATIC
-        ${fpng_SOURCE_DIR}/src/fpng.h
-
-        ${fpng_SOURCE_DIR}/src/fpng.cpp
-
         ${imgui_SOURCE_DIR}/imconfig.h
         ${imgui_SOURCE_DIR}/imgui.h
         ${imgui_SOURCE_DIR}/imgui_internal.h
@@ -198,7 +187,6 @@ else ()
 endif ()
 
 target_include_directories(baphy_thirdparty PUBLIC
-        ${fpng_SOURCE_DIR}/src
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
         ${implot_SOURCE_DIR}

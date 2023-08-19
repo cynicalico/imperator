@@ -5,7 +5,7 @@ namespace baphy {
 Engine::Engine() {
   module_mgr_ = std::make_shared<ModuleMgr>();
 
-  EventBus::sub<EShutdown>(EPI<Engine>::name, [&](const auto &) {
+  EventBus::sub<EShutdownEngine>(EPI<Engine>::name, [&](const auto &) {
     received_shutdown_ = true;
   });
 }

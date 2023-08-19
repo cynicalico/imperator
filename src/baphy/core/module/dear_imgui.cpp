@@ -47,6 +47,9 @@ void DearImgui::e_shutdown_(const baphy::EShutdown &e) {
   ImPlot::DestroyContext(implot_ctx_);
   implot_ctx_ = nullptr;
 
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+
   (void)io_;
   ImGui::DestroyContext(ctx_);
   ctx_ = nullptr;

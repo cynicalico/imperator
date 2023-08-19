@@ -57,7 +57,21 @@ public:
   ) : GuiNode(input, primitives, x, y, w, h) {}
 };
 
-class PrimitiveButton : public GuiElement {
+class Button : public GuiElement {
+public:
+  Button(
+      std::shared_ptr<InputMgr> input, std::shared_ptr<PrimitiveBatcher> primitives,
+      float x, float y, float w, float h, OnClickListener &&f
+  ) : GuiElement(input, primitives, x, y, w, h), f(std::forward<OnClickListener>(f)) {}
+
+  void update(double dt, float lay_x, float lay_y) override;
+
+protected:
+  History<bool> clicked{2, false};
+  OnClickListener f;
+};
+
+class PrimitiveButton : public Button {
 public:
   PrimitiveButton(
       std::shared_ptr<InputMgr> input, std::shared_ptr<PrimitiveBatcher> primitives,
@@ -75,15 +89,18 @@ private:
   Font &font_;
   float font_size_;
   std::string text_;
-  OnClickListener f;
 
-  RGB border_color_{baphy::rgb("white")};
+  RGB border_color_{baphy::rgb("red")};
   RGB bg_color_{baphy::rgb("black")};
-  RGB fg_color_{baphy::rgb("white")};
+  RGB fg_color_{baphy::rgb("red")};
 
   RGB hovered_border_color_{baphy::rgb("yellow")};
   RGB hovered_bg_color_{baphy::rgb("black")};
   RGB hovered_fg_color_{baphy::rgb("yellow")};
+
+  RGB clicked_border_color_{baphy::rgb("lime")};
+  RGB clicked_bg_color_{baphy::rgb("black")};
+  RGB clicked_fg_color_{baphy::rgb("lime")};
 };
 
 class Layout : public GuiNode {

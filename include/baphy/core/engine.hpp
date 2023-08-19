@@ -72,10 +72,12 @@ void Engine::run_application(const InitializeParams &window_open_params) {
   EventBus::send_nowait<EStartApplication>();
 
   framecounter_.reset();
-  while (!received_shutdown_) {
+  while (true) {
     EventBus::send_nowait<EUpdate>(framecounter_.dt(), framecounter_.fps(), framecounter_.ts());
-    if (received_shutdown_)
+    if (received_shutdown_) {
+      EventBus::send_nowait_rev_<EShutdown>();
       break;
+    }
 
     EventBus::send_nowait<EStartFrame>();
     EventBus::send_nowait<EDraw>();
