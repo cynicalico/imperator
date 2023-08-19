@@ -72,12 +72,8 @@ void Engine::run_application(const InitializeParams &window_open_params) {
   EventBus::send_nowait<EStartApplication>();
 
   framecounter_.reset();
-  while (true) {
+  while (!received_shutdown_) {
     EventBus::send_nowait<EUpdate>(framecounter_.dt(), framecounter_.fps(), framecounter_.ts());
-    if (received_shutdown_) {
-      EventBus::send_nowait_rev<EShutdown>();
-      break;
-    }
 
     EventBus::send_nowait<EStartFrame>();
     EventBus::send_nowait<EDraw>();
@@ -85,6 +81,8 @@ void Engine::run_application(const InitializeParams &window_open_params) {
 
     framecounter_.update();
   }
+
+  EventBus::send_nowait_rev<EShutdown>();
 }
 
 } // namespace baphy
