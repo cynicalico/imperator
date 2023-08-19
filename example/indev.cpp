@@ -5,7 +5,7 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 class Indev : public baphy::Application {
 public:
   std::shared_ptr<baphy::Texture> font_tex;
-  std::shared_ptr<baphy::Font> font;
+  std::shared_ptr<baphy::CP437> font;
 
   std::shared_ptr<baphy::AbsoluteLayout> lay;
   std::shared_ptr<baphy::AbsoluteLayout> lay2;
@@ -18,7 +18,7 @@ public:
     cursors->create(HERE / "res" / "img" / "dot.png", 4, 4)->set();
 
     font_tex = textures->load(HERE / "res" / "img" / "chunky_8x9.png", true);
-    font = fonts->cp437("f", font_tex, 8, 9, 2);
+    font = fonts->load<baphy::CP437>("f", font_tex, 8, 9, 2);
 
     lay = gui->create<baphy::AbsoluteLayout>(1.0f, 1.0f, window->w() - 2.0f, window->h() - 2.0f);
     lay->set_show_border(true);
