@@ -2,8 +2,9 @@
 
 namespace baphy {
 
-void GuiNode::update(double dt, float lay_x, float lay_y) {
+void GuiNode::update(double dt, float lay_x, float lay_y, bool can_become_active) {
   in_bounds_.update(
+      can_become_active &&
       input->mouse_x() >= lay_x + x_ &&
       input->mouse_x() < lay_x + x_ + w_ &&
       input->mouse_y() >= lay_y + y_ &&
@@ -12,10 +13,32 @@ void GuiNode::update(double dt, float lay_x, float lay_y) {
   hovered = in_bounds_[0];
 }
 
-void Button::update(double dt, float lay_x, float lay_y) {
-  GuiNode::update(dt, lay_x, lay_y);
+void Button::update(double dt, float lay_x, float lay_y, bool can_become_active) {
+  GuiNode::update(dt, lay_x, lay_y, can_become_active);
 
-  clicked.update(hovered && input->down("mb_left"));
+  if (clicked[0]) {
+    if (input->released("mb_left")) {
+      // Currently clicked and now released
+      clicked.update(false);
+      active = false;
+
+      // Prevent action from firing
+      if (!hovered)
+        clicked.update(false);
+
+    } else
+      clicked.update(true);
+
+  } else if (can_become_active && !clicked[0] && hovered && input->pressed("mb_left")) {
+    // Not clicked, hovered over this element, and input was pressed
+    clicked.update(true);
+    active = true;
+
+  } else
+    clicked.update(false);
+
+  if (!clicked[0] && clicked[1])
+    f();
 }
 
 PrimitiveButton::PrimitiveButton(
@@ -44,15 +67,17 @@ void PrimitiveButton::draw(float lay_x, float lay_y) {
   baphy::RGB bg = bg_color_;
   baphy::RGB fg = fg_color_;
 
-  if (clicked[0]) {
-    border = clicked_border_color_;
-    bg = clicked_bg_color_;
-    fg = clicked_fg_color_;
+  if (hovered) {
+    if (clicked[0]) {
+      border = clicked_border_color_;
+      bg = clicked_bg_color_;
+      fg = clicked_fg_color_;
 
-  } else if (hovered) {
-    border = hovered_border_color_;
-    bg = hovered_bg_color_;
-    fg = hovered_fg_color_;
+    } else {
+      border = hovered_border_color_;
+      bg = hovered_bg_color_;
+      fg = hovered_fg_color_;
+    }
   }
 
   primitives->draw_rect(lay_x + x_, lay_y + y_, w_ - 1, h_ - 1, border);
@@ -60,11 +85,8 @@ void PrimitiveButton::draw(float lay_x, float lay_y) {
   font_.draw(lay_x + x_ + 1, lay_y + y_ + 1, font_size_, text_, fg);
 }
 
-void PrimitiveButton::update(double dt, float lay_x, float lay_y) {
-  Button::update(dt, lay_x, lay_y);
-
-  if (clicked[0] && !clicked[1])
-    f();
+void PrimitiveButton::update(double dt, float lay_x, float lay_y, bool can_become_active) {
+  Button::update(dt, lay_x, lay_y, can_become_active);
 }
 
 void AbsoluteLayout::add(std::shared_ptr<GuiNode> e, float x, float y) {
@@ -85,22 +107,40 @@ void AbsoluteLayout::set_border_color(const RGB &color) {
 
 void AbsoluteLayout::draw(float lay_x, float lay_y) {
   if (show_border)
-    draw_border_();
+    draw_border_(lay_x, lay_y);
 
   for (auto &e: elements)
-    e->draw(x_, y_);
+    e->draw(lay_x + x_, lay_y + y_);
 }
 
-void AbsoluteLayout::update(double dt, float lay_x, float lay_y) {
-  Layout::update(dt, lay_x, lay_y);
+void AbsoluteLayout::update(double dt, float lay_x, float lay_y, bool can_become_active) {
+  Layout::update(dt, lay_x, lay_y, can_become_active);
 
-  if (in_bounds_[0] || in_bounds_[1])
-    for (auto &e: elements)
-      e->update(dt, x_, y_);
+  bool any_elements_are_active = false;
+  bool prev_elem_is_active{false};
+  std::size_t active_elem_idx = elements.size();
+
+  if (active || in_bounds_[0] || in_bounds_[1])
+    for (const auto &[i, e]: enumerate(elements | std::views::reverse)) {
+      e->update(dt, lay_x + x_, lay_y + y_, can_become_active && !prev_elem_is_active);
+
+      if (!prev_elem_is_active && e->active) {
+        prev_elem_is_active = true;
+        active_elem_idx = elements.size() - 1 - i;
+      }
+
+      if (e->active)
+        any_elements_are_active = true;
+    }
+
+  if (active_elem_idx != elements.size())
+    range_move_to_back(elements, active_elem_idx);
+
+  active = any_elements_are_active;
 }
 
-void AbsoluteLayout::draw_border_() {
-  primitives->draw_rect(x_ - 1, y_ - 1, w_ + 1, h_ + 1, border_color_);
+void AbsoluteLayout::draw_border_(float lay_x, float lay_y) {
+  primitives->draw_rect(lay_x + x_ - 1, lay_y + y_ - 1, w_ + 1, h_ + 1, border_color_);
 }
 
 void GuiMgr::e_initialize_(const EInitialize &e) {
@@ -117,9 +157,22 @@ void GuiMgr::e_shutdown_(const EShutdown &e) {
 }
 
 void GuiMgr::e_update_(const EUpdate &e) {
-  for (auto &p: layouts_)
-    if (!p.second->parent)
-      p.second->update(e.dt);
+  bool prev_layout_is_active{false};
+  std::size_t active_layout_idx = layouts_.size();
+
+  for (const auto &[i, l]: enumerate(layouts_ | std::views::reverse)) {
+    if (!l->parent) {
+      l->update(e.dt, 0.0, 0.0, !prev_layout_is_active);
+
+      if (!prev_layout_is_active && l->active) {
+        prev_layout_is_active = true;
+        active_layout_idx = layouts_.size() - 1 - i;
+      }
+    }
+  }
+
+  if (active_layout_idx != layouts_.size())
+    range_move_to_back(layouts_, active_layout_idx);
 }
 
 } // namespace baphy

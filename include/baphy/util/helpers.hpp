@@ -162,6 +162,12 @@ std::optional<T> json_get(const nlohmann::json &j, const std::string &key) {
   return j[key].get<T>();
 }
 
+template<typename R>
+void range_move_to_back(R& r, size_t idx) {
+  auto it = r.begin() + idx;
+  std::ranges::rotate(it, it + 1, std::ranges::end(r));
+}
+
 double lerp(double t, double min, double max);
 
 double normalize(double x, double min, double max, double norm_min = 0, double norm_max = 1);

@@ -17,6 +17,7 @@ using OnClickListener = std::function<void(void)>;
 class GuiNode {
 public:
   GuiNode *parent{nullptr};
+  bool active{false};
 
   std::shared_ptr<InputMgr> input;
   std::shared_ptr<PrimitiveBatcher> primitives;
@@ -37,10 +38,7 @@ public:
   float h() const { return h_; }
 
   virtual void draw(float lay_x, float lay_y) = 0;
-  virtual void draw() { draw(0.0f, 0.0f); }
-
-  virtual void update(double dt, float lay_x, float lay_y);
-  virtual void update(double dt) { update(dt, 0.0f, 0.0f); }
+  virtual void update(double dt, float lay_x, float lay_y, bool can_become_active);
 
 protected:
   float x_{0}, y_{0}, w_{0}, h_{0};
@@ -64,7 +62,7 @@ public:
       float x, float y, float w, float h, OnClickListener &&f
   ) : GuiElement(input, primitives, x, y, w, h), f(std::forward<OnClickListener>(f)) {}
 
-  void update(double dt, float lay_x, float lay_y) override;
+  void update(double dt, float lay_x, float lay_y, bool can_become_active) override;
 
 protected:
   History<bool> clicked{2, false};
@@ -83,7 +81,7 @@ public:
   void set_fg_color(const RGB &color);
 
   void draw(float lay_x, float lay_y) override;
-  void update(double dt, float lay_x, float lay_y) override;
+  void update(double dt, float lay_x, float lay_y, bool can_become_active) override;
 
 private:
   Font &font_;
@@ -105,9 +103,6 @@ private:
 
 class Layout : public GuiNode {
 public:
-  using GuiNode::draw;
-  using GuiNode::update;
-
   std::vector<std::shared_ptr<GuiNode>> elements{};
 
   Layout(
@@ -118,9 +113,6 @@ public:
 
 class AbsoluteLayout : public Layout {
 public:
-  using GuiNode::draw;
-  using GuiNode::update;
-
   AbsoluteLayout(
       std::shared_ptr<InputMgr> input, std::shared_ptr<PrimitiveBatcher> primitives,
       float x, float y, float w, float h
@@ -137,13 +129,13 @@ public:
   void set_border_color(const RGB &color);
 
   void draw(float lay_x, float lay_y) override;
-  void update(double dt, float lay_x, float lay_y) override;
+  void update(double dt, float lay_x, float lay_y, bool can_become_active) override;
 
 private:
   bool show_border{false};
   RGB border_color_{baphy::rgb("white")};
 
-  void draw_border_();
+  void draw_border_(float lay_x, float lay_y);
 };
 
 class GuiMgr : public Module<GuiMgr> {
@@ -167,8 +159,8 @@ public:
   std::shared_ptr<T> create(Args &&...args);
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Layout>> layouts_{};
-  std::unordered_map<std::string, std::shared_ptr<GuiElement>> elements_{};
+  std::vector<std::shared_ptr<Layout>> layouts_{};
+  std::vector<std::shared_ptr<GuiElement>> elements_{};
 
   void e_initialize_(const EInitialize &e) override;
   void e_shutdown_(const EShutdown &e) override;
@@ -180,7 +172,7 @@ template<typename T, typename... Args>
 requires std::derived_from<T, Layout>
 std::shared_ptr<T> GuiMgr::create(Args &&... args) {
   auto l = std::make_shared<T>(input, primitives, std::forward<Args>(args)...);
-  layouts_[rnd::base58(11)] = l;
+  layouts_.emplace_back(l);
   return l;
 }
 
@@ -188,7 +180,7 @@ template<typename T, typename... Args>
 requires std::derived_from<T, GuiElement>
 std::shared_ptr<T> GuiMgr::create(Args &&...args) {
   auto e = std::make_shared<T>(input, primitives, std::forward<Args>(args)...);
-  elements_[rnd::base58(11)] = e;
+  elements_.emplace_back(e);
   return e;
 }
 
