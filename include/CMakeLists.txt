@@ -27,6 +27,15 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/gfx/internal/gl/vec_buffer.hpp
         include/baphy/gfx/internal/gl/vertex_array.hpp
 
+        include/baphy/gfx/internal/gui/button.hpp
+        include/baphy/gfx/internal/gui/gui_element.hpp
+        include/baphy/gfx/internal/gui/gui_node.hpp
+        include/baphy/gfx/internal/gui/layout.hpp
+
+        include/baphy/gfx/gui/element/primitive_button.hpp
+
+        include/baphy/gfx/gui/layout/absolute_layout.hpp
+
         include/baphy/gfx/module/batcher.hpp
         include/baphy/gfx/module/font_mgr.hpp
         include/baphy/gfx/module/gfx_context.hpp

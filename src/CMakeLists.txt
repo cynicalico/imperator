@@ -19,6 +19,14 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/gfx/internal/gl/texture_unit.cpp
         src/baphy/gfx/internal/gl/vertex_array.cpp
 
+        src/baphy/gfx/internal/gui/button.cpp
+        src/baphy/gfx/internal/gui/gui_node.cpp
+        src/baphy/gfx/internal/gui/layout.cpp
+
+        src/baphy/gfx/gui/element/primitive_button.cpp
+
+        src/baphy/gfx/gui/layout/absolute_layout.cpp
+
         src/baphy/gfx/module/batcher.cpp
         src/baphy/gfx/module/font_mgr.cpp
         src/baphy/gfx/module/gfx_context.cpp

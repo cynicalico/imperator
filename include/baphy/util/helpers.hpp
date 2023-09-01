@@ -163,8 +163,8 @@ std::optional<T> json_get(const nlohmann::json &j, const std::string &key) {
 }
 
 template<typename R>
-void range_move_to_back(R& r, size_t idx) {
-  auto it = r.begin() + idx;
+void range_move_to_back(R &r, size_t idx) {
+  auto it = std::ranges::begin(r) + idx;
   std::ranges::rotate(it, it + 1, std::ranges::end(r));
 }
 
