@@ -7,8 +7,8 @@ namespace baphy {
 Texture::Texture(std::shared_ptr<TextureBatcher> mgr, std::unique_ptr<TextureUnit> &gl_obj)
     : mgr(std::move(mgr)), gl_obj_(std::move(gl_obj)) {
   id = gl_obj_->id;
-  px_w = 1.0f / gl_obj_->w;
-  px_h = 1.0f / gl_obj_->h;
+  px_w = static_cast<float>(1.0 / gl_obj_->w);
+  px_h = static_cast<float>(1.0 / gl_obj_->h);
 }
 
 Texture::Texture(Texture &&other) noexcept : mgr(std::move(other.mgr)), gl_obj_(std::move(other.gl_obj_)) {
@@ -75,6 +75,16 @@ void Texture::draw(float x, float y, float angle, const RGB &color) {
 
 void Texture::draw(float x, float y, const baphy::RGB &color) {
   mgr->draw_texture_(id, gl_obj_->fully_opaque, gl_obj_->flipped, x, y, gl_obj_->w, gl_obj_->h, 0, 0, gl_obj_->w, gl_obj_->h, px_w, px_h, 0, 0, 0, color);
+}
+
+ImageData Texture::get_image() const {
+  auto image = ImageData(w(), h());
+
+  gl_obj_->bind();
+  gl_obj_->gl.GetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.bytes());
+  gl_obj_->unbind();
+
+  return image;
 }
 
 std::shared_ptr<Texture> TextureBatcher::load(const std::filesystem::path &path, bool retro) {

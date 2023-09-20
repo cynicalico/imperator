@@ -94,8 +94,16 @@ stbi_uc &ImageData::operator[](std::size_t index) {
   return bytes_[index];
 }
 
-const stbi_uc &ImageData::operator[](std::size_t  index) const {
+const stbi_uc &ImageData::operator[](std::size_t index) const {
   return bytes_[index];
+}
+
+stbi_uc &ImageData::operator()(std::size_t r, std::size_t c, std::size_t component) {
+  return bytes_[(r * w_ * comp_) + (c * comp_) + component];
+}
+
+const stbi_uc &ImageData::operator()(std::size_t r, std::size_t c, std::size_t component) const {
+  return bytes_[(r * w_ * comp_) + (c * comp_) + component];
 }
 
 } // namespace baphy

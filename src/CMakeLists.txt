@@ -10,7 +10,8 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/core/event_bus.cpp
         src/baphy/core/glfw_callbacks.cpp
 
-        src/baphy/gfx/internal/font/cp437.cpp
+        src/baphy/gfx/internal/font/cp437_font.cpp
+        src/baphy/gfx/internal/font/strip_font.cpp
 
         src/baphy/gfx/internal/gl/buffer.cpp
         src/baphy/gfx/internal/gl/framebuffer.cpp

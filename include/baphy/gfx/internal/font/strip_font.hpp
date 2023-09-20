@@ -1,14 +1,15 @@
-#ifndef BAPHY_GFX_INTERNAL_FONT_CP437_HPP
-#define BAPHY_GFX_INTERNAL_FONT_CP437_HPP
+#ifndef BAPHY_STRIP_FONT_HPP
+#define BAPHY_STRIP_FONT_HPP
 
 #include "baphy/gfx/internal/font/font.hpp"
 #include "baphy/gfx/module/texture_batcher.hpp"
+#include <filesystem>
 
 namespace baphy {
 
-class CP437 : public Font {
+class StripFont : public Font {
 public:
-  CP437(std::shared_ptr<Texture> tex, int char_w, int char_h, int row_offset = 0);
+  StripFont(std::shared_ptr<Texture> tex, const std::string &characters);
 
   void draw(float x, float y, float size, const std::string &text, const RGB &color) override;
 
@@ -16,11 +17,12 @@ public:
 
 private:
   std::shared_ptr<Texture> tex_{nullptr};
-  float char_w_{0};
-  float char_h_{0};
-  int row_offset_{0};
+  float char_h_;
+  float space_w_{0};
+
+  std::unordered_map<char, glm::vec4> bounds_{};
 };
 
 } // namespace baphy
 
-#endif//BAPHY_GFX_INTERNAL_FONT_CP437_HPP
+#endif//BAPHY_STRIP_FONT_HPP

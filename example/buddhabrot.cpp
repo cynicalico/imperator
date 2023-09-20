@@ -8,7 +8,7 @@ const auto HERE = std::filesystem::path(__FILE__).parent_path();
 class BuddhabrotApp : public baphy::Application {
 public:
   std::shared_ptr<baphy::Texture> font_tex;
-  std::shared_ptr<baphy::CP437> font;
+  std::shared_ptr<baphy::CP437Font> font;
 
   const std::size_t FRACTAL_W{1024 * 16};
   const std::size_t FRACTAL_H{1024 * 16};
@@ -49,7 +49,7 @@ public:
 
   void initialize() override {
     font_tex = textures->load(HERE / "res" / "img" / "CGA8x8thick.png", true);
-    font = fonts->load<baphy::CP437>("cga8x8thick", font_tex, 8, 8);
+    font = fonts->load<baphy::CP437Font>("cga8x8thick", font_tex, 8, 8);
 
     r_hits.resize(FRACTAL_W * FRACTAL_H, 0);
     g_hits.resize(FRACTAL_W * FRACTAL_H, 0);

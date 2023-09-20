@@ -5,6 +5,7 @@
 #include "baphy/gfx/internal/gl/texture_unit.hpp"
 #include "baphy/gfx/module/gfx_context.hpp"
 #include "baphy/gfx/module/batcher.hpp"
+#include "baphy/util/io.hpp"
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -39,6 +40,8 @@ public:
   void draw(float x, float y, float w, float h, const baphy::RGB &color = baphy::rgb("white"));
   void draw(float x, float y, float angle, const baphy::RGB &color = baphy::rgb("white"));
   void draw(float x, float y, const baphy::RGB &color = baphy::rgb("white"));
+
+  ImageData get_image() const;
 
 private:
   std::unique_ptr<TextureUnit> gl_obj_{nullptr};

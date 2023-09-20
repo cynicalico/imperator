@@ -15,8 +15,9 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/core/msgs.hpp
         include/baphy/core/prio_list.hpp
 
-        include/baphy/gfx/internal/font/cp437.hpp
+        include/baphy/gfx/internal/font/cp437_font.hpp
         include/baphy/gfx/internal/font/font.hpp
+        include/baphy/gfx/internal/font/strip_font.hpp
 
         include/baphy/gfx/internal/gl/buffer.hpp
         include/baphy/gfx/internal/gl/framebuffer.hpp

@@ -10,6 +10,9 @@
 #include "baphy/core/msgs_types.hpp"
 #include "baphy/core/prio_list.hpp"
 
+#include "baphy/gfx/internal/font/cp437_font.hpp"
+#include "baphy/gfx/internal/font/strip_font.hpp"
+
 #include "baphy/gfx/gui/layout/absolute_layout.hpp"
 
 #include "baphy/gfx/gui/element/primitive_button.hpp"

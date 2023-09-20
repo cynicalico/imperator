@@ -26,6 +26,9 @@ public:
   stbi_uc &operator[](std::size_t index);
   const stbi_uc &operator[](std::size_t index) const;
 
+  stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component);
+  const stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component) const;
+
   stbi_uc *bytes();
 
   int w();
