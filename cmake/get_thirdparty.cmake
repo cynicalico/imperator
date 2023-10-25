@@ -1,13 +1,13 @@
 CPMAddPackage(
         NAME fmt
         GITHUB_REPOSITORY fmtlib/fmt
-        GIT_TAG a0b8a92e3d1532361c2f7feb63babc5c18d00ef2
+        GIT_TAG 10.1.1
 )
 
 CPMAddPackage(
         NAME glad2
         GITHUB_REPOSITORY Dav1dde/glad
-        GIT_TAG v2.0.4
+        VERSION 2.0.4
         DOWNLOAD_ONLY YES
 )
 add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
@@ -20,7 +20,7 @@ endif ()
 CPMAddPackage(
         NAME glfw
         GITHUB_REPOSITORY glfw/glfw
-        GIT_TAG 3.3.7
+        GIT_TAG 3.3.8
         OPTIONS
             "GLFW_BUILD_TESTS OFF"
             "GLFW_BUILD_EXAMPLES OFF"
@@ -30,7 +30,7 @@ CPMAddPackage(
 CPMAddPackage(
         NAME glm
         GITHUB_REPOSITORY g-truc/glm
-        GIT_TAG efec5db081e3aad807d0731e172ac597f6a39447
+        GIT_TAG 0.9.9.8
 )
 
 CPMAddPackage(
@@ -48,50 +48,15 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME ImGuiColorTextEdit
-        GITHUB_REPOSITORY santaclose/ImGuiColorTextEdit
-        GIT_TAG 23fdb8f6f990711f4643511cb9855482cc7d7ce7
-        DOWNLOAD_ONLY
-)
-
-CPMAddPackage(
         NAME json
         GITHUB_REPOSITORY nlohmann/json
-        GIT_TAG 5d2754306d67d1e654a1a34e1d2e74439a9d53b3
-)
-
-CPMAddPackage(
-        NAME libnyquist
-        GITHUB_REPOSITORY ddiakopoulos/libnyquist
-        GIT_TAG 767efd97cdd7a281d193296586e708490eb6e54f
-        OPTIONS
-            "BUILD_EXAMPLE OFF"
-)
-
-CPMAddPackage(
-        NAME magic_enum
-        GITHUB_REPOSITORY Neargye/magic_enum
-        GIT_TAG v0.9.3
+        VERSION 3.11.2
 )
 
 CPMAddPackage(
         NAME nfd
         GITHUB_REPOSITORY btzy/nativefiledialog-extended
-        GIT_TAG 800f58283fbc1f3950abd881357fb44c22f3f44e
-)
-
-CPMAddPackage(
-        NAME openal-soft
-        GITHUB_REPOSITORY kcat/openal-soft
-        GIT_TAG 4227cb83ced45b7a25e3720fe9d75381a40fe0ab
-        OPTIONS
-            "ALSOFT_UTILS OFF"
-            "ALSOFT_EXAMPLES OFF"
-            "ALSOFT_INSTALL ON"
-            "ALSOFT_INSTALL_HRTF_DATA ON"
-            "ALSOFT_INSTALL_AMBDEC_PRESETS ON"
-            "ALSOFT_INSTALL_EXAMPLES OFF"
-            "ALSOFT_INSTALL_UTILS OFF"
+        VERSION 1.1.0
 )
 
 CPMAddPackage(
@@ -102,21 +67,25 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME range-v3
-        GITHUB_REPOSITORY ericniebler/range-v3
-        GIT_TAG 0.12.0
-)
-
-CPMAddPackage(
         NAME rapidcsv
         GITHUB_REPOSITORY d99kris/rapidcsv
-        GIT_TAG 19946a86c255d430c4af84d3bfece36cf008feef
+        VERSION 8.80
+)
+
+# RE2 requires abseil to build
+CPMAddPackage(
+        NAME abseil-cpp
+        GITHUB_REPOSITORY abseil/abseil-cpp
+        GIT_TAG 20230802.1
+        OPTIONS
+        "ABSL_PROPAGATE_CXX_STD ON"
+        "ABSL_ENABLE_INSTALL ON"
 )
 
 CPMAddPackage(
         NAME re2
         GITHUB_REPOSITORY google/re2
-        GIT_TAG 11073deb73b3d01018308863c0bcdfd0d51d3e70
+        GIT_TAG 2023-09-01
         OPTIONS
             "RE2_BUILD_TESTING OFF"
 )
@@ -124,7 +93,7 @@ CPMAddPackage(
 CPMAddPackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
-        GIT_TAG 7e635fca68d014934b4af8a1cf874f63989352b7
+        VERSION 1.12.0
         OPTIONS
             "SPDLOG_FMT_EXTERNAL ON"
 )
@@ -139,7 +108,7 @@ CPMAddPackage(
 CPMAddPackage(
         NAME stduuid
         GITHUB_REPOSITORY mariusbancila/stduuid
-        GIT_TAG 3afe7193facd5d674de709fccc44d5055e144d7a
+        VERSION 1.2.3
 )
 
 add_library(baphy_thirdparty STATIC
@@ -167,11 +136,6 @@ add_library(baphy_thirdparty STATIC
         ${implot_SOURCE_DIR}/implot_demo.cpp
         ${implot_SOURCE_DIR}/implot_items.cpp
 
-        ${ImGuiColorTextEdit_SOURCE_DIR}/TextEditor.h
-
-        ${ImGuiColorTextEdit_SOURCE_DIR}/LanguageDefinitions.cpp
-        ${ImGuiColorTextEdit_SOURCE_DIR}/TextEditor.cpp
-
         ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
         ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
         ${pcg-cpp_SOURCE_DIR}/include/pcg_uint128.hpp
@@ -190,7 +154,6 @@ target_include_directories(baphy_thirdparty PUBLIC
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
         ${implot_SOURCE_DIR}
-        ${ImGuiColorTextEdit_SOURCE_DIR}
         ${pcg-cpp_SOURCE_DIR}/include
         ${stb_SOURCE_DIR})
 
@@ -198,14 +161,9 @@ target_link_libraries(baphy_thirdparty PUBLIC
         fmt::fmt
         glad_gl_core_mx_33
         glfw
-        glfw
         glm::glm
-        libnyquist::libnyquist
-        magic_enum::magic_enum
         nfd
         nlohmann_json::nlohmann_json
-        OpenAL::OpenAL
-        range-v3::range-v3
         rapidcsv
         re2::re2
         spdlog::spdlog
