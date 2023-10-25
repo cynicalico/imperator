@@ -104,7 +104,7 @@ CPMAddPackage(
 CPMAddPackage(
         NAME range-v3
         GITHUB_REPOSITORY ericniebler/range-v3
-        GIT_TAG 9aa41d6b8ded2cf5e8007e66a0efd1ab33dbf9a5
+        GIT_TAG 0.12.0
 )
 
 CPMAddPackage(
