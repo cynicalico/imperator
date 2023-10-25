@@ -33,7 +33,7 @@ if (WIN32)
     # Dwmapi.lib -- Dark mode titlebar
     # opengl32.lib -- We are loading the core profile, so it is not linked by glad2, but
     #                 we need it for the wgl extension functions
-    target_link_libraries(baphy PUBLIC imm32.lib Dwmapi.lib opengl32.lib)
+    target_link_libraries(baphy PUBLIC ntdll imm32.lib Dwmapi.lib opengl32.lib)
 else ()
     # vsync control in linux requires the X11 headers
     find_package(X11 REQUIRED)
