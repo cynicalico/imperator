@@ -3,6 +3,7 @@
 
 #include "baphy/util/averagers.hpp"
 #include "baphy/util/helpers.hpp"
+#include "baphy/util/sops.hpp"
 #include "baphy/util/time.hpp"
 
 #include "fmt/format.h"
