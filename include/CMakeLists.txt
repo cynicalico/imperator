@@ -1,4 +1,6 @@
 set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
+        include/baphy/core/prio_list.hpp
+
         include/baphy/util/averagers.hpp
         include/baphy/util/helpers.hpp
         include/baphy/util/rnd.hpp
