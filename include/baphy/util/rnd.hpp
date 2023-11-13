@@ -11,7 +11,7 @@
 namespace baphy::rnd {
 namespace internal {
 
-pcg64 &generator();
+pcg64& generator();
 
 } // namespace internal
 
@@ -20,7 +20,7 @@ struct seed_data {
   pcg_extras::pcg128_t stream{0};
 };
 
-seed_data &seed_info();
+seed_data& seed_info();
 
 void reseed();
 
@@ -122,17 +122,17 @@ T get(double chance) {
 }
 
 template<typename Iterable>
-void shuffle(Iterable &i) {
+void shuffle(Iterable& i) {
   pcg_extras::shuffle(i.begin(), i.end(), internal::generator());
 }
 
 template<typename Iter>
-void shuffle(Iter &start, Iter &end) {
+void shuffle(Iter& start, Iter& end) {
   pcg_extras::shuffle(start, end, internal::generator());
 }
 
 template<std::ranges::random_access_range R>
-void partial_shuffle(R &&r, double percentage) {
+void partial_shuffle(R&& r, double percentage) {
   auto n = std::ranges::size(r);
   while (n > 1) {
     n--;
@@ -144,7 +144,7 @@ void partial_shuffle(R &&r, double percentage) {
 }
 
 template<std::ranges::random_access_range R>
-auto choose(R &&r) {
+auto choose(R&& r) {
   auto n = get(std::ranges::size(r) - 1);
   return  *(std::ranges::begin(r) + n);
 }

@@ -16,7 +16,7 @@ const std::filesystem::path DATA_FOLDER =
         .parent_path()
     / "data";
 
-std::optional<nlohmann::json> read_json(const std::filesystem::path &path);
+std::optional<nlohmann::json> read_json(const std::filesystem::path& path);
 
 } // namespace baphy
 

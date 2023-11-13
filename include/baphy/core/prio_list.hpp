@@ -8,7 +8,6 @@
 #include <vector>
 
 namespace baphy {
-
 template<typename T>
 class PrioList {
   struct PendingItem_ {
@@ -19,30 +18,30 @@ class PrioList {
     // To avoid vector item deletion, we will keep track of how many are not set to -1
     int remaining_unmet_deps;
 
-    PendingItem_(int id, T &&v, const std::vector<int> &unmet_deps)
+    PendingItem_(int id, T&& v, const std::vector<int>& unmet_deps)
       : id(id), v(std::forward<T>(v)), unmet_deps(unmet_deps), remaining_unmet_deps(unmet_deps.size()) {}
 
-    PendingItem_(const PendingItem_ &) = delete;
-    PendingItem_ &operator=(const PendingItem_ &) = delete;
+    PendingItem_(const PendingItem_&) = delete;
+    PendingItem_& operator=(const PendingItem_&) = delete;
 
-    PendingItem_(PendingItem_ &&other) noexcept = default;
-    PendingItem_ &operator=(PendingItem_ &&other) noexcept = default;
+    PendingItem_(PendingItem_&& other) noexcept = default;
+    PendingItem_& operator=(PendingItem_&& other) noexcept = default;
   };
 
 public:
   PrioList() = default;
   ~PrioList() = default;
 
-  PrioList(const PrioList &) = delete;
-  PrioList &operator=(const PrioList &) = delete;
+  PrioList(const PrioList&) = delete;
+  PrioList& operator=(const PrioList&) = delete;
 
-  PrioList(PrioList &&other) noexcept = default;
-  PrioList &operator=(PrioList &&other) noexcept = default;
+  PrioList(PrioList&& other) noexcept = default;
+  PrioList& operator=(PrioList&& other) noexcept = default;
 
-  T &operator [](const std::string &name);
-  const T &operator [](const std::string &name) const;
+  T& operator [](const std::string& name);
+  const T& operator [](const std::string& name) const;
 
-  bool add(const std::string &name, std::vector<std::string> &&deps, T &&v);
+  bool add(const std::string& name, std::vector<std::string>&& deps, T&& v);
 
   std::string name_from_id(std::size_t id);
 
@@ -65,24 +64,24 @@ private:
   std::unordered_map<int, PendingItem_> pending_{};
   std::unordered_map<int, std::vector<int>> pending_dep_lookup_{};
 
-  int resolve_id_(const std::string &s);
-  void resolve_ids_(const std::string &name, std::vector<std::string> &&deps, int &i, std::vector<int> &ds);
+  int resolve_id_(const std::string& s);
+  void resolve_ids_(const std::string& name, std::vector<std::string>&& deps, int& i, std::vector<int>& ds);
 
   void resolve_pending_(int id);
 };
 
 template<typename T>
-T &PrioList<T>::operator [](const std::string &name) {
-  return ts_[idx_[s_to_id_[name]]].v;
+T& PrioList<T>::operator [](const std::string& name) {
+  return ts_[idx_[s_to_id_[name]]];
 }
 
 template<typename T>
-const T &PrioList<T>::operator [](const std::string &name) const {
-  return ts_.at(idx_.at(s_to_id_.at(name))).v;
+const T& PrioList<T>::operator [](const std::string& name) const {
+  return ts_.at(idx_.at(s_to_id_.at(name)));
 }
 
 template<typename T>
-bool PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, T &&v) {
+bool PrioList<T>::add(const std::string& name, std::vector<std::string>&& deps, T&& v) {
   int id;
   std::vector<int> dep_ids;
   resolve_ids_(name, std::forward<std::vector<std::string>>(deps), id, dep_ids);
@@ -104,15 +103,16 @@ bool PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, 
 
   // Store this entry to check later
   pending_.emplace(id, PendingItem_(id, std::forward<T>(v), dep_ids));
-  for (const auto &dep: dep_ids) {
-    if (auto it = pending_dep_lookup_.find(dep); it == pending_dep_lookup_.end())
+  for (const auto& dep: dep_ids) {
+    if (auto it = pending_dep_lookup_.find(dep); it == pending_dep_lookup_.end()) {
       pending_dep_lookup_[dep] = {id};
-    else
+    } else {
       it->second.emplace_back(id);
+    }
   }
 
   // Emit a warning if this item has a circular dependency
-  for (const auto &d: dep_ids)
+  for (const auto& d: dep_ids)
     if (std::ranges::contains(pending_dep_lookup_[id], d)) {
       // TODO: Log circular warning
       return false;
@@ -127,9 +127,10 @@ std::string PrioList<T>::name_from_id(std::size_t id) {
 }
 
 template<typename T>
-int PrioList<T>::resolve_id_(const std::string &s) {
-  if (const auto it = s_to_id_.find(s); it != s_to_id_.end())
+int PrioList<T>::resolve_id_(const std::string& s) {
+  if (const auto it = s_to_id_.find(s); it != s_to_id_.end()) {
     return it->second;
+  }
 
   s_to_id_[s] = id_to_s_.size();
   id_to_s_.emplace_back(s);
@@ -139,13 +140,14 @@ int PrioList<T>::resolve_id_(const std::string &s) {
 }
 
 template<typename T>
-void PrioList<T>::resolve_ids_(const std::string &name, std::vector<std::string> &&deps, int &i, std::vector<int> &ds) {
+void PrioList<T>::resolve_ids_(const std::string& name, std::vector<std::string>&& deps, int& i, std::vector<int>& ds) {
   i = resolve_id_(name);
 
-  for (const auto &s: deps) {
+  for (const auto& s: deps) {
     auto id = resolve_id_(s);
-    if (idx_[id] == -1)
+    if (idx_[id] == -1) {
       ds.emplace_back(id);
+    }
   }
 }
 
@@ -157,10 +159,11 @@ void PrioList<T>::resolve_pending_(int id) {
     auto v = ids_to_resolve.back();
     ids_to_resolve.pop_back();
 
-    for (const auto &dep: pending_dep_lookup_[v]) {
+    for (const auto& dep: pending_dep_lookup_[v]) {
       // Skip this dependent if we've already added it
-      if (idx_[dep] != -1)
+      if (idx_[dep] != -1) {
         continue;
+      }
 
       auto dep_it = pending_.find(dep);
 
@@ -181,7 +184,6 @@ void PrioList<T>::resolve_pending_(int id) {
     }
   }
 }
-
 } // namespace baphy
 
 #endif//BAPHY_CORE_PRIO_LIST_HPP

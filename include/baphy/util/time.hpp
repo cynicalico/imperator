@@ -16,7 +16,7 @@
 namespace baphy {
 
 template<typename S>
-std::string timestamp(const S &format) {
+std::string timestamp(const S& format) {
   auto t = std::time(nullptr);
   auto lt = fmt::localtime(t);
   auto args = fmt::make_format_args(lt);

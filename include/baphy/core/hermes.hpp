@@ -11,12 +11,11 @@
 #include <vector>
 
 namespace baphy {
-
 template<typename T>
 struct EPI;
 
 template<typename T>
-using Receiver = std::function<void(const T &)>;
+using Receiver = std::function<void(const T&)>;
 
 class ReceiverI {
 public:
@@ -24,66 +23,67 @@ public:
 
   virtual ~ReceiverI() = default;
 
-  ReceiverI(const ReceiverI &) = delete;
-  ReceiverI &operator=(const ReceiverI &) = delete;
+  ReceiverI(const ReceiverI&) = delete;
+  ReceiverI& operator=(const ReceiverI&) = delete;
 
-  ReceiverI(ReceiverI &&other) noexcept = default;
-  ReceiverI &operator=(ReceiverI &&other) noexcept = default;
+  ReceiverI(ReceiverI&& other) noexcept = default;
+  ReceiverI& operator=(ReceiverI&& other) noexcept = default;
 
-  virtual void call(const std::any &e) const {};
+  virtual void call(const std::any& e) const {};
 };
 
 template<typename T>
 class ReceiverWrap final : public ReceiverI {
   const Receiver<T> receiver_;
-public:
-  ReceiverWrap() : receiver_([](const auto &){}) {}
 
-  explicit ReceiverWrap(const Receiver<T> &&receiver)
-      : receiver_(std::move(receiver)) {}
+public:
+  ReceiverWrap() : receiver_([](const auto&) {}) {}
+
+  explicit ReceiverWrap(const Receiver<T>&& receiver)
+    : receiver_(std::move(receiver)) {}
 
   ~ReceiverWrap() override = default;
 
-  ReceiverWrap(const ReceiverWrap &) = delete;
-  ReceiverWrap &operator=(const ReceiverWrap &) = delete;
+  ReceiverWrap(const ReceiverWrap&) = delete;
+  ReceiverWrap& operator=(const ReceiverWrap&) = delete;
 
-  ReceiverWrap(ReceiverWrap &&other) noexcept = default;
-  ReceiverWrap &operator=(ReceiverWrap &&other) noexcept = default;
+  ReceiverWrap(ReceiverWrap&& other) noexcept = default;
+  ReceiverWrap& operator=(ReceiverWrap&& other) noexcept = default;
 
-  void call(const std::any &e) const override;
+  void call(const std::any& e) const override;
 };
 
 class Hermes {
 public:
   template<typename T>
-  static void presub_cache(const std::string &name);
+  static void presub_cache(const std::string& name);
 
   template<typename T>
-  static void sub(const std::string &name, std::vector<std::string> &&deps, const Receiver<T> &&recv);
+  static void sub(const std::string& name, std::vector<std::string>&& deps, const Receiver<T>&& recv);
 
   template<typename T>
-  static void sub(const std::string &name, const Receiver<T> &&recv);
+  static void sub(const std::string& name, const Receiver<T>&& recv);
 
   template<typename T, typename... Args>
-  static void send(Args &&... args);
+  static void send(Args&&... args);
 
   template<typename T, typename... Args>
-  static void send_nowait(Args &&... args);
+  static void send_nowait(Args&&... args);
 
   // Call the receivers in reverse-dependency order
   // Useful if you need things to shut down correctly
   template<typename T, typename... Args>
-  static void send_nowait_rev(Args &&... args);
+  static void send_nowait_rev(Args&&... args);
 
   template<typename T>
-  static void poll(const std::string &name);
+  static void poll(const std::string& name);
 
   template<typename T>
   static std::vector<std::string> get_prio();
 
 private:
   template<typename T>
-  static void check_create_buffer_(const std::string &name);
+  static void check_create_buffer_(const std::string& name);
 
   static std::vector<PrioList<std::unique_ptr<ReceiverI>>> receivers_;
   static std::vector<std::unordered_map<std::string, std::vector<std::any>>> buffers_;
@@ -119,35 +119,35 @@ void Hermes::sub(const std::string& name, const Receiver<T>&& recv) {
   sub(name, {}, std::forward<const Receiver<T>>(recv));
 }
 
-template<typename T, typename ... Args>
+template<typename T, typename... Args>
 void Hermes::send(Args&&... args) {
   auto e_idx = type_id<T>();
 
   if (e_idx < buffers_.size()) {
     auto pay = std::any(T{std::forward<Args>(args)...});
-    for (auto &p: buffers_[e_idx])
+    for (auto& p: buffers_[e_idx])
       p.second.emplace_back(pay);
   }
 }
 
-template<typename T, typename ... Args>
+template<typename T, typename... Args>
 void Hermes::send_nowait(Args&&... args) {
   auto e_idx = type_id<T>();
 
   if (e_idx < receivers_.size()) {
     auto pay = std::any(T{std::forward<Args>(args)...});
-    for (const auto &p: receivers_[type_id<T>()])
+    for (const auto& p: receivers_[type_id<T>()])
       p->call(pay);
   }
 }
 
-template<typename T, typename ... Args>
+template<typename T, typename... Args>
 void Hermes::send_nowait_rev(Args&&... args) {
   auto e_idx = type_id<T>();
 
   if (e_idx < receivers_.size()) {
     auto pay = std::any(T{std::forward<Args>(args)...});
-    for (const auto &p: receivers_[type_id<T>()] | std::views::reverse)
+    for (const auto& p: receivers_[type_id<T>()] | std::views::reverse)
       p->call(pay);
   }
 }
@@ -156,7 +156,7 @@ template<typename T>
 void Hermes::poll(const std::string& name) {
   auto e_idx = type_id<T>();
 
-  for (const auto &pay: buffers_[e_idx][name])
+  for (const auto& pay: buffers_[e_idx][name])
     receivers_[e_idx][name]->call(pay);
   buffers_[e_idx][name].clear();
 }
@@ -166,7 +166,7 @@ std::vector<std::string> Hermes::get_prio() {
   auto e_idx = type_id<T>();
 
   auto ret = std::vector<std::string>{};
-  for (const auto &p: receivers_[e_idx])
+  for (const auto& p: receivers_[e_idx])
     ret.emplace_back(receivers_[e_idx].name_from_id(p.id));
   return ret;
 }
@@ -181,10 +181,9 @@ void Hermes::check_create_buffer_(const std::string& name) {
   if (!buffers_[e_idx].contains(name))
     buffers_[e_idx][name] = std::vector<std::any>{};
 }
-
 } // namespace baphy
 
-#define BAPHY_PRAY_TO_HERMES(module)      \
+#define BAPHY_PRAISE_HERMES(module)      \
   template<> struct baphy::EPI<module> {  \
     static constexpr auto name = #module; \
   }

@@ -19,7 +19,7 @@ class iterator {
 public:
   explicit iterator(std::ranges::iterator_t<T> it): iter(it) {}
 
-  bool operator!=(const iterator &other) const {
+  bool operator!=(const iterator& other) const {
     return iter != other.iter;
   }
 
@@ -42,11 +42,11 @@ struct iterable_wrapper {
 };
 
 template<typename R, typename F, typename... Args>
-std::optional<R> sto_opt(F &&f, Args &&...args) {
+std::optional<R> sto_opt(F&& f, Args&& ...args) {
   std::optional<R> v{};
   try {
     v = f(std::forward<Args>(args)...);
-  } catch (const std::exception &e) {}
+  } catch (const std::exception& e) {}
   return v;
 }
 
@@ -67,8 +67,8 @@ public:
 
   void update(T v);
 
-  T &operator[](std::size_t idx);
-  const T &operator[](std::size_t idx) const;
+  T& operator[](std::size_t idx);
+  const T& operator[](std::size_t idx) const;
 
 private:
   std::deque<T> v_{};
@@ -93,83 +93,83 @@ void History<T>::update(T v) {
 }
 
 template<typename T>
-T &History<T>::operator[](std::size_t idx) {
+T& History<T>::operator[](std::size_t idx) {
   return v_[idx];
 }
 
 template<typename T>
-const T &History<T>::operator[](std::size_t idx) const {
+const T& History<T>::operator[](std::size_t idx) const {
   return v_[idx];
 }
 
 template <std::ranges::range T>
-constexpr auto enumerate(T &&iterable) {
+constexpr auto enumerate(T&& iterable) {
   return internal::iterable_wrapper<T>{std::forward<T>(iterable)};
 }
 
 template<typename T>
-std::optional<double> stod(const T &str, size_t *idx = nullptr) {
-  double (*f)(const T &, size_t *) = std::stod;
+std::optional<double> stod(const T& str, size_t *idx = nullptr) {
+  double (*f)(const T& , size_t *) = std::stod;
   return internal::sto_opt<double>(f, str, idx);
 }
 
 template<typename T>
-std::optional<float> stof(const T &str, size_t *idx = nullptr) {
-  float (*f)(const T &, size_t *) = std::stof;
+std::optional<float> stof(const T& str, size_t *idx = nullptr) {
+  float (*f)(const T& , size_t *) = std::stof;
   return internal::sto_opt<float>(f, str, idx);
 }
 
 template<typename T>
-std::optional<int> stoi(const T &str, std::size_t *idx = nullptr, int base = 10) {
-  int (*f)(const T &, size_t *, int) = std::stoi;
+std::optional<int> stoi(const T& str, std::size_t *idx = nullptr, int base = 10) {
+  int (*f)(const T& , size_t *, int) = std::stoi;
   return internal::sto_opt<int>(f, str, idx, base);
 }
 
 template<typename T>
-std::optional<long> stol(const T &str, std::size_t *idx = nullptr, int base = 10) {
-  long (*f)(const T &, size_t *, int) = std::stol;
+std::optional<long> stol(const T& str, std::size_t *idx = nullptr, int base = 10) {
+  long (*f)(const T& , size_t *, int) = std::stol;
   return internal::sto_opt<long>(f, str, idx, base);
 }
 
 template<typename T>
-std::optional<long double> stold(const T &str, size_t *idx = nullptr) {
-  long double (*f)(const T &, size_t *) = std::stold;
+std::optional<long double> stold(const T& str, size_t *idx = nullptr) {
+  long double (*f)(const T& , size_t *) = std::stold;
   return internal::sto_opt<long double>(f, str, idx);
 }
 
 template<typename T>
-std::optional<long long> stoll(const T &str, std::size_t *idx = nullptr, int base = 10) {
-  long long (*f)(const T &, size_t *, int) = std::stoll;
+std::optional<long long> stoll(const T& str, std::size_t *idx = nullptr, int base = 10) {
+  long long (*f)(const T& , size_t *, int) = std::stoll;
   return internal::sto_opt<long long>(f, str, idx, base);
 }
 
 template<typename T>
-std::optional<unsigned long> stoul(const T &str, std::size_t *idx = nullptr, int base = 10) {
-  unsigned long (*f)(const T &, size_t *, int) = std::stoul;
+std::optional<unsigned long> stoul(const T& str, std::size_t *idx = nullptr, int base = 10) {
+  unsigned long (*f)(const T& , size_t *, int) = std::stoul;
   return internal::sto_opt<unsigned long>(f, str, idx, base);
 }
 
 template<typename T>
-std::optional<unsigned long long> stoull(const T &str, std::size_t *idx = nullptr, int base = 10) {
-  unsigned long long (*f)(const T &, size_t *, int) = std::stoull;
+std::optional<unsigned long long> stoull(const T& str, std::size_t *idx = nullptr, int base = 10) {
+  unsigned long long (*f)(const T& , size_t *, int) = std::stoull;
   return internal::sto_opt<unsigned long long>(f, str, idx, base);
 }
 
 template<typename T>
-std::optional<T> json_get(const nlohmann::json &j, const std::string &key) {
+std::optional<T> json_get(const nlohmann::json& j, const std::string& key) {
   if (!j.contains(key))
     return std::nullopt;
   return j[key].get<T>();
 }
 
 template<typename R>
-void range_move_to_back(R &r, size_t idx) {
+void range_move_to_back(R& r, size_t idx) {
   auto it = std::ranges::begin(r) + idx;
   std::ranges::rotate(it, it + 1, std::ranges::end(r));
 }
 
 template<typename R>
-void range_move_idx(R &r, size_t from, size_t to) {
+void range_move_idx(R& r, size_t from, size_t to) {
   auto from_it = std::ranges::begin(r) + from;
   auto to_it = std::ranges::begin(r) + to;
   if (from <= to)

@@ -23,7 +23,7 @@ template<typename Enum>
 std::enable_if_t<EnableBitops<Enum>::enable, Enum> operator&(Enum lhs, Enum rhs) {
   using underlying = std::underlying_type_t<Enum>;
   return static_cast<Enum>(
-      static_cast<underlying>(lhs) &
+      static_cast<underlying>(lhs)&
       static_cast<underlying>(rhs)
   );
 }
@@ -35,8 +35,8 @@ std::underlying_type_t<Enum> unwrap(Enum e) {
 }
 
 template<typename Enum>
-bool is_enum_set(Enum e, Enum mask) {
-  return (e & mask) == mask;
+bool is_flag_set(Enum e, Enum mask) {
+  return (e&  mask) == mask;
 }
 
 } // namespace baphy

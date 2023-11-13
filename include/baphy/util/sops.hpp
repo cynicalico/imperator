@@ -7,16 +7,16 @@
 
 namespace baphy {
 
-void ltrim(std::string &s);
-void rtrim(std::string &s);
-void trim(std::string &s);
+void ltrim(std::string& s);
+void rtrim(std::string& s);
+void trim(std::string& s);
 
 std::string ltrim_copy(std::string s);
 std::string rtrim_copy(std::string s);
 std::string trim_copy(std::string s);
 
-std::vector<std::string> split(const std::string &s, char delim);
-std::vector<std::string> split(const std::string &s, const std::string &delim);
+std::vector<std::string> split(const std::string& s, char delim);
+std::vector<std::string> split(const std::string& s, const std::string& delim);
 
 // Macro for declaring regex splits to use with split_re
 // A special form is required, the macro will do it without being as obtrusive
@@ -34,7 +34,7 @@ std::vector<std::string> split(const std::string &s, const std::string &delim);
  * @param delim the regular expression to split on
  * @return a vector of substrings of s split on regexp
  */
-std::vector<std::string> split_re(const std::string &s, const RE2 &regexp);
+std::vector<std::string> split_re(const std::string& s, const RE2& regexp);
 
 } // namespace baphy
 

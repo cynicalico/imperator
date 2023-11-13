@@ -19,7 +19,7 @@ namespace baphy {
 
 class MsgSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex> {
 protected:
-  void sink_it_(const spdlog::details::log_msg &msg) override;
+  void sink_it_(const spdlog::details::log_msg& msg) override;
   void flush_() override { /* do nothing */ }
 };
 
