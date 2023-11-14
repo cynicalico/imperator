@@ -63,8 +63,6 @@ GLFWmonitor* Window::get_monitor_(int monitor_num) {
 }
 
 void Window::open_(const InitializeParams& params) {
-  // open_params_ = params;
-
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, params.backend_version.x);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, params.backend_version.y);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
@@ -145,7 +143,7 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  if (set(params.flags, WindowFlags::borderless)) {
+  if (is_flag_set(params.flags, WindowFlags::borderless)) {
 //    borderless = true;
 
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
