@@ -6,6 +6,7 @@
 #include "baphy/core/type_id.hpp"
 #include <any>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -87,6 +88,9 @@ private:
 
   static std::vector<PrioList<std::unique_ptr<ReceiverI>>> receivers_;
   static std::vector<std::unordered_map<std::string, std::vector<std::any>>> buffers_;
+
+  static std::recursive_mutex receiver_mutex_;
+  static std::recursive_mutex buffer_mutex_;
 };
 
 template<typename T>
@@ -102,6 +106,8 @@ void Hermes::presub_cache(const std::string& name) {
 template<typename T>
 void Hermes::sub(const std::string& name, std::vector<std::string>&& deps, const Receiver<T>&& recv) {
   auto e_idx = type_id<T>();
+
+  const std::lock_guard lock(receiver_mutex_);
 
   while (e_idx >= receivers_.size())
     receivers_.emplace_back();
@@ -123,6 +129,8 @@ template<typename T, typename... Args>
 void Hermes::send(Args&&... args) {
   auto e_idx = type_id<T>();
 
+  const std::lock_guard lock(buffer_mutex_);
+
   if (e_idx < buffers_.size()) {
     auto pay = std::any(T{std::forward<Args>(args)...});
     for (auto& p: buffers_[e_idx])
@@ -133,6 +141,8 @@ void Hermes::send(Args&&... args) {
 template<typename T, typename... Args>
 void Hermes::send_nowait(Args&&... args) {
   auto e_idx = type_id<T>();
+
+  const std::lock_guard lock(receiver_mutex_);
 
   if (e_idx < receivers_.size()) {
     auto pay = std::any(T{std::forward<Args>(args)...});
@@ -145,6 +155,8 @@ template<typename T, typename... Args>
 void Hermes::send_nowait_rev(Args&&... args) {
   auto e_idx = type_id<T>();
 
+  const std::lock_guard lock(receiver_mutex_);
+
   if (e_idx < receivers_.size()) {
     auto pay = std::any(T{std::forward<Args>(args)...});
     for (const auto& p: receivers_[type_id<T>()] | std::views::reverse)
@@ -156,6 +168,8 @@ template<typename T>
 void Hermes::poll(const std::string& name) {
   auto e_idx = type_id<T>();
 
+  const std::lock_guard lock(buffer_mutex_);
+
   for (const auto& pay: buffers_[e_idx][name])
     receivers_[e_idx][name]->call(pay);
   buffers_[e_idx][name].clear();
@@ -164,6 +178,8 @@ void Hermes::poll(const std::string& name) {
 template<typename T>
 std::vector<std::string> Hermes::get_prio() {
   auto e_idx = type_id<T>();
+
+  const std::lock_guard lock(receiver_mutex_);
 
   auto ret = std::vector<std::string>{};
   for (const auto& p: receivers_[e_idx])
@@ -174,6 +190,8 @@ std::vector<std::string> Hermes::get_prio() {
 template<typename T>
 void Hermes::check_create_buffer_(const std::string& name) {
   auto e_idx = type_id<T>();
+
+  const std::lock_guard lock(buffer_mutex_);
 
   while (e_idx >= buffers_.size())
     buffers_.emplace_back();

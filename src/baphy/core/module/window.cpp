@@ -7,24 +7,20 @@
 namespace baphy {
 std::once_flag Window::initialize_glfw_;
 
-int Window::w() const {
-  int w;
-  glfwGetWindowSize(glfw_handle_, &w, nullptr);
-
-  return w;
-}
-
-int Window::h() const {
-  int h;
-  glfwGetWindowSize(glfw_handle_, &h, nullptr);
-
-  return h;
-}
-
 void Window::r_initialize_(const E_Initialize& p) {
   Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, [&](const auto& p) { r_end_frame_(p); });
   Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
+
   Hermes::sub<E_GlfwWindowClose>(module_name, [&](const auto& p) { r_glfw_window_close_(p); });
+  Hermes::sub<E_GlfwWindowSize>(module_name, [&](const auto& p) { r_glfw_window_size_(p); });
+  Hermes::sub<E_GlfwFramebufferSize>(module_name, [&](const auto& p) { r_glfw_framebuffer_size_(p); });
+  Hermes::sub<E_GlfwWindowContentScale>(module_name, [&](const auto& p) { r_glfw_window_content_scale_(p); });
+  Hermes::sub<E_GlfwWindowPos>(module_name, [&](const auto& p) { r_glfw_window_pos_(p); });
+  Hermes::sub<E_GlfwWindowIconify>(module_name, [&](const auto& p) { r_glfw_window_iconify_(p); });
+  Hermes::sub<E_GlfwWindowMaximize>(module_name, [&](const auto& p) { r_glfw_window_maximize_(p); });
+  Hermes::sub<E_GlfwWindowFocus>(module_name, [&](const auto& p) { r_glfw_window_focus_(p); });
+  Hermes::sub<E_GlfwWindowRefresh>(module_name, [&](const auto& p) { r_glfw_window_refresh_(p); });
+  Hermes::sub<E_GlfwMonitor>(module_name, [&](const auto& p) { r_glfw_monitor_(p); });
 
   std::call_once(initialize_glfw_, [&]() {
     register_glfw_error_callback();
@@ -82,6 +78,11 @@ void Window::open_(const InitializeParams& params) {
     open_fullscreen_(params);
   else
     open_windowed_(params);
+
+  // This isn't sent at the beginning of the program, so we send it first
+  // Sent as an immediate event in case we ever do anything special when
+  // the window size is changed
+  Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, params.size.x, params.size.y);
 
   register_glfw_callbacks(glfw_handle_);
 
@@ -202,9 +203,37 @@ void Window::r_end_frame_(const E_EndFrame& p) {
 
 void Window::r_update_(const E_Update& p) {
   Hermes::poll<E_GlfwWindowClose>(module_name);
+  Hermes::poll<E_GlfwWindowSize>(module_name);
+  Hermes::poll<E_GlfwFramebufferSize>(module_name);
+  Hermes::poll<E_GlfwWindowContentScale>(module_name);
+  Hermes::poll<E_GlfwWindowPos>(module_name);
+  Hermes::poll<E_GlfwWindowIconify>(module_name);
+  Hermes::poll<E_GlfwWindowMaximize>(module_name);
+  Hermes::poll<E_GlfwWindowFocus>(module_name);
+  Hermes::poll<E_GlfwWindowRefresh>(module_name);
+  Hermes::poll<E_GlfwMonitor>(module_name);
 }
 
 void Window::r_glfw_window_close_(const E_GlfwWindowClose& p) {
   Hermes::send_nowait<E_ShutdownEngine>();
 }
+
+void Window::r_glfw_window_size_(const E_GlfwWindowSize& p) {
+  size_.x = p.width;
+  size_.y = p.height;
+}
+
+void Window::r_glfw_framebuffer_size_(const E_GlfwFramebufferSize& p) {}
+void Window::r_glfw_window_content_scale_(const E_GlfwWindowContentScale& p) {}
+
+void Window::r_glfw_window_pos_(const E_GlfwWindowPos& p) {
+  pos_.x = p.xpos;
+  pos_.y = p.ypos;
+}
+
+void Window::r_glfw_window_iconify_(const E_GlfwWindowIconify& p) {}
+void Window::r_glfw_window_maximize_(const E_GlfwWindowMaximize& p) {}
+void Window::r_glfw_window_focus_(const E_GlfwWindowFocus& p) {}
+void Window::r_glfw_window_refresh_(const E_GlfwWindowRefresh& p) {}
+void Window::r_glfw_monitor_(const E_GlfwMonitor& p) {}
 } // namespace baphy
