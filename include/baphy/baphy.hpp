@@ -2,6 +2,7 @@
 #define BAPHY_BAPHY_HPP
 
 #include "baphy/core/module/application.hpp"
+
 #include "baphy/core/engine.hpp"
 #include "baphy/core/hermes.hpp"
 #include "baphy/core/module_mgr.hpp"
@@ -13,6 +14,8 @@
 #include "baphy/util/helpers.hpp"
 #include "baphy/util/io.hpp"
 #include "baphy/util/log.hpp"
+#include "baphy/util/memusage.hpp"
+#include "baphy/util/platform.hpp"
 #include "baphy/util/rnd.hpp"
 #include "baphy/util/sops.hpp"
 #include "baphy/util/time.hpp"

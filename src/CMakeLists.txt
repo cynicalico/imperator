@@ -6,7 +6,9 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/core/hermes.cpp
         src/baphy/core/prio_list.cpp
 
+        src/baphy/gfx/gl/buffer.cpp
         src/baphy/gfx/gl/shader.cpp
+        src/baphy/gfx/gl/vertex_array.cpp
         src/baphy/gfx/module/dear_imgui.cpp
         src/baphy/gfx/module/gfx_context.cpp
 
@@ -14,6 +16,7 @@ set(baphy_SRC_FILES ${baphy_SRC_FILES}
         src/baphy/util/helpers.cpp
         src/baphy/util/io.cpp
         src/baphy/util/log.cpp
+        src/baphy/util/memusage.cpp
         src/baphy/util/platform.cpp
         src/baphy/util/rnd.cpp
         src/baphy/util/sops.cpp

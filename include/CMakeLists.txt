@@ -10,7 +10,11 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/core/prio_list.hpp
         include/baphy/core/type_id.hpp
 
+        include/baphy/gfx/gl/buffer.hpp
         include/baphy/gfx/gl/shader.hpp
+        include/baphy/gfx/gl/static_buffer.hpp
+        include/baphy/gfx/gl/vec_buffer.hpp
+        include/baphy/gfx/gl/vertex_array.hpp
         include/baphy/gfx/module/dear_imgui.hpp
         include/baphy/gfx/module/gfx_context.hpp
 
@@ -19,10 +23,12 @@ set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
         include/baphy/util/helpers.hpp
         include/baphy/util/io.hpp
         include/baphy/util/log.hpp
+        include/baphy/util/memusage.hpp
         include/baphy/util/platform.hpp
         include/baphy/util/rnd.hpp
         include/baphy/util/sops.hpp
         include/baphy/util/time.hpp
 
         include/baphy/baphy.hpp
+        include/baphy/baphy_gl_wrappers.hpp
         include/baphy/baphy_imconfig.hpp)

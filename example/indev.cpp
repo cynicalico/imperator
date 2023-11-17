@@ -1,16 +1,17 @@
 #include "baphy/baphy.hpp"
-#include "baphy/gfx/gl/shader.hpp"
+#include "baphy/baphy_gl_wrappers.hpp"
 
 class Indev : public baphy::Application {
 public:
   std::unique_ptr<baphy::Shader> shader;
-  GLuint vao, vbo;
+  std::unique_ptr<baphy::FSBuffer> vbo;
+  std::unique_ptr<baphy::VertexArray> vao;
 
   std::vector<float> vertices;
   float radius{100.0f};
   float theta{0.0f};
 
-  double fps{0.0};
+  baphy::FrameCounter fps{};
 
   void initialize() override;
 
@@ -28,26 +29,19 @@ void Indev::initialize() {
   shader = std::make_unique<baphy::Shader>(*gfx, *shader_src);
 
   regen_vertices();
+  vbo = std::make_unique<baphy::FSBuffer>(*gfx, baphy::BufTarget::array, baphy::BufUsage::stream_draw, vertices);
 
-  gfx->gl.GenVertexArrays(1, &vao);
-  gfx->gl.BindVertexArray(vao);
-
-  gfx->gl.GenBuffers(1, &vbo);
-  gfx->gl.BindBuffer(GL_ARRAY_BUFFER, vbo);
-  gfx->gl.BufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
-
-  gfx->gl.VertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)0);
-  gfx->gl.EnableVertexAttribArray(0);
+  vao = std::make_unique<baphy::VertexArray>(*gfx);
+  vao->attrib(*shader, *vbo, "in_pos:3f");
 }
 
 void Indev::update(double dt) {
   theta += 20.0f * dt;
+
   regen_vertices();
+  vbo->write_sub(0, vertices);
 
-  gfx->gl.BindBuffer(GL_ARRAY_BUFFER, vbo);
-  gfx->gl.BufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
-
-  fps = 1.0 / dt;
+  fps.update();
 }
 
 void Indev::draw() {
@@ -57,13 +51,17 @@ void Indev::draw() {
   dear->new_frame();
 
   shader->use();
-  gfx->gl.BindVertexArray(vao);
-  gfx->gl.DrawArrays(GL_TRIANGLES, 0, 3);
+  vao->draw_arrays(baphy::DrawMode::triangles, 3);
 
-  if (ImGui::Begin("FPS")) {
-    ImGui::Text("%s", fmt::format("{:.2f} fps", fps).c_str());
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0, 0});
+  ImGui::SetNextWindowPos({0, 0});
+  if (ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::Text("%s", fmt::format("{:.2f} fps", fps.fps()).c_str());
+    ImGui::Text("%s", fmt::format("{:.2f} MB", baphy::memusage_mb()).c_str());
   }
   ImGui::End();
+  ImGui::PopStyleVar(2);
 
   dear->render();
 }
