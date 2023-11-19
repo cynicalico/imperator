@@ -19,7 +19,7 @@ void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const st
   const static RE2 attrib_pat(R"((\w+):(\d+)(i|f|u)(?::(n))?(?::s(\d+)(i|f|u)?)?(?::o(\d+)(i|f|u)?)?)");
   assert(attrib_pat.ok());
 
-  const static RE2 spaces_pat{R"((\s+))"};
+  const static RE2 spaces_pat{BAPHY_SPLIT_RE(R"((\s+))")};
   assert(spaces_pat.ok());
 
   static std::unordered_map<std::string, GLenum> type_map = {

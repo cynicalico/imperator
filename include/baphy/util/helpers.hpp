@@ -180,7 +180,7 @@ void range_move_idx(R& r, size_t from, size_t to) {
 
 double lerp(double t, double min, double max);
 
-double normalize(double x, double min, double max, double norm_min = 0, double norm_max = 1);
+double normalize(double n, double n_min, double n_max, double new_min = 0, double new_max = 1);
 
 } // namespace baphy
 

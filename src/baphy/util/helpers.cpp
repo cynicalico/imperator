@@ -6,8 +6,8 @@ double lerp(double t, double min, double max) {
   return (1 - t) * min + t * max;
 }
 
-double normalize(double x, double min, double max, double norm_min, double norm_max) {
-  return (norm_max - norm_min) * ((x - min) / (max - min)) + norm_min;
+double normalize(double n, double n_min, double n_max, double new_min, double new_max) {
+  return (new_max - new_min) * ((n - n_min) / (n_max - n_min)) + new_min;
 }
 
 } // namespace baphy
