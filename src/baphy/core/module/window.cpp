@@ -3,9 +3,14 @@
 #include "baphy/core/module/application.hpp"
 #include "baphy/core/module/glfw_callbacks.hpp"
 #include "baphy/util/log.hpp"
+#include "glm/ext/matrix_clip_space.hpp"
 
 namespace baphy {
 std::once_flag Window::initialize_glfw_;
+
+glm::mat4 Window::projection_matrix() const {
+  return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f);
+}
 
 void Window::r_initialize_(const E_Initialize& p) {
   Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, [&](const auto& p) { r_end_frame_(p); });

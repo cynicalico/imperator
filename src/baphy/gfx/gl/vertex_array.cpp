@@ -16,7 +16,7 @@ void VertexArray::unbind() {
 }
 
 void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const std::string& desc) {
-  const static RE2 attrib_pat(R"((\w+):(\d+)(i|f|u)(?::(n))?(?::s(\d+)(i|f|u)?)?(?::o(\d+)(i|f|u)?)?)");
+  const static RE2 attrib_pat(R"((\w+):(\d+)(i|f|u)(?::(n))?(?::s(\d+)(i|f|u)?)?(?::o(\d+)(i|f|u)?)?(?::i(\d+))?)");
   assert(attrib_pat.ok());
 
   const static RE2 spaces_pat{BAPHY_SPLIT_RE(R"((\s+))")};
@@ -49,7 +49,8 @@ void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const st
     std::string stride_type;
     std::string offset;
     std::string offset_type;
-    if (RE2::FullMatch(s, attrib_pat, &name, &size, &type, &normalized, &stride, &stride_type, &offset, &offset_type)) {
+    std::string divisor;
+    if (RE2::FullMatch(s, attrib_pat, &name, &size, &type, &normalized, &stride, &stride_type, &offset, &offset_type, &divisor)) {
       auto loc = shader.get_attrib_loc(name);
       if (loc == -1)
         continue;
@@ -67,7 +68,8 @@ void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const st
         type_e,
         normalized.empty() ? GL_FALSE : GL_TRUE,
         stride.empty() ? 0 : size_map[type_map[stride_t]] * std::stoi(stride),
-        offset.empty() ? stride_acc : size_map[type_map[offset_t]] * std::stoi(offset)
+        offset.empty() ? stride_acc : size_map[type_map[offset_t]] * std::stoi(offset),
+        divisor.empty() ? 0 : std::stoi(divisor)
       );
 
       stride_acc += static_cast<GLsizei>(type_s) * size_i;
@@ -84,7 +86,11 @@ void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const st
   buf.bind(target);
   for (const auto& a: vertex_attribs) {
     gl.VertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, reinterpret_cast<void*>(a.offset));
+    if (a.divisor != 0)
+      gl.VertexAttribDivisor(a.index, a.divisor);
     gl.EnableVertexAttribArray(a.index);
+
+    BAPHY_LOG_INFO("{} {} {} {} {} {} {}", a.index, a.size, a.type, a.normalized, a.stride, a.offset, a.divisor);
   }
   buf.unbind(target);
   unbind();
@@ -97,6 +103,12 @@ void VertexArray::attrib(Shader& shader, Buffer& buf, const std::string& desc) {
 void VertexArray::draw_arrays(const DrawMode& mode, GLsizei count, int first) {
   bind();
   gl.DrawArrays(unwrap(mode), first, count);
+  unbind();
+}
+
+void VertexArray::multi_draw_arrays_indirect(const DrawMode& mode, GLsizei drawcount, GLsizei stride) {
+  bind();
+  gl.MultiDrawArraysIndirect(unwrap(mode), nullptr, drawcount, stride);
   unbind();
 }
 

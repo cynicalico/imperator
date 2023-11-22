@@ -1,14 +1,14 @@
 #include "baphy/baphy.hpp"
 #include "baphy/baphy_gl_wrappers.hpp"
-#include "glm/ext/matrix_clip_space.hpp"
 
 class Indev : public baphy::Application {
 public:
   std::unique_ptr<baphy::Shader> shader;
-  glm::mat4 mvp;
 
-  std::unique_ptr<baphy::FVBuffer> vbo;
   std::unique_ptr<baphy::VertexArray> vao;
+  std::unique_ptr<baphy::IVBuffer> ibo;
+  std::unique_ptr<baphy::FVBuffer> vbo;
+  std::unique_ptr<baphy::FVBuffer> mbo;
 
   std::vector<float> vertices;
   float radius{20.0f};
@@ -29,12 +29,43 @@ void Indev::initialize() {
     cwd / "res" / "shader" / "basic.glsl");
   shader = std::make_unique<baphy::Shader>(*gfx, *shader_src);
 
-  mvp = glm::ortho(0.0f, (float)window->w(), (float)window->h(), 0.0f);
+  ibo = std::make_unique<baphy::IVBuffer>(*gfx, 4, false,
+    baphy::BufTarget::draw_indirect, baphy::BufUsage::stream_draw);
+  ibo->add({
+    3, 1, 0, 0,
+    6, 2, 3, 1
+  });
+  ibo->sync();
 
-  vbo = std::make_unique<baphy::FVBuffer>(*gfx, 18, false, baphy::BufTarget::array, baphy::BufUsage::stream_draw);
+  vbo = std::make_unique<baphy::FVBuffer>(*gfx, 3, false,
+    baphy::BufTarget::array, baphy::BufUsage::stream_draw);
+  vbo->add({
+    100.0f, 100.0f, 0.0f,
+    150.0f, 150.0f, 0.0f,
+    100.0f, 150.0f, 0.0f,
+
+    100.0f, 200.0f, 0.0f,
+    200.0f, 200.0f, 0.0f,
+    100.0f, 300.0f, 0.0f,
+    100.0f, 300.0f, 0.0f,
+    200.0f, 200.0f, 0.0f,
+    200.0f, 300.0f, 0.0f,
+  });
+  vbo->sync();
+
+  mbo = std::make_unique<baphy::FVBuffer>(*gfx, 6, false,
+    baphy::BufTarget::array, baphy::BufUsage::stream_draw);
+  mbo->add({
+    1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+
+    0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 150.0f, 250.0f, glm::radians(45.0f),
+  });
+  mbo->sync();
 
   vao = std::make_unique<baphy::VertexArray>(*gfx);
-  vao->attrib(*shader, *vbo, "in_pos:3f in_color:3f");
+  vao->attrib(*shader, baphy::BufTarget::array, *vbo, "in_pos:3f");
+  vao->attrib(*shader, baphy::BufTarget::array, *mbo, "in_color:3f:i1 in_trans:3f:i1");
 }
 
 void Indev::update(double dt) {
@@ -47,30 +78,10 @@ void Indev::draw() {
   gfx->gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   gfx->gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  vbo->clear();
-  for (std::size_t i = 0; i < 375000; ++i) {
-    auto c_x = baphy::rnd::get<float>(0, window->w());
-    auto c_y = baphy::rnd::get<float>(0, window->h());
-    auto v1_x = baphy::rnd::get<float>(c_x - radius, c_x + radius);
-    auto v1_y = baphy::rnd::get<float>(c_y - radius, c_y + radius);
-    auto v2_x = baphy::rnd::get<float>(c_x - radius, c_x + radius);
-    auto v2_y = baphy::rnd::get<float>(c_y - radius, c_y + radius);
-    auto v3_x = baphy::rnd::get<float>(c_x - radius, c_x + radius);
-    auto v3_y = baphy::rnd::get<float>(c_y - radius, c_y + radius);
-    auto r = baphy::rnd::get<float>();
-    auto g = baphy::rnd::get<float>();
-    auto b = baphy::rnd::get<float>();
-    vbo->add({
-      v1_x, v1_y, 0.0f,  r, g, b,
-      v2_x, v2_y, 0.0f,  r, g, b,
-      v3_x, v3_y, 0.0f,  r, g, b,
-    });
-  }
-  vbo->sync();
-
   shader->use();
-  shader->uniform_mat4f("mvp", mvp);
-  vao->draw_arrays(baphy::DrawMode::triangles, vbo->size() / 6);
+  shader->uniform_mat4f("mvp", window->projection_matrix());
+  ibo->bind(baphy::BufTarget::draw_indirect);
+  vao->multi_draw_arrays_indirect(baphy::DrawMode::triangles, ibo->size() / 4, sizeof(float) * 4);
 
   dear->new_frame();
 
@@ -92,6 +103,6 @@ int main(int, char*[]) {
   e.run_application<Indev>(baphy::InitializeParams{
     .title = "Indev",
     .size = {1280, 720},
-    .flags = baphy::WindowFlags::centered // | baphy::WindowFlags::vsync
+    .flags = baphy::WindowFlags::centered | baphy::WindowFlags::vsync
   });
 }

@@ -5,6 +5,7 @@
 #include "baphy/core/module_mgr.hpp"
 #include "baphy/util/platform.hpp"
 #include "GLFW/glfw3.h"
+#include "glm/mat4x4.hpp"
 #include <mutex>
 
 namespace baphy {
@@ -19,6 +20,8 @@ public:
 
   int w() const { return size_.x; }
   int h() const { return size_.y; }
+
+  glm::mat4 projection_matrix() const;
 
 protected:
   void r_initialize_(const E_Initialize& p) override;
