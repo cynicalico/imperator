@@ -1,25 +1,27 @@
-set(baphy_SRC_FILES ${baphy_SRC_FILES}
-        src/baphy/core/module/application.cpp
-        src/baphy/core/module/window.cpp
-        src/baphy/core/module/glfw_callbacks.cpp
-        src/baphy/core/engine.cpp
-        src/baphy/core/hermes.cpp
-        src/baphy/core/prio_list.cpp
+set(imperator_SRC_FILES ${imperator_SRC_FILES}
+        core/module/application.cpp
+        core/module/window.cpp
+        core/module/glfw_callbacks.cpp
+        core/engine.cpp
+        core/hermes.cpp
+        core/prio_list.cpp
 
-        src/baphy/gfx/gl/buffer.cpp
-        src/baphy/gfx/gl/shader.cpp
-        src/baphy/gfx/gl/vertex_array.cpp
-        src/baphy/gfx/module/dear_imgui.cpp
-        src/baphy/gfx/module/gfx_context.cpp
+        gfx/gl/buffer.cpp
+        gfx/gl/shader.cpp
+        gfx/gl/vertex_array.cpp
+        gfx/module/dear_imgui.cpp
+        gfx/module/gfx_context.cpp
 
-        src/baphy/util/averagers.cpp
-        src/baphy/util/helpers.cpp
-        src/baphy/util/io.cpp
-        src/baphy/util/log.cpp
-        src/baphy/util/memusage.cpp
-        src/baphy/util/platform.cpp
-        src/baphy/util/rnd.cpp
-        src/baphy/util/sops.cpp
-        src/baphy/util/time.cpp
+        util/averagers.cpp
+        util/helpers.cpp
+        util/io.cpp
+        util/log.cpp
+        util/memusage.cpp
+        util/platform.cpp
+        util/rnd.cpp
+        util/sops.cpp
+        util/time.cpp
 
-        src/baphy/baphy.cpp)
+        imperator.cpp)
+
+list(TRANSFORM imperator_SRC_FILES PREPEND src/imperator/)

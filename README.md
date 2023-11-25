@@ -1,8 +1,8 @@
-# baphy
+# imperator
 
-[![build](https://github.com/bogicide/baphy/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/bogicide/baphy/actions/workflows/c-cpp.yml)
+[![build](https://github.com/bogicide/imperator/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/bogicide/imperator/actions/workflows/c-cpp.yml)
 
-Baphy 2: Electric Boogaloo.
+Imperator 2: Electric Boogaloo.
 
 ### Motivation
 
@@ -22,7 +22,7 @@ TODO
 
 ### Credits
 
-I'm using several great open-source projects to create Baphy.
+I'm using several great open-source projects to create Imperator.
 
 - [{fmt}](https://github.com/fmtlib/fmt)
 - [glad](https://github.com/Dav1dde/glad)

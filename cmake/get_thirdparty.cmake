@@ -12,9 +12,9 @@ CPMAddPackage(
 )
 add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
 if (WIN32)
-    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
+    glad_add_library(glad_gl_core_mx_43 REPRODUCIBLE MX API gl:core=4.3 wgl=1.0)
 else ()
-    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4)
+    glad_add_library(glad_gl_core_mx_43 REPRODUCIBLE MX API gl:core=4.3 glx=1.4)
 endif ()
 
 CPMAddPackage(
@@ -78,8 +78,8 @@ CPMAddPackage(
         GITHUB_REPOSITORY abseil/abseil-cpp
         GIT_TAG 20230802.1
         OPTIONS
-        "ABSL_PROPAGATE_CXX_STD ON"
-        "ABSL_ENABLE_INSTALL ON"
+            "ABSL_PROPAGATE_CXX_STD ON"
+            "ABSL_ENABLE_INSTALL ON"
 )
 
 CPMAddPackage(
@@ -111,7 +111,7 @@ CPMAddPackage(
         VERSION 1.2.3
 )
 
-add_library(baphy_thirdparty STATIC
+add_library(imperator_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imconfig.h
         ${imgui_SOURCE_DIR}/imgui.h
         ${imgui_SOURCE_DIR}/imgui_internal.h
@@ -145,21 +145,21 @@ add_library(baphy_thirdparty STATIC
         ${stb_SOURCE_DIR}/stb_image_resize.h)
 
 if (MSVC)
-    target_compile_definitions(baphy_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(imperator_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 else ()
     set(NFD_PORTAL ON CACHE STRING "" FORCE)
 endif ()
 
-target_include_directories(baphy_thirdparty PUBLIC
+target_include_directories(imperator_thirdparty PUBLIC
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
         ${implot_SOURCE_DIR}
         ${pcg-cpp_SOURCE_DIR}/include
         ${stb_SOURCE_DIR})
 
-target_link_libraries(baphy_thirdparty PUBLIC
+target_link_libraries(imperator_thirdparty PUBLIC
         fmt::fmt
-        glad_gl_core_mx_33
+        glad_gl_core_mx_43
         glfw
         glm::glm
         nfd
