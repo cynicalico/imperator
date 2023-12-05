@@ -3,10 +3,10 @@
 #pragma vertex
 #version 330 core
 layout (location = 0) in vec3 in_pos;
-layout (location = 1) in vec3 in_color;
-layout (location = 2) in vec3 in_trans;
+layout (location = 1) in vec3 in_trans;
+layout (location = 2) in vec4 in_color;
 
-out vec3 out_color;
+out vec4 out_color;
 
 uniform mat4 mvp;
 
@@ -31,10 +31,10 @@ void main() {
 
 #pragma fragment
 #version 330 core
-in vec3 out_color;
+in vec4 out_color;
 
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(out_color, 1.0);
+    FragColor = out_color;
 }

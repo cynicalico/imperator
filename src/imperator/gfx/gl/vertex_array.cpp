@@ -16,7 +16,7 @@ void VertexArray::unbind() {
 }
 
 void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const std::string& desc) {
-  const static RE2 attrib_pat(R"((\w+):(\d+)(i|f|u)(?::(n))?(?::s(\d+)(i|f|u)?)?(?::o(\d+)(i|f|u)?)?(?::i(\d+))?)");
+  const static RE2 attrib_pat(R"((\w+):(\d+)(i|f|u|s)(?::(n))?(?::s(\d+)(i|f|u|s)?)?(?::o(\d+)(i|f|u|s)?)?(?::i(\d+))?)");
   assert(attrib_pat.ok());
 
   const static RE2 spaces_pat{IMPERATOR_SPLIT_RE(R"((\s+))")};
@@ -27,13 +27,15 @@ void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const st
     {"i", GL_INT},
     {"f", GL_FLOAT},
     {"u", GL_UNSIGNED_INT},
+    {"s", GL_SHORT}
   };
 
   static std::unordered_map<GLenum, std::size_t> size_map = {
     {GL_NONE, 1},
     {GL_INT, sizeof(int)},
     {GL_FLOAT, sizeof(float)},
-    {GL_UNSIGNED_INT, sizeof(unsigned int)}
+    {GL_UNSIGNED_INT, sizeof(unsigned int)},
+    {GL_SHORT, sizeof(std::int16_t)},
   };
 
   auto attrib_strs = split_re(desc, spaces_pat);

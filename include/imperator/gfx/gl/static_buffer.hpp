@@ -54,6 +54,7 @@ private:
 using FSBuffer = StaticBuffer<float>;
 using ISBuffer = StaticBuffer<int>;
 using USBuffer = StaticBuffer<unsigned int>;
+using SSBuffer = StaticBuffer<std::int16_t>;
 
 template<Numeric T>
 std::size_t StaticBuffer<T>::size() const {
