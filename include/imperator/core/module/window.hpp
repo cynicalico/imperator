@@ -21,7 +21,23 @@ public:
   int w() const { return size_.x; }
   int h() const { return size_.y; }
 
+  std::string title() const { return title_; }
+
   glm::mat4 projection_matrix() const;
+
+  void set_x(int x);
+  void set_y(int y);
+  void set_pos(int x, int y);
+
+  void set_w(int w);
+  void set_h(int h);
+  void set_size(int w, int h);
+
+  void set_title(const std::string& title);
+
+  void set_icon(const std::vector<std::filesystem::path> &paths);
+  void set_icon(const std::filesystem::path &path);
+  void set_icon_dir(const std::filesystem::path &dir);
 
 protected:
   void r_initialize_(const E_Initialize& p) override;
@@ -36,6 +52,7 @@ private:
 
   glm::ivec2 size_{};
   glm::ivec2 pos_{};
+  std::string title_{};
 
   void open_(const InitializeParams& params);
   void open_fullscreen_(const InitializeParams& params);

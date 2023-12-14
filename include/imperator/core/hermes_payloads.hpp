@@ -5,6 +5,7 @@
 #include "hermes_payloads_types.hpp"
 #include "GLFW/glfw3.h"
 #include "spdlog/common.h"
+#include <filesystem>
 #include <string>
 
 // This gets defined when we include spdlog/common.hpp, but the
@@ -136,6 +137,28 @@ struct E_GlfwDrop {
   GLFWwindow* window;
   int count;
   const char** paths;
+};
+
+struct E_GlfwSetWindowSize {
+  GLFWwindow* window;
+  int width;
+  int height;
+};
+
+struct E_GlfwSetWindowPos {
+  GLFWwindow* window;
+  int x;
+  int y;
+};
+
+struct E_GlfwSetWindowTitle {
+  GLFWwindow* window;
+  std::string title;
+};
+
+struct E_GlfwSetWindowIcon {
+  GLFWwindow* window;
+  const std::vector<std::filesystem::path> paths;
 };
 
 /* MESSAGES */

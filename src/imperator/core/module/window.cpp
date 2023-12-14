@@ -2,14 +2,55 @@
 
 #include "imperator/core/module/application.hpp"
 #include "imperator/core/module/glfw_callbacks.hpp"
+#include "imperator/util/io.hpp"
 #include "imperator/util/log.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
+#include <set>
 
 namespace imp {
 std::once_flag Window::initialize_glfw_;
 
 glm::mat4 Window::projection_matrix() const {
   return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f);
+}
+
+void Window::set_x(int x) { Hermes::send<E_GlfwSetWindowPos>(glfw_handle_, x, pos_.y); }
+void Window::set_y(int y) { Hermes::send<E_GlfwSetWindowPos>(glfw_handle_, pos_.x, y); }
+void Window::set_pos(int x, int y) { Hermes::send<E_GlfwSetWindowPos>(glfw_handle_, x, y); }
+
+void Window::set_w(int w) { Hermes::send<E_GlfwSetWindowSize>(glfw_handle_, w, size_.y); }
+void Window::set_h(int h) { Hermes::send<E_GlfwSetWindowSize>(glfw_handle_, size_.x, h); }
+void Window::set_size(int w, int h) { Hermes::send<E_GlfwSetWindowSize>(glfw_handle_, w, h); }
+
+void Window::set_title(const std::string& title) { Hermes::send<E_GlfwSetWindowTitle>(glfw_handle_, title); }
+
+void Window::set_icon(const std::vector<std::filesystem::path>& paths) {
+  Hermes::send<E_GlfwSetWindowIcon>(glfw_handle_, paths);
+}
+
+void Window::set_icon(const std::filesystem::path& path) {
+  const std::vector paths = {path};
+  set_icon(paths);
+}
+
+void Window::set_icon_dir(const std::filesystem::path& dir) {
+  // This is the list of formats that stb_image can support
+  static std::set<std::string> valid_extensions = {
+    ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"
+  };
+
+  std::vector<std::filesystem::path> icon_paths{};
+  for (const auto& p: std::filesystem::directory_iterator(dir)) {
+    if (p.is_regular_file() && valid_extensions.contains(p.path().extension().string())) {
+      icon_paths.emplace_back(p.path());
+    }
+  }
+
+  if (icon_paths.empty()) {
+    IMPERATOR_LOG_WARN("No valid icon images found in '{}'", dir.string());
+  }
+
+  set_icon(icon_paths);
 }
 
 void Window::r_initialize_(const E_Initialize& p) {
@@ -77,10 +118,12 @@ void Window::open_(const InitializeParams& params) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   if (is_flag_set(params.flags, WindowFlags::fullscreen) ||
-    is_flag_set(params.flags, WindowFlags::borderless))
+      is_flag_set(params.flags, WindowFlags::borderless))
     open_fullscreen_(params);
   else
     open_windowed_(params);
+
+  title_ = params.title;
 
   // This isn't sent at the beginning of the program, so we send it first
   // Sent as an immediate event in case we ever do anything special when
@@ -90,8 +133,8 @@ void Window::open_(const InitializeParams& params) {
   register_glfw_callbacks(glfw_handle_);
 
   if (!is_flag_set(params.flags, WindowFlags::fullscreen) &&
-    !is_flag_set(params.flags, WindowFlags::borderless) &&
-    !is_flag_set(params.flags, WindowFlags::hidden))
+      !is_flag_set(params.flags, WindowFlags::borderless) &&
+      !is_flag_set(params.flags, WindowFlags::hidden))
     glfwShowWindow(glfw_handle_);
 }
 
@@ -123,8 +166,8 @@ void Window::open_fullscreen_(const InitializeParams& params) {
     IMPERATOR_LOG_CRITICAL("Failed to create GLFW window: ({}) {}", code, description);
     glfwTerminate();
     std::exit(EXIT_FAILURE);
-  } else
-    IMPERATOR_LOG_DEBUG("Created GLFW window");
+  }
+  IMPERATOR_LOG_DEBUG("Created GLFW window");
 
   if (is_flag_set(params.flags, WindowFlags::borderless)) {
     int base_x, base_y;

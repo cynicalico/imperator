@@ -4,8 +4,8 @@ project(imperator VERSION 0.1
         LANGUAGES CXX C)
 
 # This is kind of a workaround to handle the OpenAL DLL... not sure what the real solution is
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include(cmake/get_cpm.cmake)
 include(cmake/setup_ccache.cmake)

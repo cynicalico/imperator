@@ -29,8 +29,17 @@ private:
   std::jthread render_thread;
 
   std::shared_ptr<ModuleMgr> module_mgr_{nullptr};
-};
 
+  void r_glfw_set_window_size_(const E_GlfwSetWindowSize& p);
+  void r_glfw_set_window_pos_(const E_GlfwSetWindowPos& p);
+  void r_glfw_set_window_title_(const E_GlfwSetWindowTitle& p);
+  void r_glfw_set_window_icon_(const E_GlfwSetWindowIcon& p);
+};
+}
+
+IMPERATOR_PRAISE_HERMES(imp::Engine);
+
+namespace imp {
 template<typename T>
   requires std::derived_from<T, Application>
 void Engine::run_application(const InitializeParams& initialize_params) {
@@ -62,6 +71,11 @@ void Engine::run_application(const InitializeParams& initialize_params) {
 
   while (!received_shutdown_) {
     glfwWaitEventsTimeout(0);
+
+    Hermes::poll<E_GlfwSetWindowSize>(EPI<Engine>::name);
+    Hermes::poll<E_GlfwSetWindowPos>(EPI<Engine>::name);
+    Hermes::poll<E_GlfwSetWindowTitle>(EPI<Engine>::name);
+    Hermes::poll<E_GlfwSetWindowIcon>(EPI<Engine>::name);
   }
 
   render_thread.join();
@@ -69,7 +83,5 @@ void Engine::run_application(const InitializeParams& initialize_params) {
   Hermes::send_nowait_rev<E_Shutdown>();
 }
 } // namespace imp
-
-IMPERATOR_PRAISE_HERMES(imp::Engine);
 
 #endif//IMPERATOR_CORE_ENGINE_HPP
