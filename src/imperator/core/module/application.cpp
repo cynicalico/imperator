@@ -10,7 +10,7 @@ void Application::r_initialize_(const E_Initialize& e) {
   Hermes::sub<E_StartFrame>(module_name, [&](const auto& p) { r_start_frame_(p); });
   Hermes::sub<E_Draw>(module_name, [&](const auto& p) { r_draw_(p); });
   Hermes::sub<E_EndFrame>(module_name, [&](const auto& p) { r_end_frame_(p); });
-  Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
+  Hermes::sub<E_Update>(module_name, {EPI<InputMgr>::name, EPI<Window>::name}, [&](const auto& p) { r_update_(p); });
 
   initialize();
 

@@ -1,6 +1,7 @@
 #include "imperator/core/module/input_mgr.hpp"
 
 #include "imperator/util/time.hpp"
+#include <ranges>
 
 namespace imp {
 std::once_flag InputMgr::initialize_glfw_action_maps_;
@@ -53,6 +54,13 @@ void InputMgr::bind(const std::string& name, const std::string& action) {
   bindings_[name].emplace_back(action);
 }
 
+bool InputMgr::pressed(const std::string& name, const Mods& mods) {
+  int mods_check = unwrap(mods);
+  return std::ranges::any_of(bindings_[name], [&](const auto& b) {
+    return state_[b].pressed && !state_[b].last_pressed && (state_[b].mods & mods_check) == mods_check;
+  });
+}
+
 void InputMgr::r_initialize_(const E_Initialize& p) {
   std::call_once(initialize_glfw_action_maps_, [&] {
     for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
@@ -72,6 +80,14 @@ void InputMgr::r_initialize_(const E_Initialize& p) {
     bind(a, a);
   }
 
+  Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
+  Hermes::sub<E_GlfwKey>(module_name, [&](const auto& p) { r_glfw_key_(p); });
+  Hermes::sub<E_GlfwCharacter>(module_name, [&](const auto& p) { r_glfw_character_(p); });
+  Hermes::sub<E_GlfwCursorPos>(module_name, [&](const auto& p) { r_glfw_cursor_pos_(p); });
+  Hermes::sub<E_GlfwCursorEnter>(module_name, [&](const auto& p) { r_glfw_cursor_enter_(p); });
+  Hermes::sub<E_GlfwMouseButton>(module_name, [&](const auto& p) { r_glfw_mouse_button_(p); });
+  Hermes::sub<E_GlfwScroll>(module_name, [&](const auto& p) { r_glfw_scroll_(p); });
+
   Module::r_initialize_(p);
 }
 
@@ -80,7 +96,29 @@ void InputMgr::r_shutdown_(const E_Shutdown& p) {
 }
 
 void InputMgr::r_update_(const E_Update& p) {
-  for (auto &s: state_)
+  for (auto& s: state_ | std::views::values) {
+    s.last_pressed = s.pressed;
+  }
+
+  Hermes::poll<E_GlfwKey>(module_name);
+  Hermes::poll<E_GlfwCharacter>(module_name);
+  Hermes::poll<E_GlfwCursorPos>(module_name);
+  Hermes::poll<E_GlfwCursorEnter>(module_name);
+  Hermes::poll<E_GlfwMouseButton>(module_name);
+  Hermes::poll<E_GlfwScroll>(module_name);
+
+  while (!action_queue_.empty()) {
+    auto [action, pressed, mods, time] = action_queue_.front();
+    action_queue_.pop();
+
+    state_[action].pressed = pressed;
+    state_[action].mods = mods;
+    if (pressed) {
+      state_[action].press_time = time;
+    } else {
+      state_[action].release_time = time;
+    }
+  }
 }
 
 void InputMgr::r_glfw_key_(const E_GlfwKey& p) {

@@ -4,6 +4,7 @@
 #include "imperator/core/hermes_payloads.hpp"
 #include "imperator/core/prio_list.hpp"
 #include "imperator/core/type_id.hpp"
+#include "imperator/util/log.hpp"
 #include <any>
 #include <memory>
 #include <mutex>
@@ -81,6 +82,12 @@ public:
 
   template<typename T>
   static std::vector<std::string> get_prio();
+
+  template<typename T>
+  static bool has_pending();
+
+  template<typename T>
+  static std::vector<PendingItemInfo> get_pending();
 
 private:
   template<typename T>
@@ -188,6 +195,24 @@ std::vector<std::string> Hermes::get_prio() {
 }
 
 template<typename T>
+bool Hermes::has_pending() {
+  auto e_idx = type_id<T>();
+
+  const std::lock_guard lock(receiver_mutex_);
+
+  return receivers_[e_idx].has_pending();
+}
+
+template<typename T>
+std::vector<PendingItemInfo> Hermes::get_pending() {
+  auto e_idx = type_id<T>();
+
+  const std::lock_guard lock(receiver_mutex_);
+
+  return receivers_[e_idx].get_pending();
+}
+
+template<typename T>
 void Hermes::check_create_buffer_(const std::string& name) {
   auto e_idx = type_id<T>();
 
@@ -201,8 +226,8 @@ void Hermes::check_create_buffer_(const std::string& name) {
 }
 } // namespace imp
 
-#define IMPERATOR_PRAISE_HERMES(module)      \
-  template<> struct imp::EPI<module> {  \
+#define IMPERATOR_PRAISE_HERMES(module)   \
+  template<> struct imp::EPI<module> {    \
     static constexpr auto name = #module; \
   }
 

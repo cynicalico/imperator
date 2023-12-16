@@ -27,6 +27,8 @@ private:
   std::atomic_bool received_shutdown_{false};
 
   std::shared_ptr<ModuleMgr> module_mgr_{nullptr};
+
+  bool check_pending_();
 };
 }
 
@@ -46,16 +48,18 @@ void Engine::run_application(const InitializeParams& initialize_params) {
 
   Hermes::send_nowait<E_Initialize>(initialize_params);
 
-  while (!received_shutdown_) {
-    Hermes::send_nowait<E_Update>(frame_counter_.dt());
+  if (check_pending_()) {
+    while (!received_shutdown_) {
+      Hermes::send_nowait<E_Update>(frame_counter_.dt());
 
-    Hermes::send_nowait<E_StartFrame>();
-    Hermes::send_nowait<E_Draw>();
-    Hermes::send_nowait<E_EndFrame>();
+      Hermes::send_nowait<E_StartFrame>();
+      Hermes::send_nowait<E_Draw>();
+      Hermes::send_nowait<E_EndFrame>();
 
-    frame_counter_.update();
+      frame_counter_.update();
 
-    glfwPollEvents();
+      glfwPollEvents();
+    }
   }
 
   Hermes::send_nowait_rev<E_Shutdown>();

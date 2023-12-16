@@ -8,6 +8,11 @@
 #include <vector>
 
 namespace imp {
+struct PendingItemInfo {
+  std::string name;
+  std::vector<std::string> deps;
+};
+
 template<typename T>
 class PrioList {
   struct PendingItem_ {
@@ -44,6 +49,10 @@ public:
   bool add(const std::string& name, std::vector<std::string>&& deps, T&& v);
 
   std::string name_from_id(std::size_t id);
+
+  bool has_pending() const;
+
+  std::vector<PendingItemInfo> get_pending() const;
 
   typename std::vector<T>::iterator begin() { return ts_.begin(); }
   typename std::vector<T>::iterator end() { return ts_.end(); }
@@ -124,6 +133,24 @@ bool PrioList<T>::add(const std::string& name, std::vector<std::string>&& deps, 
 template<typename T>
 std::string PrioList<T>::name_from_id(std::size_t id) {
   return id_to_s_[id];
+}
+
+template<typename T>
+bool PrioList<T>::has_pending() const {
+  return !pending_.empty();
+}
+
+template<typename T>
+std::vector<PendingItemInfo> PrioList<T>::get_pending() const {
+  std::vector<PendingItemInfo> pending_info{};
+  for (const auto& [id, i]: pending_) {
+    pending_info.emplace_back(id_to_s_[id]);
+    for (const auto& id2: i.unmet_deps) {
+      pending_info.back().deps.emplace_back(id_to_s_[id2]);
+    }
+  }
+
+  return pending_info;
 }
 
 template<typename T>

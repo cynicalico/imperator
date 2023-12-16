@@ -17,6 +17,10 @@ void Indev::initialize() {}
 
 void Indev::update(double dt) {
   fps.update();
+
+  if (input->pressed("a", imp::Mods::ctrl | imp::Mods::alt)) {
+    IMPERATOR_LOG_INFO("ctrl+a pressed!");
+  }
 }
 
 void Indev::draw() {

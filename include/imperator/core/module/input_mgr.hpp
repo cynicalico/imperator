@@ -9,6 +9,16 @@
 #include <queue>
 
 namespace imp {
+enum class Mods {
+  none    = 0,
+  shift   = 1 << 0,
+  ctrl    = 1 << 1,
+  alt     = 1 << 2,
+  super   = 1 << 3,
+  caps    = 1 << 4,
+  numlock = 1 << 5
+};
+
 class InputMgr : public Module<InputMgr> {
 public:
   InputMgr() : Module({
@@ -16,6 +26,8 @@ public:
   }) {}
 
   void bind(const std::string& name, const std::string& action);
+
+  bool pressed(const std::string& name, const Mods& mods = Mods::none);
 
 protected:
   void r_initialize_(const E_Initialize& p) override;
@@ -40,8 +52,10 @@ private:
     bool pressed{false};
     bool last_pressed{false};
     int mods{};
-    double time{0};
+    double press_time{0};
+    double release_time{0};
   };
+
   std::unordered_map<std::string, ActionState> state_{};
 
   struct PendingAction {
@@ -50,6 +64,7 @@ private:
     int mods{};
     double time{0};
   };
+
   std::queue<PendingAction> action_queue_{};
 
   void r_update_(const E_Update& p);
@@ -61,6 +76,8 @@ private:
   void r_glfw_scroll_(const E_GlfwScroll& p);
 };
 } // namespace imp
+
+ENUM_ENABLE_BITOPS(imp::Mods);
 
 IMPERATOR_PRAISE_HERMES(imp::InputMgr);
 
