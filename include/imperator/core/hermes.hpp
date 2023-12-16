@@ -200,7 +200,9 @@ bool Hermes::has_pending() {
 
   const std::lock_guard lock(receiver_mutex_);
 
-  return receivers_[e_idx].has_pending();
+  if (receivers_.size() > e_idx)
+    return receivers_[e_idx].has_pending();
+  return false;
 }
 
 template<typename T>
@@ -209,7 +211,9 @@ std::vector<PendingItemInfo> Hermes::get_pending() {
 
   const std::lock_guard lock(receiver_mutex_);
 
-  return receivers_[e_idx].get_pending();
+  if (receivers_.size() > e_idx)
+    return receivers_[e_idx].get_pending();
+  return {};
 }
 
 template<typename T>
