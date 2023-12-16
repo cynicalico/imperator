@@ -13,9 +13,7 @@ public:
   void draw() override;
 };
 
-void Indev::initialize() {
-  window->set_icon_dir(CWD / ".." / "data" / "logo" / "png");
-}
+void Indev::initialize() {}
 
 void Indev::update(double dt) {
   fps.update();
@@ -44,7 +42,7 @@ int main(int, char*[]) {
   auto e = imp::Engine();
   e.run_application<Indev>(imp::InitializeParams{
     .title = "Indev",
-    .size = {500, 500},
+    .size = {1280, 720},
     .flags = imp::WindowFlags::centered // | imp::WindowFlags::vsync
   });
 }

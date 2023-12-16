@@ -45,14 +45,8 @@ private:
   int comp_{0};
 };
 
-const std::filesystem::path DATA_FOLDER =
-    std::filesystem::path(__FILE__)
-    .remove_filename()
-    .parent_path()
-    .parent_path()
-    .parent_path()
-    .parent_path()
-    / "data";
+// TODO: Make this configurable
+const std::filesystem::path DATA_FOLDER = std::filesystem::current_path() / "data";
 
 std::optional<nlohmann::json> read_json(const std::filesystem::path& path);
 } // namespace imp

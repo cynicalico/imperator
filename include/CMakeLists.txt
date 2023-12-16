@@ -1,7 +1,8 @@
 set(imperator_INCLUDE_FILES ${imperator_INCLUDE_FILES}
         core/module/application.hpp
-        core/module/window.hpp
         core/module/glfw_callbacks.hpp
+        core/module/input_mgr.hpp
+        core/module/window.hpp
         core/engine.hpp
         core/hermes.hpp
         core/hermes_payloads.hpp

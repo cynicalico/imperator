@@ -1,7 +1,8 @@
 set(imperator_SRC_FILES ${imperator_SRC_FILES}
         core/module/application.cpp
-        core/module/window.cpp
         core/module/glfw_callbacks.cpp
+        core/module/input_mgr.cpp
+        core/module/window.cpp
         core/engine.cpp
         core/hermes.cpp
         core/prio_list.cpp

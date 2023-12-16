@@ -14,18 +14,44 @@ glm::mat4 Window::projection_matrix() const {
   return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f);
 }
 
-void Window::set_x(int x) { Hermes::send<E_GlfwSetWindowPos>(glfw_handle_, x, pos_.y); }
-void Window::set_y(int y) { Hermes::send<E_GlfwSetWindowPos>(glfw_handle_, pos_.x, y); }
-void Window::set_pos(int x, int y) { Hermes::send<E_GlfwSetWindowPos>(glfw_handle_, x, y); }
+void Window::set_pos(int x, int y) {
+  glfwSetWindowPos(glfw_handle_, x, y);
+}
 
-void Window::set_w(int w) { Hermes::send<E_GlfwSetWindowSize>(glfw_handle_, w, size_.y); }
-void Window::set_h(int h) { Hermes::send<E_GlfwSetWindowSize>(glfw_handle_, size_.x, h); }
-void Window::set_size(int w, int h) { Hermes::send<E_GlfwSetWindowSize>(glfw_handle_, w, h); }
+void Window::set_x(int x) {
+  set_pos(x, pos_.y);
+}
 
-void Window::set_title(const std::string& title) { Hermes::send<E_GlfwSetWindowTitle>(glfw_handle_, title); }
+void Window::set_y(int y) {
+  set_pos(pos_.x, y);
+}
+
+void Window::set_size(int w, int h) {
+  glfwSetWindowSize(glfw_handle_, w, h);
+}
+
+void Window::set_w(int w) {
+  set_size(w, size_.y);
+}
+
+void Window::set_h(int h) {
+  set_size(size_.x, h);
+}
+
+void Window::set_title(const std::string& title) {
+  glfwSetWindowTitle(glfw_handle_, title.c_str());
+}
 
 void Window::set_icon(const std::vector<std::filesystem::path>& paths) {
-  Hermes::send<E_GlfwSetWindowIcon>(glfw_handle_, paths);
+  std::vector<ImageData> images{};
+  for (const auto &path: paths)
+    images.emplace_back(path, 4);
+
+  std::vector<GLFWimage> glfw_images{};
+  for (auto &i: images)
+    glfw_images.emplace_back(i.glfw_image());
+
+  glfwSetWindowIcon(glfw_handle_, glfw_images.size(), &glfw_images[0]);
 }
 
 void Window::set_icon(const std::filesystem::path& path) {
@@ -131,6 +157,9 @@ void Window::open_(const InitializeParams& params) {
   Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, params.size.x, params.size.y);
 
   register_glfw_callbacks(glfw_handle_);
+
+  // Default logo
+  set_icon_dir(DATA_FOLDER / "logo" / "png");
 
   if (!is_flag_set(params.flags, WindowFlags::fullscreen) &&
       !is_flag_set(params.flags, WindowFlags::borderless) &&

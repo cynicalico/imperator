@@ -5,14 +5,12 @@
 #include "GLFW/glfw3.h"
 
 namespace imp {
-
 void register_glfw_error_callback();
 
-void register_glfw_callbacks(GLFWwindow *window);
+void register_glfw_callbacks(GLFWwindow* window);
 
 namespace internal {
-
-void error_callback(int code, const char *description);
+void error_callback(int code, const char* description);
 
 void window_close_callback(GLFWwindow* window);
 
@@ -49,9 +47,7 @@ void joystick_callback(int jid, int event);
 void drop_callback(GLFWwindow* window, int count, const char** paths);
 
 void monitor_callback(GLFWmonitor* monitor, int event);
-
 } // namespace internal
-
 } // namespace imp
 
 #endif//IMPERATOR_CORE_MODULE_GLFW_CALLBACKS_HPP
