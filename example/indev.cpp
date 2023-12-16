@@ -18,8 +18,20 @@ void Indev::initialize() {}
 void Indev::update(double dt) {
   fps.update();
 
-  if (input->pressed("a", imp::Mods::ctrl | imp::Mods::alt)) {
-    IMPERATOR_LOG_INFO("ctrl+a pressed!");
+  if (input->released("a")) {
+    IMPERATOR_LOG_INFO("a released!");
+  }
+
+  if (input->down("b", imp::Mods::ctrl)) {
+    IMPERATOR_LOG_INFO("ctrl+b held");
+  }
+
+  if (input->down("c", imp::Mods::ctrl, 0.5)) {
+    IMPERATOR_LOG_INFO("Holding c");
+  }
+
+  if (input->down("left_control", 0.5, 2)) {
+    IMPERATOR_LOG_INFO("Holding lctrl");
   }
 }
 

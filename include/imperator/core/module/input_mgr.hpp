@@ -10,12 +10,12 @@
 
 namespace imp {
 enum class Mods {
-  none    = 0,
-  shift   = 1 << 0,
-  ctrl    = 1 << 1,
-  alt     = 1 << 2,
-  super   = 1 << 3,
-  caps    = 1 << 4,
+  none = 0,
+  shift = 1 << 0,
+  ctrl = 1 << 1,
+  alt = 1 << 2,
+  super = 1 << 3,
+  caps = 1 << 4,
   numlock = 1 << 5
 };
 
@@ -28,6 +28,11 @@ public:
   void bind(const std::string& name, const std::string& action);
 
   bool pressed(const std::string& name, const Mods& mods = Mods::none);
+
+  bool released(const std::string& name, const Mods& mods = Mods::none);
+
+  bool down(const std::string& name, const Mods& mods, double interval = 0.0, double delay = 0.0);
+  bool down(const std::string& name, double interval = 0.0, double delay = 0.0);
 
 protected:
   void r_initialize_(const E_Initialize& p) override;
@@ -56,7 +61,14 @@ private:
     double release_time{0};
   };
 
-  std::unordered_map<std::string, ActionState> state_{};
+  struct RepeatState {
+    bool pressed{false};
+    std::string action;
+    double acc{0};
+    double interval{0};
+    double delay{0};
+    bool delay_stage{false};
+  };
 
   struct PendingAction {
     std::string action{};
@@ -65,6 +77,8 @@ private:
     double time{0};
   };
 
+  std::unordered_map<std::string, ActionState> state_{};
+  std::unordered_map<std::string, RepeatState> repeat_{};
   std::queue<PendingAction> action_queue_{};
 
   void r_update_(const E_Update& p);

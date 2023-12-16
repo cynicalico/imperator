@@ -61,6 +61,47 @@ bool InputMgr::pressed(const std::string& name, const Mods& mods) {
   });
 }
 
+bool InputMgr::released(const std::string& name, const Mods& mods) {
+  int mods_check = unwrap(mods);
+  return std::ranges::any_of(bindings_[name], [&](const auto& b) {
+    return !state_[b].pressed && state_[b].last_pressed && (state_[b].mods & mods_check) == mods_check;
+  });
+}
+
+// TODO: If the desired mods are released, but the keys aren't, this will keep returning true
+bool InputMgr::down(const std::string& name, const Mods& mods, double interval, double delay) {
+  int mods_check = unwrap(mods);
+
+  if (interval <= 0.0 && delay <= 0.0) {
+    return std::ranges::any_of(bindings_[name], [&](const auto& b) {
+      return state_[b].pressed && (state_[b].mods & mods_check) == mods_check;
+    });
+  }
+
+  if (auto it = repeat_.find(name); it != repeat_.end()) {
+    return it->second.pressed;
+  }
+
+  for (const auto& action: bindings_[name]) {
+    if (state_[action].pressed && (state_[action].mods & mods_check) == mods_check) {
+      repeat_[name] = RepeatState{
+        .action = action,
+        .interval = interval,
+        .delay = delay,
+        .delay_stage = delay > 0.0
+      };
+
+      return delay <= 0.0;
+    }
+  }
+
+  return false;
+}
+
+bool InputMgr::down(const std::string& name, double interval, double delay) {
+  return down(name, Mods::none, interval, delay);
+}
+
 void InputMgr::r_initialize_(const E_Initialize& p) {
   std::call_once(initialize_glfw_action_maps_, [&] {
     for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
@@ -119,15 +160,41 @@ void InputMgr::r_update_(const E_Update& p) {
       state_[action].release_time = time;
     }
   }
+
+  for (auto it = repeat_.begin(); it != repeat_.end();) {
+    auto& [pressed, action, acc, interval, delay, delay_stage] = it->second;
+
+    if (!state_[action].pressed) {
+      it = repeat_.erase(it);
+      continue;
+    }
+    pressed = false;
+
+    if (delay_stage) {
+      delay -= p.dt;
+      if (delay <= 0) {
+        delay_stage = false;
+        pressed = true;
+      }
+    } else {
+      acc += p.dt;
+      if (acc >= interval) {
+        acc -= interval;
+        pressed = true;
+      }
+    }
+
+    ++it;
+  }
 }
 
 void InputMgr::r_glfw_key_(const E_GlfwKey& p) {
   auto action = glfw_key_to_str_[p.key];
 
   if (p.action == GLFW_PRESS) {
-    action_queue_.emplace(action, true, p.mods, time_nsec());
+    action_queue_.emplace(action, true, p.mods, time_nsec<double>());
   } else if (p.action == GLFW_RELEASE) {
-    action_queue_.emplace(action, false, p.mods, time_nsec());
+    action_queue_.emplace(action, false, p.mods, time_nsec<double>());
   }
 }
 
@@ -141,9 +208,9 @@ void InputMgr::r_glfw_mouse_button_(const E_GlfwMouseButton& p) {
   auto action = glfw_button_to_str_[p.button];
 
   if (p.action == GLFW_PRESS) {
-    action_queue_.emplace(action, true, p.mods, time_nsec());
+    action_queue_.emplace(action, true, p.mods, time_nsec<double>());
   } else if (p.action == GLFW_RELEASE) {
-    action_queue_.emplace(action, false, p.mods, time_nsec());
+    action_queue_.emplace(action, false, p.mods, time_nsec<double>());
   }
 }
 
