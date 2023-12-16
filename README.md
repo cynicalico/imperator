@@ -1,6 +1,6 @@
 # imperator
 
-[![build](https://github.com/bogicide/imperator/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/bogicide/imperator/actions/workflows/c-cpp.yml)
+[![build](https://github.com/bofehlan/imperator/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/bofehlan/imperator/actions/workflows/c-cpp.yml)
 
 Imperator 2: Electric Boogaloo.
 
