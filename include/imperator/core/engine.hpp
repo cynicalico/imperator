@@ -8,6 +8,7 @@
 #include "imperator/core/module_mgr.hpp"
 #include "imperator/gfx/module/dear_imgui.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
+#include "imperator/util/module/timer_mgr.hpp"
 #include "imperator/util/platform.hpp"
 #include "imperator/util/time.hpp"
 #include <atomic>
@@ -44,6 +45,7 @@ void Engine::run_application(const InitializeParams& initialize_params) {
   module_mgr_->create<DearImgui>();
   module_mgr_->create<InputMgr>();
   module_mgr_->create<GfxContext>();
+  module_mgr_->create<TimerMgr>();
   module_mgr_->create<Window>();
 
   Hermes::send_nowait<E_Initialize>(initialize_params);

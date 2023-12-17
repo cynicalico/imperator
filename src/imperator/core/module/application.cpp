@@ -5,12 +5,17 @@ void Application::r_initialize_(const E_Initialize& e) {
   dear = module_mgr->get<DearImgui>();
   input = module_mgr->get<InputMgr>();
   gfx = module_mgr->get<GfxContext>();
+  timers = module_mgr->get<TimerMgr>();
   window = module_mgr->get<Window>();
 
   Hermes::sub<E_StartFrame>(module_name, [&](const auto& p) { r_start_frame_(p); });
   Hermes::sub<E_Draw>(module_name, [&](const auto& p) { r_draw_(p); });
   Hermes::sub<E_EndFrame>(module_name, [&](const auto& p) { r_end_frame_(p); });
-  Hermes::sub<E_Update>(module_name, {EPI<InputMgr>::name, EPI<Window>::name}, [&](const auto& p) { r_update_(p); });
+  Hermes::sub<E_Update>(module_name, {
+                          EPI<InputMgr>::name,
+                          EPI<TimerMgr>::name,
+                          EPI<Window>::name
+                        }, [&](const auto& p) { r_update_(p); });
 
   initialize();
 

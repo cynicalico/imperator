@@ -5,7 +5,8 @@
 #include "imperator/core/module/input_mgr.hpp"
 #include "imperator/core/module_mgr.hpp"
 #include "imperator/gfx/module/dear_imgui.hpp"
-#include "imperator//gfx/module/gfx_context.hpp"
+#include "imperator/gfx/module/gfx_context.hpp"
+#include "imperator/util/module/timer_mgr.hpp"
 
 namespace imp {
 class Application : public Module<Application> {
@@ -13,12 +14,14 @@ public:
   std::shared_ptr<DearImgui> dear{nullptr};
   std::shared_ptr<InputMgr> input{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<TimerMgr> timers{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
   Application() : Module({
     EPI<DearImgui>::name,
     EPI<InputMgr>::name,
     EPI<GfxContext>::name,
+    EPI<TimerMgr>::name,
     EPI<Window>::name,
   }) {}
 

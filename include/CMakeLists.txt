@@ -19,6 +19,7 @@ set(imperator_INCLUDE_FILES ${imperator_INCLUDE_FILES}
         gfx/module/dear_imgui.hpp
         gfx/module/gfx_context.hpp
 
+        util/module/timer_mgr.hpp
         util/averagers.hpp
         util/enum_bitops.hpp
         util/helpers.hpp
