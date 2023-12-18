@@ -34,6 +34,25 @@ public:
   bool down(const std::string& name, const Mods& mods, double interval = 0.0, double delay = 0.0);
   bool down(const std::string& name, double interval = 0.0, double delay = 0.0);
 
+  double mouse_x() const;
+  double mouse_y() const;
+
+  double mouse_px() const;
+  double mouse_py() const;
+
+  double mouse_dx() const;
+  double mouse_dy() const;
+
+  bool mouse_moved() const;
+
+  bool mouse_got_first_event() const;
+
+  double mouse_sx() const;
+  double mouse_sy() const;
+
+  bool mouse_entered() const;
+  bool mouse_left() const;
+
 protected:
   void r_initialize_(const E_Initialize& p) override;
   void r_shutdown_(const E_Shutdown& p) override;
@@ -77,6 +96,17 @@ private:
     double time{0};
   };
 
+  struct {
+    double x{0}, y{0};
+    double px{0}, py{0};
+    double dx{0}, dy{0};
+    bool moved{false};
+    bool got_first_event{false};
+
+    double sx{0}, sy{0};
+
+    int entered{0};
+  } mouse_state_{};
   std::unordered_map<std::string, ActionState> state_{};
   std::unordered_map<std::string, RepeatState> repeat_{};
   std::queue<PendingAction> action_queue_{};

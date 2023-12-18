@@ -102,6 +102,54 @@ bool InputMgr::down(const std::string& name, double interval, double delay) {
   return down(name, Mods::none, interval, delay);
 }
 
+double InputMgr::mouse_x() const {
+  return mouse_state_.x;
+}
+
+double InputMgr::mouse_y() const {
+  return mouse_state_.y;
+}
+
+double InputMgr::mouse_px() const {
+  return mouse_state_.px;
+}
+
+double InputMgr::mouse_py() const {
+  return mouse_state_.py;
+}
+
+double InputMgr::mouse_dx() const {
+  return mouse_state_.dx;
+}
+
+double InputMgr::mouse_dy() const {
+  return mouse_state_.dy;
+}
+
+bool InputMgr::mouse_moved() const {
+  return mouse_state_.moved;
+}
+
+bool InputMgr::mouse_got_first_event() const {
+  return mouse_state_.got_first_event;
+}
+
+double InputMgr::mouse_sx() const {
+  return mouse_state_.sx;
+}
+
+double InputMgr::mouse_sy() const {
+  return mouse_state_.sy;
+}
+
+bool InputMgr::mouse_entered() const {
+  return mouse_state_.entered == 1;
+}
+
+bool InputMgr::mouse_left() const {
+  return mouse_state_.entered == -1;
+}
+
 void InputMgr::r_initialize_(const E_Initialize& p) {
   std::call_once(initialize_glfw_action_maps_, [&] {
     for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
@@ -140,6 +188,14 @@ void InputMgr::r_update_(const E_Update& p) {
   for (auto& s: state_ | std::views::values) {
     s.last_pressed = s.pressed;
   }
+
+  mouse_state_.px = mouse_state_.x;
+  mouse_state_.py = mouse_state_.y;
+  mouse_state_.dx = 0.0;
+  mouse_state_.dy = 0.0;
+  mouse_state_.sx = 0.0;
+  mouse_state_.sy = 0.0;
+  mouse_state_.moved = false;
 
   Hermes::poll<E_GlfwKey>(module_name);
   Hermes::poll<E_GlfwCharacter>(module_name);
@@ -200,9 +256,23 @@ void InputMgr::r_glfw_key_(const E_GlfwKey& p) {
 
 void InputMgr::r_glfw_character_(const E_GlfwCharacter& p) {}
 
-void InputMgr::r_glfw_cursor_pos_(const E_GlfwCursorPos& p) {}
+void InputMgr::r_glfw_cursor_pos_(const E_GlfwCursorPos& p) {
+  mouse_state_.dx += p.xpos - mouse_state_.x;
+  mouse_state_.dy += p.ypos - mouse_state_.y;
+  mouse_state_.x = p.xpos;
+  mouse_state_.y = p.ypos;
+  mouse_state_.moved = true;
 
-void InputMgr::r_glfw_cursor_enter_(const E_GlfwCursorEnter& p) {}
+  if (!mouse_state_.got_first_event) {
+    mouse_state_.dx = 0;
+    mouse_state_.dy = 0;
+    mouse_state_.got_first_event = true;
+  }
+}
+
+void InputMgr::r_glfw_cursor_enter_(const E_GlfwCursorEnter& p) {
+  mouse_state_.entered = p.entered ? 1 : -1;
+}
 
 void InputMgr::r_glfw_mouse_button_(const E_GlfwMouseButton& p) {
   auto action = glfw_button_to_str_[p.button];
@@ -214,5 +284,8 @@ void InputMgr::r_glfw_mouse_button_(const E_GlfwMouseButton& p) {
   }
 }
 
-void InputMgr::r_glfw_scroll_(const E_GlfwScroll& p) {}
+void InputMgr::r_glfw_scroll_(const E_GlfwScroll& p) {
+  mouse_state_.sx += p.xoffset;
+  mouse_state_.sy += p.yoffset;
+}
 } // namespace imp
