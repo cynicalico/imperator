@@ -2,6 +2,7 @@
 
 namespace imp {
 void Application::r_initialize_(const E_Initialize& e) {
+  cursors = module_mgr->get<CursorMgr>();
   dear = module_mgr->get<DearImgui>();
   input = module_mgr->get<InputMgr>();
   gfx = module_mgr->get<GfxContext>();

@@ -1,5 +1,6 @@
 set(imperator_SRC_FILES ${imperator_SRC_FILES}
         core/module/application.cpp
+        core/module/cursor_mgr.cpp
         core/module/glfw_callbacks.cpp
         core/module/input_mgr.cpp
         core/module/window.cpp

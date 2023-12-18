@@ -2,15 +2,20 @@
 #define IMPERATOR_CORE_ENGINE_HPP
 
 #include "imperator/core/module/application.hpp"
+#include "imperator/core/module/cursor_mgr.hpp"
 #include "imperator/core/module/input_mgr.hpp"
 #include "imperator/core/module/window.hpp"
+
 #include "imperator/core/hermes.hpp"
 #include "imperator/core/module_mgr.hpp"
+
 #include "imperator/gfx/module/dear_imgui.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
+
 #include "imperator/util/module/timer_mgr.hpp"
 #include "imperator/util/platform.hpp"
 #include "imperator/util/time.hpp"
+
 #include <atomic>
 #include <concepts>
 
@@ -42,6 +47,7 @@ void Engine::run_application(const InitializeParams& initialize_params) {
   log_platform();
 
   module_mgr_->create<Application, T>();
+  module_mgr_->create<CursorMgr>();
   module_mgr_->create<DearImgui>();
   module_mgr_->create<InputMgr>();
   module_mgr_->create<GfxContext>();
