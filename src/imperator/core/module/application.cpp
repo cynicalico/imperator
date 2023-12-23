@@ -4,7 +4,8 @@ namespace imp {
 void Application::r_initialize_(const E_Initialize& e) {
   cursors = module_mgr->get<CursorMgr>();
   dear = module_mgr->get<DearImgui>();
-  input = module_mgr->get<InputMgr>();
+  debug_overlay = module_mgr->get<DebugOverlay>();
+  inputs = module_mgr->get<InputMgr>();
   gfx = module_mgr->get<GfxContext>();
   timers = module_mgr->get<TimerMgr>();
   window = module_mgr->get<Window>();
@@ -27,13 +28,17 @@ void Application::r_shutdown_(const E_Shutdown& e) {
   Module::r_shutdown_(e);
 }
 
-void Application::r_start_frame_(const E_StartFrame& p) {}
+void Application::r_start_frame_(const E_StartFrame& p) {
+  dear->new_frame();
+}
 
 void Application::r_draw_(const E_Draw& p) {
   draw();
 }
 
-void Application::r_end_frame_(const E_EndFrame& p) {}
+void Application::r_end_frame_(const E_EndFrame& p) {
+  dear->render();
+}
 
 void Application::r_update_(const E_Update& p) {
   update(p.dt);

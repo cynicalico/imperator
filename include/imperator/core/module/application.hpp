@@ -7,14 +7,16 @@
 #include "imperator/core/module_mgr.hpp"
 #include "imperator/gfx/module/dear_imgui.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
+#include "imperator/util/module/debug_overlay.hpp"
 #include "imperator/util/module/timer_mgr.hpp"
 
 namespace imp {
 class Application : public Module<Application> {
 public:
-  std::shared_ptr<DearImgui> dear{nullptr};
   std::shared_ptr<CursorMgr> cursors{nullptr};
-  std::shared_ptr<InputMgr> input{nullptr};
+  std::shared_ptr<DearImgui> dear{nullptr};
+  std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
+  std::shared_ptr<InputMgr> inputs{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
   std::shared_ptr<TimerMgr> timers{nullptr};
   std::shared_ptr<Window> window{nullptr};
@@ -22,6 +24,7 @@ public:
   Application() : Module({
     EPI<CursorMgr>::name,
     EPI<DearImgui>::name,
+    EPI<DebugOverlay>::name,
     EPI<InputMgr>::name,
     EPI<GfxContext>::name,
     EPI<TimerMgr>::name,

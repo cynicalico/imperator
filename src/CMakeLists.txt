@@ -14,6 +14,7 @@ set(imperator_SRC_FILES ${imperator_SRC_FILES}
         gfx/module/dear_imgui.cpp
         gfx/module/gfx_context.cpp
 
+        util/module/debug_overlay.cpp
         util/module/timer_mgr.cpp
         util/averagers.cpp
         util/helpers.cpp

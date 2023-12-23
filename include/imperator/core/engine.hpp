@@ -12,7 +12,9 @@
 #include "imperator/gfx/module/dear_imgui.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
 
+#include "imperator/util/module/debug_overlay.hpp"
 #include "imperator/util/module/timer_mgr.hpp"
+
 #include "imperator/util/platform.hpp"
 #include "imperator/util/time.hpp"
 
@@ -49,6 +51,7 @@ void Engine::run_application(const InitializeParams& initialize_params) {
   module_mgr_->create<Application, T>();
   module_mgr_->create<CursorMgr>();
   module_mgr_->create<DearImgui>();
+  module_mgr_->create<DebugOverlay>();
   module_mgr_->create<InputMgr>();
   module_mgr_->create<GfxContext>();
   module_mgr_->create<TimerMgr>();
@@ -58,7 +61,7 @@ void Engine::run_application(const InitializeParams& initialize_params) {
 
   if (check_pending_()) {
     while (!received_shutdown_) {
-      Hermes::send_nowait<E_Update>(frame_counter_.dt());
+      Hermes::send_nowait<E_Update>(frame_counter_.dt(), frame_counter_.fps());
 
       Hermes::send_nowait<E_StartFrame>();
       Hermes::send_nowait<E_Draw>();

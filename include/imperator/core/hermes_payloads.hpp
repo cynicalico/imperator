@@ -49,6 +49,7 @@ struct E_EndFrame {};
 
 struct E_Update {
   double dt;
+  double fps;
 };
 
 struct E_GlfwWindowClose {
