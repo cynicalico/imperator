@@ -46,6 +46,9 @@ namespace imp {
 template<typename T>
   requires std::derived_from<T, Application>
 void Engine::run_application(const InitializeParams& initialize_params) {
+  // Make sure the DebugOverlay gets *all* log messages from the beginning
+  Hermes::presub_cache<E_LogMsg>(EPI<DebugOverlay>::name);
+
   log_platform();
 
   module_mgr_->create<Application, T>();

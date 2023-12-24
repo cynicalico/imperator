@@ -19,6 +19,7 @@ set(imperator_INCLUDE_FILES ${imperator_INCLUDE_FILES}
         gfx/gl/vertex_array.hpp
         gfx/module/dear_imgui.hpp
         gfx/module/gfx_context.hpp
+        gfx/color.hpp
 
         util/module/debug_overlay.hpp
         util/module/timer_mgr.hpp

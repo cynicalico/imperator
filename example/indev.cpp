@@ -20,16 +20,18 @@ void Indev::initialize() {
   debug_overlay->add_tab("Tab 3", [&] {
     ImGui::Text("Stuff is happening");
   });
+
+  debug_overlay->set_flying_log_enabled(true);
 }
 
 void Indev::update(double dt) {
   if (inputs->pressed("1")) {
-    gfx->set_vsync(!gfx->is_vsync());
+    IMPERATOR_LOG_INFO("Pressed 1!");
   }
 }
 
 void Indev::draw() {
-  gfx->gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  gfx->gl.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
   gfx->gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

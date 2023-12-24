@@ -13,6 +13,7 @@ set(imperator_SRC_FILES ${imperator_SRC_FILES}
         gfx/gl/vertex_array.cpp
         gfx/module/dear_imgui.cpp
         gfx/module/gfx_context.cpp
+        gfx/color.cpp
 
         util/module/debug_overlay.cpp
         util/module/timer_mgr.cpp
