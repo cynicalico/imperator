@@ -21,6 +21,7 @@ set(imperator_INCLUDE_FILES ${imperator_INCLUDE_FILES}
         gfx/module/gfx_context.hpp
         gfx/color.hpp
 
+        util/ds/trie.hpp
         util/module/debug_overlay.hpp
         util/module/timer_mgr.hpp
         util/averagers.hpp

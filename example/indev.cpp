@@ -1,4 +1,7 @@
 #include "indev.hpp"
+#include <filesystem>
+#include <fstream>
+#include <string>
 
 const auto CWD = std::filesystem::current_path();
 
@@ -10,25 +13,31 @@ public:
 };
 
 void Indev::initialize() {
-  debug_overlay->add_tab("Tab 2", [&] {
-    ImGui::Text("wawa");
-    if (ImGui::Button("Toggle vsync")) {
-      gfx->set_vsync(!gfx->is_vsync());
+  debug_overlay->register_console_cmd(
+    "foo",
+    [](argparse::ArgumentParser& p) {
+      p.add_argument("i").scan<'i', int>();
+    },
+    [](argparse::ArgumentParser& p) {
+      IMPERATOR_LOG_INFO("Foo! i * 2: {}", p.get<int>("i") * 2);
     }
-  });
+  );
 
-  debug_overlay->add_tab("Tab 3", [&] {
-    ImGui::Text("Stuff is happening");
-  });
+  debug_overlay->register_console_cmd(
+    "bar",
+    [](argparse::ArgumentParser& p) {
+      p.add_argument("i").scan<'i', int>();
+      p.add_argument("j").scan<'i', int>();
+    },
+    [](argparse::ArgumentParser& p) {
+      IMPERATOR_LOG_INFO("Bar! i * j: {}", p.get<int>("i") * p.get<int>("j"));
+    }
+  );
 
   debug_overlay->set_flying_log_enabled(true);
 }
 
-void Indev::update(double dt) {
-  if (inputs->pressed("1")) {
-    IMPERATOR_LOG_INFO("Pressed 1!");
-  }
-}
+void Indev::update(double dt) {}
 
 void Indev::draw() {
   gfx->gl.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);

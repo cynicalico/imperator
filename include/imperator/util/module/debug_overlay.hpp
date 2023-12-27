@@ -3,10 +3,15 @@
 
 #include "imperator/core/module_mgr.hpp"
 #include "imperator/gfx/color.hpp"
+#include "imperator/util/ds/trie.hpp"
+#include "argparse/argparse.hpp"
 #include <deque>
 
 namespace imp {
 class GfxContext;
+
+using ConsoleParseFunc = std::function<void(argparse::ArgumentParser&)>;
+using ConsoleCallbackFunc = std::function<void(argparse::ArgumentParser&)>;
 
 class DebugOverlay : public Module<DebugOverlay> {
 public:
@@ -31,13 +36,21 @@ public:
   void set_flying_log_limit(std::size_t max_lines);
   void set_flying_log_timeout(double timeout);
 
+  void register_console_cmd(
+    const std::string& name,
+    const ConsoleParseFunc&& parser_setup,
+    const ConsoleCallbackFunc&& f
+  );
+
 protected:
   void r_initialize_(const E_Initialize& p) override;
   void r_shutdown_(const E_Shutdown& p) override;
 
 private:
+  const float WINDOW_EDGE_PADDING = 4.0f;
+
 #if defined(NDEBUG)
-  const char *BUILD_TYPE{" (release)"};
+  const char* BUILD_TYPE{" (release)"};
 #else
   const char* BUILD_TYPE{" (debug)"};
 #endif
@@ -57,6 +70,19 @@ private:
     std::size_t max_lines{20};
     double timeout{5};
   } flying_log_{};
+
+  struct {
+    bool enabled{true};
+
+    std::string input{};
+    std::string last_pre{};
+
+    Trie<std::string> trie{};
+    std::vector<std::pair<std::string, std::optional<std::string>>> matches{};
+
+    std::unordered_map<std::string, ConsoleParseFunc> parsers{};
+    std::unordered_map<std::string, ConsoleCallbackFunc> callbacks{};
+  } console_{};
 
   void r_update_(const E_Update& p);
   void r_draw_(const E_Draw& p);

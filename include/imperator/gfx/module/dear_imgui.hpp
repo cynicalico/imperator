@@ -6,6 +6,7 @@
 #include "imperator/gfx/module/gfx_context.hpp"
 #include "imgui.h"
 #include "implot.h"
+#include "misc/cpp/imgui_stdlib.h"
 
 namespace imp {
 class DearImgui : public Module<DearImgui> {

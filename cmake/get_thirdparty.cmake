@@ -1,4 +1,10 @@
 CPMAddPackage(
+        NAME argparse
+        GITHUB_REPOSITORY p-ranav/argparse
+        VERSION 3.0
+)
+
+CPMAddPackage(
         NAME fmt
         GITHUB_REPOSITORY fmtlib/fmt
         GIT_TAG 10.1.1
@@ -36,14 +42,14 @@ CPMAddPackage(
 CPMAddPackage(
         NAME imgui
         GITHUB_REPOSITORY ocornut/imgui
-        GIT_TAG d2291df55190e2f070af2635863f47a96d378a52
+        GIT_TAG 20e1caec858caa8123a6d52d410fa3f2578d3054
         DOWNLOAD_ONLY YES
 )
 
 CPMAddPackage(
         NAME implot
         GITHUB_REPOSITORY epezent/implot
-        GIT_TAG 18758e237e8906a97ddf42de1e75793526f30ce9
+        GIT_TAG 1f7a8c0314d838a76695bccebe0f66864f507bc0
         DOWNLOAD_ONLY
 )
 
@@ -120,6 +126,7 @@ add_library(imperator_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imstb_truetype.h
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
+        ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
 
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -128,6 +135,7 @@ add_library(imperator_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imgui_widgets.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+        ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
 
         ${implot_SOURCE_DIR}/implot.h
         ${implot_SOURCE_DIR}/implot_internal.h
@@ -158,6 +166,7 @@ target_include_directories(imperator_thirdparty PUBLIC
         ${stb_SOURCE_DIR})
 
 target_link_libraries(imperator_thirdparty PUBLIC
+        argparse
         fmt::fmt
         glad_gl_core_mx_43
         glfw

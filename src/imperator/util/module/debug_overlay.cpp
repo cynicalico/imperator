@@ -2,9 +2,29 @@
 
 #include "imperator/core/module/application.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
+#include "imperator/util/io.hpp"
 #include "imperator/util/memusage.hpp"
+#include "imperator/util/sops.hpp"
+#include <fstream>
 
 namespace imp {
+// This should split a string into arguments like a command line does,
+// including respecting escaped quotes
+std::vector<std::string> argument_split(const std::string& s) {
+  static RE2 pat(R"(([^\s"]+|\"(?:[\w\s]|(?:\\\"))*?\"))");
+  // assert(pat.ok());
+
+  std::vector<std::string> args{};
+
+  std::string_view sp(s);
+  std::string arg;
+  while (RE2::FindAndConsume(&sp, pat, &arg)) {
+    args.emplace_back(arg);
+  }
+
+  return args;
+}
+
 void DebugOverlay::set_flying_log_enabled(bool enabled) {
   flying_log_.enabled = enabled;
 }
@@ -19,6 +39,24 @@ void DebugOverlay::set_flying_log_limit(std::size_t max_lines) {
 
 void DebugOverlay::set_flying_log_timeout(double timeout) {
   flying_log_.timeout = timeout;
+}
+
+void DebugOverlay::register_console_cmd(
+  const std::string& name,
+  const ConsoleParseFunc&& parser_setup,
+  const ConsoleCallbackFunc&& f
+) {
+  argparse::ArgumentParser p(name);
+  parser_setup(p);
+
+  std::string usage = p.usage();
+  if (usage.starts_with("Usage: ")) {
+    usage = usage.substr(7);
+  }
+
+  console_.trie.insert(name, usage);
+  console_.parsers[name] = std::forward<const ConsoleParseFunc>(parser_setup);
+  console_.callbacks[name] = std::forward<const ConsoleCallbackFunc>(f);
 }
 
 void DebugOverlay::r_initialize_(const E_Initialize& p) {
@@ -57,7 +95,7 @@ void DebugOverlay::r_update_(const E_Update& p) {
 void DebugOverlay::r_draw_(const E_Draw& p) {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {1, 1});
   ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0, 0});
-  ImGui::SetNextWindowPos({1, 1});
+  ImGui::SetNextWindowPos({WINDOW_EDGE_PADDING, WINDOW_EDGE_PADDING});
   if (ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize)) {
     const auto vsync_str = gfx->is_vsync() ? " (vsync)" : "";
     ImGui::Text("%s", fmt::format("{:.2f} fps{}{}", fps, vsync_str, BUILD_TYPE).c_str());
@@ -66,28 +104,75 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
   ImGui::End();
   ImGui::PopStyleVar(2);
 
-  if (ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-    static std::string current_item{tabs.begin()->first};
-    if (ImGui::BeginCombo("##combo", current_item.c_str())) {
-      for (const auto& k: tabs | std::views::keys) {
-        const bool is_selected = current_item == k;
-        if (ImGui::Selectable(k.c_str(), is_selected)) {
-          current_item = k;
+  if (!tabs.empty()) {
+    if (ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      static std::string current_item{tabs.begin()->first};
+      if (ImGui::BeginCombo("##combo", current_item.c_str())) {
+        for (const auto& k: tabs | std::views::keys) {
+          const bool is_selected = current_item == k;
+          if (ImGui::Selectable(k.c_str(), is_selected)) {
+            current_item = k;
+          }
+          if (is_selected) {
+            ImGui::SetItemDefaultFocus();
+          }
         }
-        if (is_selected) {
-          ImGui::SetItemDefaultFocus();
+        ImGui::EndCombo();
+      }
+
+      ImGui::Separator();
+      tabs[current_item]();
+    }
+    ImGui::End();
+  }
+
+  if (console_.enabled) {
+    auto desired_width = 3.0f * (window_size_.x / 4.0f);
+    auto max_height = window_size_.y * 0.9f;
+
+    ImGui::SetNextWindowPos({(window_size_.x / 4.0f) / 2.0f, WINDOW_EDGE_PADDING});
+    ImGui::SetNextWindowSizeConstraints({desired_width, 0.0f}, {desired_width, max_height});
+    if (ImGui::Begin("Fuzzy matching", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration)) {
+      ImGui::PushItemWidth(-1);
+      if (ImGui::InputText("##console_input", &console_.input, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        const auto args = argument_split(console_.input);
+        if (!args.empty()) {
+          if (console_.parsers.contains(args[0])) {
+            auto parser = argparse::ArgumentParser(args[0]);
+            console_.parsers[args[0]](parser);
+            try {
+              parser.parse_args(args);
+              console_.callbacks[args[0]](parser);
+            } catch (std::exception& e) {
+              IMPERATOR_LOG_ERROR("Parse error: {}", e.what());
+            }
+          }
         }
       }
-      ImGui::EndCombo();
-    }
+      ImGui::PopItemWidth();
 
-    ImGui::Separator();
-    tabs[current_item]();
+      if (!console_.input.empty()) {
+        ImGui::Separator();
+
+        const auto pre = argument_split(console_.input);
+        if (!pre.empty() && pre[0] != console_.last_pre) {
+          console_.matches = console_.trie.fuzzy_match_n(pre[0]);
+          console_.last_pre = pre[0];
+        }
+
+        if (ImGui::BeginChild("##predictions", {0, 0}, ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY)) {
+          for (const auto& m: console_.matches) {
+            ImGui::Text("%s", m.second->c_str());
+          }
+        }
+        ImGui::EndChild();
+      }
+    }
+    ImGui::End();
   }
-  ImGui::End();
 
   auto dl = ImGui::GetBackgroundDrawList();
-  auto pos = glm::vec2{1, window_size_.y - 1};
+  auto pos = glm::vec2{WINDOW_EDGE_PADDING, window_size_.y - WINDOW_EDGE_PADDING};
 
   auto draw_line = [&](const std::string& s, const RGB& color) {
     auto text_size = ImGui::CalcTextSize(s.c_str());
