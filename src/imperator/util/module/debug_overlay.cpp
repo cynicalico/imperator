@@ -1,15 +1,19 @@
 #include "imperator/util/module/debug_overlay.hpp"
 
 #include "imperator/core/module/application.hpp"
+#include "imperator/core/module/input_mgr.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
 #include "imperator/util/io.hpp"
 #include "imperator/util/memusage.hpp"
 #include "imperator/util/sops.hpp"
 #include <fstream>
 
+#include "imperator/core/module/glfw_callbacks.hpp"
+
 namespace imp {
 // This should split a string into arguments like a command line does,
 // including respecting escaped quotes
+// TODO: Make this into a parser rather than regex
 std::vector<std::string> argument_split(const std::string& s) {
   static RE2 pat(R"(([^\s"]+|\"(?:[\w\s]|(?:\\\"))*?\"))");
   // assert(pat.ok());
@@ -44,9 +48,9 @@ void DebugOverlay::set_flying_log_timeout(double timeout) {
 void DebugOverlay::register_console_cmd(
   const std::string& name,
   const ConsoleParseFunc&& parser_setup,
-  const ConsoleCallbackFunc&& f
+  const ConsoleCallbackFunc&& callback
 ) {
-  argparse::ArgumentParser p(name);
+  argparse::ArgumentParser p(name, "1.0", argparse::default_arguments::none);
   parser_setup(p);
 
   std::string usage = p.usage();
@@ -56,7 +60,11 @@ void DebugOverlay::register_console_cmd(
 
   console_.trie.insert(name, usage);
   console_.parsers[name] = std::forward<const ConsoleParseFunc>(parser_setup);
-  console_.callbacks[name] = std::forward<const ConsoleCallbackFunc>(f);
+  console_.callbacks[name] = std::forward<const ConsoleCallbackFunc>(callback);
+}
+
+void DebugOverlay::set_console_binding(const std::string& binding) {
+  console_.binding = binding;
 }
 
 void DebugOverlay::r_initialize_(const E_Initialize& p) {
@@ -73,10 +81,9 @@ void DebugOverlay::r_shutdown_(const E_Shutdown& p) {
 }
 
 void DebugOverlay::r_update_(const E_Update& p) {
-  // Late-initialize so GfxContext can add a tab at some point if that is useful
-  if (!gfx) {
-    gfx = module_mgr->get<GfxContext>();
-  }
+  // Late-initialization of required modules
+  if (!inputs) { inputs = module_mgr->get<InputMgr>(); }
+  if (!gfx) { gfx = module_mgr->get<GfxContext>(); }
 
   fps = p.fps;
 
@@ -90,6 +97,11 @@ void DebugOverlay::r_update_(const E_Update& p) {
     flying_log_.lines.pop_back();
   }
   Hermes::poll<E_LogMsg>(module_name);
+
+  if (inputs->pressed(console_.binding)) {
+    console_.enabled = true;
+    set_ignore_imgui_capture(inputs->get_glfw_actions(console_.binding), GLFW_RELEASE);
+  }
 }
 
 void DebugOverlay::r_draw_(const E_Draw& p) {
@@ -143,12 +155,18 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
             try {
               parser.parse_args(args);
               console_.callbacks[args[0]](parser);
+
+              console_.input.clear();
+              console_.enabled = false;
             } catch (std::exception& e) {
               IMPERATOR_LOG_ERROR("Parse error: {}", e.what());
             }
           }
         }
       }
+      if ((ImGui::IsWindowFocused() || !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) && !
+          ImGui::IsAnyItemActive())
+        ImGui::SetKeyboardFocusHere(-1);
       ImGui::PopItemWidth();
 
       if (!console_.input.empty()) {

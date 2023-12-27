@@ -8,6 +8,7 @@
 #include <deque>
 
 namespace imp {
+class InputMgr;
 class GfxContext;
 
 using ConsoleParseFunc = std::function<void(argparse::ArgumentParser&)>;
@@ -15,16 +16,14 @@ using ConsoleCallbackFunc = std::function<void(argparse::ArgumentParser&)>;
 
 class DebugOverlay : public Module<DebugOverlay> {
 public:
+  std::shared_ptr<InputMgr> inputs{nullptr};
   std::shared_ptr<GfxContext> gfx{nullptr};
 
-  /* This module depends on ImGui being initialized before the game loop starts.
+  /* ImGui is required for display
+   * GfxContext is required for vsync status
    *
-   * It is not listed as a dependency in the constructor so other modules can add
-   * controls to the DebugOverlay if desired during their initialization (practically,
-   * this module needs to be initialzed as the very first module, modules that use it
-   * should list it as a dependency)
-   *
-   * GfxContext is in the same boat for checking vsync status
+   * Required modules are not listed as dependencies because this module must be
+   * initialized first so other modules can add controls if they desire.
    */
   DebugOverlay() = default;
 
@@ -39,8 +38,9 @@ public:
   void register_console_cmd(
     const std::string& name,
     const ConsoleParseFunc&& parser_setup,
-    const ConsoleCallbackFunc&& f
+    const ConsoleCallbackFunc&& callback
   );
+  void set_console_binding(const std::string& binding);
 
 protected:
   void r_initialize_(const E_Initialize& p) override;
@@ -56,7 +56,6 @@ private:
 #endif
   double fps{0};
   std::map<std::string, std::function<void()>> tabs{};
-  glm::vec2 window_size_{0, 0}; // For drawing the flying log
 
   struct FlyingLogLine {
     std::string s{};
@@ -72,7 +71,8 @@ private:
   } flying_log_{};
 
   struct {
-    bool enabled{true};
+    bool enabled{false};
+    std::string binding{};
 
     std::string input{};
     std::string last_pre{};
@@ -87,6 +87,9 @@ private:
   void r_update_(const E_Update& p);
   void r_draw_(const E_Draw& p);
   void r_log_msg_(const E_LogMsg& p);
+
+  glm::vec2 window_size_{0, 0};
+
   void r_glfw_window_size_(const E_GlfwWindowSize& p);
 };
 

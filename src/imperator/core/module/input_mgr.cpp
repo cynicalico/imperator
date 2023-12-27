@@ -54,6 +54,18 @@ void InputMgr::bind(const std::string& name, const std::string& action) {
   bindings_[name].emplace_back(action);
 }
 
+std::vector<int> InputMgr::get_glfw_actions(const std::string& name) {
+  std::vector<int> glfw_actions{};
+  for (const auto& s: bindings_[name]) {
+    int action = str_to_glfw_key_[s];
+    if (action == 0) {
+      action = str_to_glfw_button_[s];
+    }
+    glfw_actions.emplace_back(action);
+  }
+  return glfw_actions;
+}
+
 bool InputMgr::pressed(const std::string& name, const Mods& mods) {
   int mods_check = unwrap(mods);
   return std::ranges::any_of(bindings_[name], [&](const auto& b) {

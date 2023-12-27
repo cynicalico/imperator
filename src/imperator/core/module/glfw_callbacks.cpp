@@ -2,6 +2,7 @@
 
 #include "imperator/core/hermes.hpp"
 #include "imperator/util/log.hpp"
+#include "imgui.h"
 
 namespace imp {
 void register_glfw_error_callback() {
@@ -33,7 +34,44 @@ void register_glfw_callbacks(GLFWwindow* window) {
   IMPERATOR_LOG_DEBUG("Registered GLFW callbacks");
 }
 
+void set_ignore_imgui_capture(const std::vector<int>& keys, int action) {
+  if (action == GLFW_PRESS) {
+    internal::ignore_imgui_capture_pressed().emplace_back(keys);
+  } else if (action == GLFW_RELEASE) {
+    internal::ignore_imgui_capture_released().emplace_back(keys);
+  }
+}
+
 namespace internal {
+std::vector<std::vector<int>>& ignore_imgui_capture_pressed() {
+  static std::vector<std::vector<int>> v{};
+  return v;
+}
+
+std::vector<std::vector<int>>& ignore_imgui_capture_released() {
+  static std::vector<std::vector<int>> v{};
+  return v;
+}
+
+bool check_ignore_imgui_capture(int key, int action) {
+  std::vector<std::vector<int>> v;
+  if (action == GLFW_PRESS) {
+    v = ignore_imgui_capture_pressed();
+  } else if (action == GLFW_RELEASE) {
+    v = ignore_imgui_capture_released();
+  } else {
+    return false;
+  }
+
+  for (auto it = v.begin(); it != v.end(); ++it) {
+    if (std::ranges::any_of(*it, [&](int i) { return i == key; })) {
+      v.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
 void error_callback(int code, const char* description) {
   IMPERATOR_LOG_ERROR("GLFW ({}): {}", code, description);
 }
@@ -75,33 +113,44 @@ void window_refresh_callback(GLFWwindow* window) {
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  // if (!ImGui::GetIO().WantCaptureKeyboard)
-  Hermes::send<E_GlfwKey>(window, key, scancode, action, mods);
+  bool should_send = true;
+  if (ImGui::GetIO().WantCaptureKeyboard) {
+    should_send = check_ignore_imgui_capture(key, action);
+  }
+
+  if (should_send) {
+    Hermes::send<E_GlfwKey>(window, key, scancode, action, mods);
+  }
 }
 
 void character_callback(GLFWwindow* window, unsigned int codepoint) {
-  // if (!ImGui::GetIO().WantCaptureKeyboard)
-  Hermes::send<E_GlfwCharacter>(window, codepoint);
+  if (!ImGui::GetIO().WantCaptureKeyboard) {
+    Hermes::send<E_GlfwCharacter>(window, codepoint);
+  }
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-  // if (!ImGui::GetIO().WantCaptureMouse)
-  Hermes::send<E_GlfwCursorPos>(window, xpos, ypos);
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    Hermes::send<E_GlfwCursorPos>(window, xpos, ypos);
+  }
 }
 
 void cursor_enter_callback(GLFWwindow* window, int entered) {
-  // if (!ImGui::GetIO().WantCaptureMouse)
-  Hermes::send<E_GlfwCursorEnter>(window, entered);
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    Hermes::send<E_GlfwCursorEnter>(window, entered);
+  }
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-  // if (!ImGui::GetIO().WantCaptureMouse)
-  Hermes::send<E_GlfwMouseButton>(window, button, action, mods);
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    Hermes::send<E_GlfwMouseButton>(window, button, action, mods);
+  }
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-  // if (!ImGui::GetIO().WantCaptureMouse)
-  Hermes::send<E_GlfwScroll>(window, xoffset, yoffset);
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    Hermes::send<E_GlfwScroll>(window, xoffset, yoffset);
+  }
 }
 
 void joystick_callback(int jid, int event) {

@@ -3,13 +3,34 @@
 
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
+#include <vector>
 
 namespace imp {
 void register_glfw_error_callback();
 
 void register_glfw_callbacks(GLFWwindow* window);
 
+/* Propagate key actions to Hermes (one time) even when imgui says to ignore it
+ *
+ * This handles the situation where a key is pressed, and immediately an imgui window
+ * is opened and focused, which eats the release action, which desyncs the real state
+ * of the keyboard and the inputmgr state
+ *
+ * It is effectively saying
+ *  "I am expecting an action to occur in the future, do not let imgui eat it"
+ *
+ * The vector of keys should be retrieved from InputMgr::get_glfw_actions(...).
+ *
+ * You can also do the action on key/button *release* instead, which means you
+ * can ignore this entirely and it won't be an issue at all.
+ */
+void set_ignore_imgui_capture(const std::vector<int>& keys, int action);
+
 namespace internal {
+std::vector<std::vector<int>>& ignore_imgui_capture_pressed();
+std::vector<std::vector<int>>& ignore_imgui_capture_released();
+bool check_ignore_imgui_capture(int key, int action);
+
 void error_callback(int code, const char* description);
 
 void window_close_callback(GLFWwindow* window);

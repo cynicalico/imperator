@@ -26,6 +26,7 @@ public:
   }) {}
 
   void bind(const std::string& name, const std::string& action);
+  std::vector<int> get_glfw_actions(const std::string& name);
 
   bool pressed(const std::string& name, const Mods& mods = Mods::none);
 

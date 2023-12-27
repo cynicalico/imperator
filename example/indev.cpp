@@ -1,7 +1,4 @@
 #include "indev.hpp"
-#include <filesystem>
-#include <fstream>
-#include <string>
 
 const auto CWD = std::filesystem::current_path();
 
@@ -13,6 +10,8 @@ public:
 };
 
 void Indev::initialize() {
+  debug_overlay->set_flying_log_enabled(true);
+
   debug_overlay->register_console_cmd(
     "foo",
     [](argparse::ArgumentParser& p) {
@@ -34,7 +33,7 @@ void Indev::initialize() {
     }
   );
 
-  debug_overlay->set_flying_log_enabled(true);
+  debug_overlay->set_console_binding("grave_accent");
 }
 
 void Indev::update(double dt) {}
