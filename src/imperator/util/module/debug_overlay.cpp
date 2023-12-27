@@ -89,9 +89,6 @@ void DebugOverlay::r_update_(const E_Update& p) {
 
   for (auto& [s, color, acc, fade_max]: flying_log_.lines) {
     acc -= p.dt;
-    if (acc <= fade_max) {
-      color.a = static_cast<int>(std::floor(255.0 * (acc / fade_max)));
-    }
   }
   while (!flying_log_.lines.empty() && flying_log_.lines.back().acc <= 0.0) {
     flying_log_.lines.pop_back();
@@ -142,6 +139,7 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
     auto desired_width = 3.0f * (window_size_.x / 4.0f);
     auto max_height = window_size_.y * 0.9f;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {2, 2});
     ImGui::SetNextWindowPos({(window_size_.x / 4.0f) / 2.0f, WINDOW_EDGE_PADDING});
     ImGui::SetNextWindowSizeConstraints({desired_width, 0.0f}, {desired_width, max_height});
     if (ImGui::Begin("Fuzzy matching", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration)) {
@@ -165,8 +163,9 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
         }
       }
       if ((ImGui::IsWindowFocused() || !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) && !
-          ImGui::IsAnyItemActive())
+          ImGui::IsAnyItemActive()) {
         ImGui::SetKeyboardFocusHere(-1);
+      }
       ImGui::PopItemWidth();
 
       if (!console_.input.empty()) {
@@ -187,17 +186,18 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
       }
     }
     ImGui::End();
+    ImGui::PopStyleVar();
   }
 
   auto dl = ImGui::GetBackgroundDrawList();
   auto pos = glm::vec2{WINDOW_EDGE_PADDING, window_size_.y - WINDOW_EDGE_PADDING};
 
-  auto draw_line = [&](const std::string& s, const RGB& color) {
+  auto draw_line = [&](const std::string& s, const RGB& color, float a) {
     auto text_size = ImGui::CalcTextSize(s.c_str());
     dl->AddRectFilled(
       {pos.x, pos.y - text_size.y - 2},
       {pos.x + text_size.x + 2, pos.y},
-      ImGui::GetColorU32(rgba(0, 0, 0, color.a).vec4())
+      ImGui::GetColorU32(ImGuiCol_WindowBg, a)
     );
     dl->AddText(
       {pos.x + 1, pos.y - text_size.y - 1},
@@ -207,8 +207,14 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
     pos.y -= text_size.y + 2;
   };
 
-  for (const auto& l: flying_log_.lines) {
-    draw_line(l.s, l.color);
+  for (const auto& [s, color, acc, fade_max]: flying_log_.lines) {
+    float a = 1.0f;
+    if (acc <= fade_max) {
+      a = acc / fade_max;
+    }
+    auto c = color;
+    c.a = c.a * a;
+    draw_line(s, c, a);
   }
 }
 
@@ -217,7 +223,7 @@ void DebugOverlay::r_log_msg_(const E_LogMsg& p) {
   static std::unordered_map<spdlog::level::level_enum, RGB> level_colors{
     {spdlog::level::trace, rgb(0x808080)},
     {spdlog::level::debug, rgb(0x8080ff)},
-    {spdlog::level::info, rgb(0xffffff)},
+    {spdlog::level::info, rgba(ImGui::GetColorU32(ImGuiCol_Text), true)},
     {spdlog::level::warn, rgb(0xffff80)},
     {spdlog::level::err, rgb(0xff8080)},
     {spdlog::level::critical, rgb(0xff0000)}

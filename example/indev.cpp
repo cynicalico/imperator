@@ -39,7 +39,7 @@ void Indev::initialize() {
 void Indev::update(double dt) {}
 
 void Indev::draw() {
-  gfx->gl.ClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+  gfx->gl.ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   gfx->gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

@@ -241,7 +241,15 @@ RGB rgba(int r, int g, int b, int a) {
   return {r, g, b, a};
 }
 
-RGB rgba(std::uint64_t hex) {
+RGB rgba(std::uint64_t hex, bool argb) {
+  if (argb) {
+    return {
+      static_cast<int>((hex >> 16) & 0xff),
+      static_cast<int>((hex >> 8) & 0xff),
+      static_cast<int>(hex & 0xff),
+      static_cast<int>((hex >> 24) & 0xff),
+    };
+  }
   return {
     static_cast<int>((hex >> 24) & 0xff),
     static_cast<int>((hex >> 16) & 0xff),

@@ -29,6 +29,8 @@ private:
   ImGuiIO* io_{nullptr};
 
   ImPlotContext* implot_ctx_{nullptr};
+
+  void setup_style_();
 };
 } // namespace imp
 

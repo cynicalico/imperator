@@ -28,7 +28,7 @@ RGB rgb(std::uint32_t hex);
 RGB rgb(const std::string& css_color);
 
 RGB rgba(int r, int g, int b, int a);
-RGB rgba(std::uint64_t hex);
+RGB rgba(std::uint64_t hex, bool argb = false);
 RGB rgba(const std::string& css_color, int a);
 
 RGB rgb_f(float r, float g, float b);
@@ -46,7 +46,7 @@ public:
   friend RGB rgb(const std::string& css_color);
 
   friend RGB rgba(int r, int g, int b, int a);
-  friend RGB rgba(std::uint64_t hex);
+  friend RGB rgba(std::uint64_t hex, bool argb);
   friend RGB rgba(const std::string& css_color, int a);
 
   friend RGB rgb_f(float r, float g, float b);
