@@ -1,3 +1,5 @@
+:warning: ***This is undergoing a big rewrite (and name change) at the moment, so I'm working on the redux branch. No ETA, but progress is being made!*** :warning:
+
 # baphy
 
 [![build](https://github.com/bogicide/baphy/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/bogicide/baphy/actions/workflows/c-cpp.yml)
