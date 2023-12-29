@@ -3,6 +3,7 @@
 
 #define GLFW_INCLUDE_NONE
 #include "imperator/core/module_mgr.hpp"
+#include "imperator/util/module/debug_overlay.hpp"
 #include "imperator/util/platform.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/mat4x4.hpp"
@@ -11,9 +12,17 @@
 namespace imp {
 class Window : public Module<Window> {
 public:
-  Window() : Module() {}
+  std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
+
+  Window() : Module({EPI<DebugOverlay>::name}) {}
 
   GLFWwindow* handle() const { return glfw_handle_; }
+
+  bool resizable() const;
+  bool decorated() const;
+  bool auto_iconify() const;
+  bool floating() const;
+  bool focus_on_show() const;
 
   int x() const { return pos_.x; }
   int y() const { return pos_.y; }
@@ -25,6 +34,12 @@ public:
 
   glm::mat4 projection_matrix() const;
 
+  void set_resizable(bool resizable);
+  void set_decorated(bool decorated);
+  void set_auto_iconify(bool auto_iconify);
+  void set_floating(bool floating);
+  void set_focus_on_show(bool focus_on_show);
+
   void set_pos(int x, int y);
   void set_x(int x);
   void set_y(int y);
@@ -35,9 +50,9 @@ public:
 
   void set_title(const std::string& title);
 
-  void set_icon(const std::vector<std::filesystem::path> &paths);
-  void set_icon(const std::filesystem::path &path);
-  void set_icon_dir(const std::filesystem::path &dir);
+  void set_icon(const std::vector<std::filesystem::path>& paths);
+  void set_icon(const std::filesystem::path& path);
+  void set_icon_dir(const std::filesystem::path& dir);
 
 protected:
   void r_initialize_(const E_Initialize& p) override;
@@ -53,6 +68,11 @@ private:
   glm::ivec2 size_{};
   glm::ivec2 pos_{};
   std::string title_{};
+
+  struct {
+    bool is_pos_dirty{false};
+    bool is_size_dirty{false};
+  } overlay_{};
 
   void open_(const InitializeParams& params);
   void open_fullscreen_(const InitializeParams& params);

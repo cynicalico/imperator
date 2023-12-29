@@ -85,6 +85,8 @@ void DebugOverlay::r_update_(const E_Update& p) {
   if (!inputs) { inputs = module_mgr->get<InputMgr>(); }
   if (!gfx) { gfx = module_mgr->get<GfxContext>(); }
 
+  Hermes::poll<E_GlfwWindowSize>(module_name);
+
   fps = p.fps;
 
   for (auto& [s, color, acc, fade_max]: flying_log_.lines) {
@@ -114,7 +116,8 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
   ImGui::PopStyleVar(2);
 
   if (!tabs.empty()) {
-    if (ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::SetNextWindowPos({window_size_.x - WINDOW_EDGE_PADDING, WINDOW_EDGE_PADDING}, 0, {1, 0});
+    if (ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration)) {
       static std::string current_item{tabs.begin()->first};
       if (ImGui::BeginCombo("##combo", current_item.c_str())) {
         for (const auto& k: tabs | std::views::keys) {
@@ -143,7 +146,11 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
     ImGui::SetNextWindowPos({(window_size_.x / 4.0f) / 2.0f, WINDOW_EDGE_PADDING});
     ImGui::SetNextWindowSizeConstraints({desired_width, 0.0f}, {desired_width, max_height});
     if (ImGui::Begin("Fuzzy matching", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration)) {
-      ImGui::PushItemWidth(-1);
+      if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+        console_.enabled = false;
+      }
+
+      ImGui::PushItemWidth(-FLT_MIN);
       if (ImGui::InputText("##console_input", &console_.input, ImGuiInputTextFlags_EnterReturnsTrue)) {
         const auto args = argument_split(console_.input);
         if (!args.empty()) {
@@ -197,24 +204,20 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
     dl->AddRectFilled(
       {pos.x, pos.y - text_size.y - 2},
       {pos.x + text_size.x + 2, pos.y},
-      ImGui::GetColorU32(ImGuiCol_WindowBg, a)
+      ImGui::GetColorU32(ImGuiCol_WindowBg, a),
+      ImGui::GetStyle().WindowRounding
     );
     dl->AddText(
       {pos.x + 1, pos.y - text_size.y - 1},
-      ImGui::GetColorU32(color.vec4()),
+      ImGui::GetColorU32(rgba(color.r, color.g, color.b, color.a * a).vec4()),
       s.c_str()
     );
     pos.y -= text_size.y + 2;
   };
 
   for (const auto& [s, color, acc, fade_max]: flying_log_.lines) {
-    float a = 1.0f;
-    if (acc <= fade_max) {
-      a = acc / fade_max;
-    }
-    auto c = color;
-    c.a = c.a * a;
-    draw_line(s, c, a);
+    float a = acc <= fade_max ? acc / fade_max : 1.0f;
+    draw_line(s, color, a);
   }
 }
 

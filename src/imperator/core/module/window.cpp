@@ -10,8 +10,48 @@
 namespace imp {
 std::once_flag Window::initialize_glfw_;
 
+bool Window::resizable() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_RESIZABLE);
+}
+
+bool Window::decorated() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_DECORATED);
+}
+
+bool Window::auto_iconify() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_AUTO_ICONIFY);
+}
+
+bool Window::floating() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_FLOATING);
+}
+
+bool Window::focus_on_show() const {
+  return glfwGetWindowAttrib(glfw_handle_, GLFW_FOCUS_ON_SHOW);
+}
+
 glm::mat4 Window::projection_matrix() const {
   return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f);
+}
+
+void Window::set_resizable(bool resizable) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_decorated(bool decorated) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_DECORATED, decorated ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_auto_iconify(bool auto_iconify) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_AUTO_ICONIFY, auto_iconify ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_floating(bool floating) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_FLOATING, floating ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void Window::set_focus_on_show(bool focus_on_show) {
+  glfwSetWindowAttrib(glfw_handle_, GLFW_FOCUS_ON_SHOW, focus_on_show ? GLFW_TRUE : GLFW_FALSE);
 }
 
 void Window::set_pos(int x, int y) {
@@ -44,11 +84,11 @@ void Window::set_title(const std::string& title) {
 
 void Window::set_icon(const std::vector<std::filesystem::path>& paths) {
   std::vector<ImageData> images{};
-  for (const auto &path: paths)
+  for (const auto& path: paths)
     images.emplace_back(path, 4);
 
   std::vector<GLFWimage> glfw_images{};
-  for (auto &i: images)
+  for (auto& i: images)
     glfw_images.emplace_back(i.glfw_image());
 
   glfwSetWindowIcon(glfw_handle_, glfw_images.size(), &glfw_images[0]);
@@ -80,6 +120,8 @@ void Window::set_icon_dir(const std::filesystem::path& dir) {
 }
 
 void Window::r_initialize_(const E_Initialize& p) {
+  debug_overlay = module_mgr->get<DebugOverlay>();
+
   Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, [&](const auto& p) { r_end_frame_(p); });
   Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
 
@@ -108,6 +150,51 @@ void Window::r_initialize_(const E_Initialize& p) {
   });
 
   open_(p.params);
+
+  debug_overlay->add_tab("Window", [&] {
+    static int pos[2];
+    static int size[2];
+
+    if (overlay_.is_pos_dirty) {
+      pos[0] = pos_.x;
+      pos[1] = pos_.y;
+      overlay_.is_pos_dirty = false;
+    }
+    ImGui::InputInt2("pos", pos);
+    if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
+      set_pos(pos[0], pos[1]);
+    }
+
+    if (overlay_.is_size_dirty) {
+      size[0] = size_.x;
+      size[1] = size_.y;
+      overlay_.is_size_dirty = false;
+    }
+    ImGui::InputInt2("size", size);
+    if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
+      set_size(size[0], size[1]);
+    }
+
+    if (bool v = resizable(); ImGui::Checkbox("Resizable", &v)) {
+      set_resizable(v);
+    }
+
+    if (bool v = decorated(); ImGui::Checkbox("Decorated", &v)) {
+      set_decorated(v);
+    }
+
+    if (bool v = auto_iconify(); ImGui::Checkbox("Auto iconify", &v)) {
+      set_auto_iconify(v);
+    }
+
+    if (bool v = floating(); ImGui::Checkbox("Floating", &v)) {
+      set_floating(v);
+    }
+
+    if (bool v = focus_on_show(); ImGui::Checkbox("Focus on show", &v)) {
+      set_focus_on_show(v);
+    }
+  });
 
   Module::r_initialize_(p);
 }
@@ -296,6 +383,7 @@ void Window::r_glfw_window_close_(const E_GlfwWindowClose& p) {
 void Window::r_glfw_window_size_(const E_GlfwWindowSize& p) {
   size_.x = p.width;
   size_.y = p.height;
+  overlay_.is_size_dirty = true;
 }
 
 void Window::r_glfw_framebuffer_size_(const E_GlfwFramebufferSize& p) {}
@@ -304,6 +392,7 @@ void Window::r_glfw_window_content_scale_(const E_GlfwWindowContentScale& p) {}
 void Window::r_glfw_window_pos_(const E_GlfwWindowPos& p) {
   pos_.x = p.xpos;
   pos_.y = p.ypos;
+  overlay_.is_pos_dirty = true;
 }
 
 void Window::r_glfw_window_iconify_(const E_GlfwWindowIconify& p) {}
