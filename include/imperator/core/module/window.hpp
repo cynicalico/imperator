@@ -18,6 +18,8 @@ public:
 
   GLFWwindow* handle() const { return glfw_handle_; }
 
+  bool should_close() const;
+
   bool resizable() const;
   bool decorated() const;
   bool auto_iconify() const;
@@ -33,6 +35,8 @@ public:
   std::string title() const { return title_; }
 
   glm::mat4 projection_matrix() const;
+
+  void set_should_close(bool should_close);
 
   void set_resizable(bool resizable);
   void set_decorated(bool decorated);
@@ -54,6 +58,13 @@ public:
   void set_icon(const std::filesystem::path& path);
   void set_icon_dir(const std::filesystem::path& dir);
 
+  void set_monitor(
+    WindowMode mode,
+    int monitor_num,
+    int x, int y,
+    int w, int h
+  );
+
 protected:
   void r_initialize_(const E_Initialize& p) override;
   void r_shutdown_(const E_Shutdown& p) override;
@@ -61,17 +72,33 @@ protected:
 private:
   static std::once_flag initialize_glfw_;
 
+  int detect_monitor_num() const;
   static GLFWmonitor* get_monitor_(int monitor_num);
+  GLFWmonitor** monitors_{};
+  int monitor_count_{0};
 
   GLFWwindow* glfw_handle_{nullptr};
 
+  WindowMode mode_{WindowMode::windowed};
   glm::ivec2 size_{};
   glm::ivec2 pos_{};
   std::string title_{};
 
   struct {
+    std::vector<std::pair<WindowMode, std::string>> modes = {
+      {WindowMode::windowed, "Windowed"},
+      {WindowMode::fullscreen, "Fullscreen"},
+      {WindowMode::borderless, "Borderless"}
+    };
+    std::size_t current_mode;
+
+    std::size_t current_monitor;
+
     bool is_pos_dirty{false};
+    int pos[2];
+
     bool is_size_dirty{false};
+    int size[2];
   } overlay_{};
 
   void open_(const InitializeParams& params);

@@ -6,15 +6,21 @@
 #include <string>
 
 namespace imp {
+enum class WindowMode {
+  windowed,
+  fullscreen,
+  borderless
+};
+
 enum class WindowFlags {
   none        = 1 << 0,
   resizable   = 1 << 1,
   hidden      = 1 << 2,
   undecorated = 1 << 3,
   centered    = 1 << 4,
-  fullscreen  = 1 << 5,
-  borderless  = 1 << 6,
-  vsync       = 1 << 7,
+  // fullscreen  = 1 << 5,
+  // borderless  = 1 << 6,
+  vsync       = 1 << 5,
 };
 
 struct InitializeParams {
@@ -25,6 +31,7 @@ struct InitializeParams {
 
   int monitor_num{0};
 
+  WindowMode mode{WindowMode::windowed};
   WindowFlags flags{WindowFlags::none};
 
   glm::ivec2 backend_version{4, 3};

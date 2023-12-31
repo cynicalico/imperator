@@ -74,7 +74,7 @@ void DearImgui::setup_style_() {
   style.WindowBorderSize = 1;
   style.ChildBorderSize = 1;
   style.PopupBorderSize = 1;
-  style.FrameBorderSize = 0;
+  style.FrameBorderSize = 1;
   style.TabBorderSize = 0;
   style.TabBarBorderSize = 1;
 

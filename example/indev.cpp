@@ -14,7 +14,11 @@ void Indev::initialize() {
   debug_overlay->set_console_binding("grave_accent");
 }
 
-void Indev::update(double dt) {}
+void Indev::update(double dt) {
+  if (inputs->pressed("escape")) {
+    window->set_should_close(true);
+  }
+}
 
 void Indev::draw() {
   gfx->gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -26,6 +30,7 @@ int main(int, char*[]) {
   e.run_application<Indev>(imp::InitializeParams{
     .title = "Indev",
     .size = {1280, 720},
+    .mode = imp::WindowMode::windowed,
     .flags = imp::WindowFlags::centered // | imp::WindowFlags::vsync
   });
 }

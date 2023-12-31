@@ -10,6 +10,10 @@
 namespace imp {
 std::once_flag Window::initialize_glfw_;
 
+bool Window::should_close() const {
+  return glfwWindowShouldClose(glfw_handle_);
+}
+
 bool Window::resizable() const {
   return glfwGetWindowAttrib(glfw_handle_, GLFW_RESIZABLE);
 }
@@ -32,6 +36,10 @@ bool Window::focus_on_show() const {
 
 glm::mat4 Window::projection_matrix() const {
   return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f);
+}
+
+void Window::set_should_close(bool should_close) {
+  glfwSetWindowShouldClose(glfw_handle_, should_close ? GLFW_TRUE : GLFW_FALSE);
 }
 
 void Window::set_resizable(bool resizable) {
@@ -119,6 +127,29 @@ void Window::set_icon_dir(const std::filesystem::path& dir) {
   set_icon(icon_paths);
 }
 
+void Window::set_monitor(WindowMode mode, int monitor_num, int x, int y, int w, int h) {
+  if (mode == WindowMode::windowed) {
+    glfwSetWindowMonitor(glfw_handle_, nullptr, x, y, w, h, 0);
+  } else {
+    GLFWmonitor* monitor = get_monitor_(monitor_num);
+    const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+
+    if (mode == WindowMode::borderless) {
+      set_auto_iconify(false);
+      set_floating(true);
+      int base_x, base_y;
+      glfwGetMonitorPos(monitor, &base_x, &base_y);
+      glfwSetWindowMonitor(glfw_handle_, nullptr, base_x, base_y, vidmode->width, vidmode->height, 0);
+    } else {
+      set_auto_iconify(true);
+      set_floating(false);
+      glfwSetWindowMonitor(glfw_handle_, monitor, 0, 0, vidmode->width, vidmode->height, vidmode->refreshRate);
+    }
+  }
+
+  mode_ = mode;
+}
+
 void Window::r_initialize_(const E_Initialize& p) {
   debug_overlay = module_mgr->get<DebugOverlay>();
 
@@ -149,31 +180,92 @@ void Window::r_initialize_(const E_Initialize& p) {
     IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
   });
 
+  monitors_ = glfwGetMonitors(&monitor_count_);
   open_(p.params);
+  overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
+  overlay_.current_monitor = detect_monitor_num();
 
   debug_overlay->add_tab("Window", [&] {
-    static int pos[2];
-    static int size[2];
+    ImGui::SeparatorText("Mode/Pos/Size");
 
-    if (overlay_.is_pos_dirty) {
-      pos[0] = pos_.x;
-      pos[1] = pos_.y;
-      overlay_.is_pos_dirty = false;
+    // ImGui::PushItemWidth(-FLT_MIN);
+    if (ImGui::BeginCombo("Mode", overlay_.modes[overlay_.current_mode].second.c_str())) {
+      for (std::size_t i = 0; i < overlay_.modes.size(); ++i) {
+        const bool is_selected = overlay_.current_mode == i;
+        if (ImGui::Selectable(overlay_.modes[i].second.c_str(), is_selected)) {
+          overlay_.current_mode = i;
+        }
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
     }
-    ImGui::InputInt2("pos", pos);
-    if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
-      set_pos(pos[0], pos[1]);
+    // ImGui::PopItemWidth();
+
+    const auto mname = [](const char* name, int i) {
+      return fmt::format("{}: {}", i, name);
+    };
+    // ImGui::PushItemWidth(-FLT_MIN);
+    if (ImGui::BeginCombo("Monitor",
+                          mname(glfwGetMonitorName(monitors_[overlay_.current_monitor]),
+                                overlay_.current_monitor).c_str())) {
+      for (std::size_t i = 0; i < monitor_count_; ++i) {
+        const bool is_selected = overlay_.current_monitor == i;
+        if (ImGui::Selectable(mname(glfwGetMonitorName(monitors_[i]), i).c_str(), is_selected)) {
+          overlay_.current_monitor = i;
+        }
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+    // ImGui::PopItemWidth();
+
+    if (overlay_.modes[overlay_.current_mode].first != WindowMode::windowed) { ImGui::BeginDisabled(); }
+    ImGui::InputInt2("pos", overlay_.pos);
+    ImGui::InputInt2("size", overlay_.size);
+    if (overlay_.modes[overlay_.current_mode].first != WindowMode::windowed) { ImGui::EndDisabled(); }
+
+    const int n = 3;
+    const auto item_spacing = ImGui::GetStyle().ItemSpacing;
+    const auto avail_space = ImGui::GetContentRegionAvail();
+    const float mrw = (avail_space.x - item_spacing.x * (n - 1)) / static_cast<float>(n);
+
+    if (ImGui::Button("Set", {mrw, 0})) {
+      set_monitor(
+        overlay_.modes[overlay_.current_mode].first,
+        overlay_.current_monitor,
+        overlay_.pos[0], overlay_.pos[1],
+        overlay_.size[0], overlay_.size[1]
+      );
     }
 
-    if (overlay_.is_size_dirty) {
-      size[0] = size_.x;
-      size[1] = size_.y;
-      overlay_.is_size_dirty = false;
+    if (mode_ != WindowMode::windowed) { ImGui::BeginDisabled(); }
+    ImGui::SameLine();
+    if (ImGui::Button("Center", {mrw, 0}) && mode_ == WindowMode::windowed) {
+      int base_x, base_y;
+      glfwGetMonitorPos(monitors_[overlay_.current_monitor], &base_x, &base_y);
+      auto vidmode = glfwGetVideoMode(monitors_[overlay_.current_monitor]);
+      set_pos(
+        base_x + (vidmode->width - size_.x) / 2,
+        base_y + (vidmode->height - size_.y) / 2
+      );
     }
-    ImGui::InputInt2("size", size);
-    if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
-      set_size(size[0], size[1]);
+    if (mode_ != WindowMode::windowed) { ImGui::EndDisabled(); }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Clear", {mrw, 0})) {
+      overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
+      overlay_.current_monitor = detect_monitor_num();
+      overlay_.pos[0] = pos_.x;
+      overlay_.pos[1] = pos_.y;
+      overlay_.size[0] = size_.x;
+      overlay_.size[1] = size_.y;
     }
+
+    ImGui::SeparatorText("Attributes");
 
     if (bool v = resizable(); ImGui::Checkbox("Resizable", &v)) {
       set_resizable(v);
@@ -206,6 +298,34 @@ void Window::r_shutdown_(const E_Shutdown& p) {
   Module::r_shutdown_(p);
 }
 
+int Window::detect_monitor_num() const {
+  if (mode_ == WindowMode::windowed) {
+    for (std::size_t i = 0; i < monitor_count_; ++i) {
+      int mx, my;
+      glfwGetMonitorPos(monitors_[i], &mx, &my);
+      auto vidmode = glfwGetVideoMode(monitors_[i]);
+
+      if (pos_.x >= mx && pos_.x < mx + vidmode->width &&
+          pos_.y >= my && pos_.y < my + vidmode->height) {
+        return i;
+      }
+    }
+
+    // Nothing matched, means the top left corner is offscreen, return default
+    return 0;
+  }
+
+  const auto m = glfwGetWindowMonitor(glfw_handle_);
+  for (std::size_t i = 0; i < monitor_count_; ++i) {
+    if (m == monitors_[i]) {
+      return i;
+    }
+  }
+
+  // Nothing matched, return default
+  return 0;
+}
+
 GLFWmonitor* Window::get_monitor_(int monitor_num) {
   int monitor_count = 0;
   const auto monitors = glfwGetMonitors(&monitor_count);
@@ -230,27 +350,32 @@ void Window::open_(const InitializeParams& params) {
 #endif
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  if (is_flag_set(params.flags, WindowFlags::fullscreen) ||
-      is_flag_set(params.flags, WindowFlags::borderless))
+  if (params.mode == WindowMode::fullscreen || params.mode == WindowMode::borderless)
     open_fullscreen_(params);
   else
     open_windowed_(params);
 
+  mode_ = params.mode;
   title_ = params.title;
 
   // This isn't sent at the beginning of the program, so we send it first
   // Sent as an immediate event in case we ever do anything special when
   // the window size is changed
-  Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, params.size.x, params.size.y);
+  if (params.mode == WindowMode::windowed) {
+    Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, params.size.x, params.size.y);
+  } else {
+    GLFWmonitor* monitor = get_monitor_(params.monitor_num);
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, mode->width, mode->height);
+  }
 
   register_glfw_callbacks(glfw_handle_);
 
   // Default logo
   set_icon_dir(DATA_FOLDER / "logo" / "png");
 
-  if (!is_flag_set(params.flags, WindowFlags::fullscreen) &&
-      !is_flag_set(params.flags, WindowFlags::borderless) &&
-      !is_flag_set(params.flags, WindowFlags::hidden))
+  if (params.mode == WindowMode::windowed && !is_flag_set(params.flags, WindowFlags::hidden))
     glfwShowWindow(glfw_handle_);
 }
 
@@ -265,13 +390,13 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  if (is_flag_set(params.flags, WindowFlags::borderless)) {
+  if (params.mode == WindowMode::borderless) {
     // borderless = true;
 
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
-    glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+    // This seems to cause flickering
     glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
-
     glfw_handle_ = glfwCreateWindow(mode->width, mode->height, params.title.c_str(), nullptr, nullptr);
   } else
     glfw_handle_ = glfwCreateWindow(mode->width, mode->height, params.title.c_str(), monitor, nullptr);
@@ -285,18 +410,18 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   }
   IMPERATOR_LOG_DEBUG("Created GLFW window");
 
-  if (is_flag_set(params.flags, WindowFlags::borderless)) {
+  if (params.mode == WindowMode::borderless) {
     int base_x, base_y;
     glfwGetMonitorPos(monitor, &base_x, &base_y);
     glfwSetWindowPos(glfw_handle_, base_x, base_y);
   }
 #elif defined(IMPERATOR_PLATFORM_LINUX)
   /* We are making the assumption that the user is running a version of X11
-     * that treats *all* fullscreen windows as borderless fullscreen windows.
-     * This seems to generally be true for a good majority of systems. This may
-     * also just act exactly like a normal fullscreen, there's not really any
-     * way to tell ahead of time.
-     */
+   * that treats *all* fullscreen windows as borderless fullscreen windows.
+   * This seems to generally be true for a good majority of systems. This may
+   * also just act exactly like a normal fullscreen, there's not really any
+   * way to tell ahead of time.
+   */
 
   GLFWmonitor* monitor = get_monitor_(params.monitor_num);
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -307,7 +432,7 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  if (is_flag_set(params.flags, WindowFlags::borderless)) {
+  if (params.mode == WindowMode::borderless) {
     //    borderless = true;
 
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
@@ -361,6 +486,10 @@ void Window::open_windowed_(const InitializeParams& params) {
 
 void Window::r_end_frame_(const E_EndFrame& p) {
   glfwSwapBuffers(glfw_handle_);
+
+  if (should_close()) {
+    Hermes::send_nowait<E_GlfwWindowClose>(glfw_handle_);
+  }
 }
 
 void Window::r_update_(const E_Update& p) {
@@ -383,21 +512,31 @@ void Window::r_glfw_window_close_(const E_GlfwWindowClose& p) {
 void Window::r_glfw_window_size_(const E_GlfwWindowSize& p) {
   size_.x = p.width;
   size_.y = p.height;
-  overlay_.is_size_dirty = true;
+  overlay_.size[0] = p.width;
+  overlay_.size[1] = p.height;
 }
 
 void Window::r_glfw_framebuffer_size_(const E_GlfwFramebufferSize& p) {}
+
 void Window::r_glfw_window_content_scale_(const E_GlfwWindowContentScale& p) {}
 
 void Window::r_glfw_window_pos_(const E_GlfwWindowPos& p) {
   pos_.x = p.xpos;
   pos_.y = p.ypos;
-  overlay_.is_pos_dirty = true;
+  overlay_.pos[0] = p.xpos;
+  overlay_.pos[1] = p.ypos;
+  overlay_.current_monitor = detect_monitor_num();
 }
 
 void Window::r_glfw_window_iconify_(const E_GlfwWindowIconify& p) {}
+
 void Window::r_glfw_window_maximize_(const E_GlfwWindowMaximize& p) {}
+
 void Window::r_glfw_window_focus_(const E_GlfwWindowFocus& p) {}
+
 void Window::r_glfw_window_refresh_(const E_GlfwWindowRefresh& p) {}
-void Window::r_glfw_monitor_(const E_GlfwMonitor& p) {}
+
+void Window::r_glfw_monitor_(const E_GlfwMonitor& p) {
+  monitors_ = glfwGetMonitors(&monitor_count_);
+}
 } // namespace imp

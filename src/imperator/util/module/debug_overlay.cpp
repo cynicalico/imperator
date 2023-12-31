@@ -117,9 +117,9 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
 
   if (!tabs.empty()) {
     ImGui::SetNextWindowPos({window_size_.x - WINDOW_EDGE_PADDING, WINDOW_EDGE_PADDING}, 0, {1, 0});
-    if (ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration)) {
+    if (ImGui::Begin("##Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration)) {
       static std::string current_item{tabs.begin()->first};
-      if (ImGui::BeginCombo("##combo", current_item.c_str())) {
+      if (ImGui::BeginCombo("Tab", current_item.c_str())) {
         for (const auto& k: tabs | std::views::keys) {
           const bool is_selected = current_item == k;
           if (ImGui::Selectable(k.c_str(), is_selected)) {
@@ -132,7 +132,6 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
         ImGui::EndCombo();
       }
 
-      ImGui::Separator();
       tabs[current_item]();
     }
     ImGui::End();
