@@ -1,4 +1,4 @@
-set(imperator_INCLUDE_FILES ${imperator_INCLUDE_FILES}
+set(imp_INCLUDE_FILES ${imp_INCLUDE_FILES}
         core/module/application.hpp
         core/module/cursor_mgr.hpp
         core/module/glfw_callbacks.hpp
@@ -38,8 +38,8 @@ set(imperator_INCLUDE_FILES ${imperator_INCLUDE_FILES}
         util/sops.hpp
         util/time.hpp
 
-        imperator.hpp
-        imperator_gl_wrappers.hpp
-        imperator_imconfig.hpp)
+        imp.hpp
+        imp_gl_wrappers.hpp
+        imp_imconfig.hpp)
 
-list(TRANSFORM imperator_INCLUDE_FILES PREPEND include/imperator/)
+list(TRANSFORM imp_INCLUDE_FILES PREPEND include/imp/)

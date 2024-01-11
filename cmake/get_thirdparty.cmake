@@ -117,7 +117,7 @@ CPMAddPackage(
         VERSION 1.2.3
 )
 
-add_library(imperator_thirdparty STATIC
+add_library(imp_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imconfig.h
         ${imgui_SOURCE_DIR}/imgui.h
         ${imgui_SOURCE_DIR}/imgui_internal.h
@@ -153,19 +153,19 @@ add_library(imperator_thirdparty STATIC
         ${stb_SOURCE_DIR}/stb_image_resize.h)
 
 if (MSVC)
-    target_compile_definitions(imperator_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(imp_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 else ()
     set(NFD_PORTAL ON CACHE STRING "" FORCE)
 endif ()
 
-target_include_directories(imperator_thirdparty PUBLIC
+target_include_directories(imp_thirdparty PUBLIC
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
         ${implot_SOURCE_DIR}
         ${pcg-cpp_SOURCE_DIR}/include
         ${stb_SOURCE_DIR})
 
-target_link_libraries(imperator_thirdparty PUBLIC
+target_link_libraries(imp_thirdparty PUBLIC
         argparse
         fmt::fmt
         glad_gl_core_mx_43

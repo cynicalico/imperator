@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20...3.25)
-project(imperator VERSION 0.1
+project(imp VERSION 0.1
         DESCRIPTION "WIP"
         LANGUAGES CXX C)
 
@@ -18,33 +18,33 @@ endif ()
 
 include(include/CMakeLists.txt)
 include(src/CMakeLists.txt)
-add_library(imperator STATIC ${imperator_INCLUDE_FILES} ${imperator_SRC_FILES})
+add_library(imp STATIC ${imp_INCLUDE_FILES} ${imp_SRC_FILES})
 
 if (MSVC)
-    target_compile_definitions(imperator PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(imp PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
 endif ()
-target_compile_definitions(imperator PUBLIC IMGUI_USER_CONFIG="imperator/imperator_imconfig.hpp")
+target_compile_definitions(imp PUBLIC IMGUI_USER_CONFIG="imp/imp_imconfig.hpp")
 
-target_include_directories(imperator PUBLIC include)
+target_include_directories(imp PUBLIC include)
 
 include(cmake/get_thirdparty.cmake)
-target_link_libraries(imperator PUBLIC imperator_thirdparty)
+target_link_libraries(imp PUBLIC imp_thirdparty)
 if (WIN32)
     # ntdll -- Windows version info
     # imm32.lib -- IME support for imgui
     # Dwmapi.lib -- Dark mode titlebar
     # opengl32.lib -- We are loading the core profile, so it is not linked by glad2, but
     #                 we need it for the wgl extension functions
-    target_link_libraries(imperator PUBLIC ntdll imm32.lib Dwmapi.lib opengl32.lib)
+    target_link_libraries(imp PUBLIC ntdll imm32.lib Dwmapi.lib opengl32.lib)
 else ()
     # vsync control in linux requires the X11 headers
     find_package(X11 REQUIRED)
-    target_link_libraries(imperator PUBLIC X11::X11)
+    target_link_libraries(imp PUBLIC X11::X11)
 endif (WIN32)
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(imperator PUBLIC OpenMP::OpenMP_CXX)
+    target_link_libraries(imp PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
 add_subdirectory(example)

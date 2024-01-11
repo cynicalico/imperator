@@ -1,4 +1,4 @@
-set(imperator_SRC_FILES ${imperator_SRC_FILES}
+set(imp_SRC_FILES ${imp_SRC_FILES}
         core/module/application.cpp
         core/module/cursor_mgr.cpp
         core/module/glfw_callbacks.cpp
@@ -30,6 +30,6 @@ set(imperator_SRC_FILES ${imperator_SRC_FILES}
         util/sops.cpp
         util/time.cpp
 
-        imperator.cpp)
+        imp.cpp)
 
-list(TRANSFORM imperator_SRC_FILES PREPEND src/imperator/)
+list(TRANSFORM imp_SRC_FILES PREPEND src/imp/)

@@ -1,6 +1,6 @@
 #ifndef EXAMPLE_INDEV_HPP
 #define EXAMPLE_INDEV_HPP
 
-#include "imperator/imperator.hpp"
+#include "imp/imp.hpp"
 
 #endif//EXAMPLE_INDEV_HPP
