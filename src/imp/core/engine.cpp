@@ -29,6 +29,7 @@ bool Engine::check_pending_() {
   CHECK(E_Draw)
   CHECK(E_EndFrame)
   CHECK(E_Update)
+
   CHECK(E_GlfwWindowClose)
   CHECK(E_GlfwWindowSize)
   CHECK(E_GlfwFramebufferSize)
@@ -47,10 +48,6 @@ bool Engine::check_pending_() {
   CHECK(E_GlfwScroll)
   CHECK(E_GlfwJoystick)
   CHECK(E_GlfwDrop)
-  CHECK(E_GlfwSetWindowSize)
-  CHECK(E_GlfwSetWindowPos)
-  CHECK(E_GlfwSetWindowTitle)
-  CHECK(E_GlfwSetWindowIcon)
 
 #undef CHECK
 

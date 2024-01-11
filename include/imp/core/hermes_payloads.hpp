@@ -28,86 +28,96 @@ struct PayloadInfo {
     static constexpr auto name = #struct_name;      \
   };
 
+// This is a workaround to handle the structs declared in this file specifically
+// You can't redundantly qualify the namespace the structs are declared in
+#define IMP_DECLARE_PAYLOAD_INTERNAL(struct_name, ...) \
+  struct struct_name {                                 \
+    __VA_ARGS__                                        \
+  };                                                   \
+  template<> struct PayloadInfo<struct_name> {         \
+    static constexpr auto name = #struct_name;         \
+  };
+
 namespace imp {
 /* EVENTS */
 
-IMP_DECLARE_PAYLOAD(E_Initialize,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_Initialize,
   const InitializeParams params;
 )
 
-IMP_DECLARE_PAYLOAD(E_ShutdownEngine)
+IMP_DECLARE_PAYLOAD_INTERNAL(E_ShutdownEngine)
 
-IMP_DECLARE_PAYLOAD(E_Shutdown)
+IMP_DECLARE_PAYLOAD_INTERNAL(E_Shutdown)
 
-IMP_DECLARE_PAYLOAD(E_LogMsg,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_LogMsg,
   std::string text;
   spdlog::level::level_enum level;
 )
 
-IMP_DECLARE_PAYLOAD(E_StartFrame)
+IMP_DECLARE_PAYLOAD_INTERNAL(E_StartFrame)
 
-IMP_DECLARE_PAYLOAD(E_Draw)
+IMP_DECLARE_PAYLOAD_INTERNAL(E_Draw)
 
-IMP_DECLARE_PAYLOAD(E_EndFrame)
+IMP_DECLARE_PAYLOAD_INTERNAL(E_EndFrame)
 
-IMP_DECLARE_PAYLOAD(E_Update,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_Update,
   double dt;
   double fps;
 );
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowClose,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowClose,
   GLFWwindow* window;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowSize,
-  GLFWwindow* window;
-  int width;
-  int height;
-)
-
-IMP_DECLARE_PAYLOAD(E_GlfwFramebufferSize,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowSize,
   GLFWwindow* window;
   int width;
   int height;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowContentScale,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwFramebufferSize,
+  GLFWwindow* window;
+  int width;
+  int height;
+)
+
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowContentScale,
   GLFWwindow* window;
   float xscale;
   float yscale;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowPos,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowPos,
   GLFWwindow* window;
   int xpos;
   int ypos;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowIconify,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowIconify,
   GLFWwindow* window;
   int iconified;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowMaximize,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowMaximize,
   GLFWwindow* window;
   int maximized;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowFocus,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowFocus,
   GLFWwindow* window;
   int focused;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwWindowRefresh,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwWindowRefresh,
   GLFWwindow* window;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwMonitor,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwMonitor,
   GLFWmonitor* monitor;
   int event;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwKey,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwKey,
   GLFWwindow* window;
   int key;
   int scancode;
@@ -115,69 +125,49 @@ IMP_DECLARE_PAYLOAD(E_GlfwKey,
   int mods;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwCharacter,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwCharacter,
   GLFWwindow* window;
   unsigned int codepoint;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwCursorPos,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwCursorPos,
   GLFWwindow* window;
   double xpos;
   double ypos;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwCursorEnter,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwCursorEnter,
   GLFWwindow* window;
   int entered;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwMouseButton,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwMouseButton,
   GLFWwindow* window;
   int button;
   int action;
   int mods;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwScroll,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwScroll,
   GLFWwindow* window;
   double xoffset;
   double yoffset;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwJoystick,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwJoystick,
   int jid;
   int event;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwDrop,
+IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwDrop,
   GLFWwindow* window;
   int count;
   const char** paths;
 )
 
-IMP_DECLARE_PAYLOAD(E_GlfwSetWindowSize,
-  GLFWwindow* window;
-  int width;
-  int height;
-)
-
-IMP_DECLARE_PAYLOAD(E_GlfwSetWindowPos,
-  GLFWwindow* window;
-  int x;
-  int y;
-)
-
-IMP_DECLARE_PAYLOAD(E_GlfwSetWindowTitle,
-  GLFWwindow* window;
-  std::string title;
-)
-
-IMP_DECLARE_PAYLOAD(E_GlfwSetWindowIcon,
-  GLFWwindow* window;
-  const std::vector<std::filesystem::path> paths;
-)
-
 /* MESSAGES */
 } // namespace imp
+
+#undef IMP_DECLARE_PAYLOAD_INTERNAL
 
 #endif//IMP_CORE_HERMES_PAYLOADS_HPP
