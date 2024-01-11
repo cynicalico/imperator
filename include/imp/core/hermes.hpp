@@ -15,7 +15,17 @@
 namespace imp {
 template<typename T>
 struct EPI;
+} // namespace imp
 
+// Specialize EPI with the name of the module for use in the event system
+// This is intended to be used outside of a namespace so the namespace becomes part
+// of the name (just in case it is what qualifies it from another module)
+#define IMP_PRAISE_HERMES(module)         \
+  template<> struct imp::EPI<module> {    \
+    static constexpr auto name = #module; \
+  }
+
+namespace imp {
 class Hermes {
 public:
   using Receiver = std::function<void(const std::any&)>;
@@ -62,147 +72,31 @@ private:
   static std::recursive_mutex receiver_mutex_;
   static std::recursive_mutex buffer_mutex_;
 };
-
-template<typename T>
-void Hermes::presub_cache(const std::string& name) {
-  check_create_buffer_<T>(name);
-}
-
-template<typename T>
-void Hermes::sub(const std::string& name, std::vector<std::string>&& deps, Receiver&& recv) {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(receiver_mutex_);
-
-  while (e_idx >= receivers_.size())
-    receivers_.emplace_back();
-  receivers_[e_idx].add(
-    name,
-    std::forward<std::vector<std::string>>(deps),
-    std::forward<Receiver>(recv)
-  );
-
-  check_create_buffer_<T>(name);
-}
-
-template<typename T>
-void Hermes::sub(const std::string& name, Receiver&& recv) {
-  sub<T>(name, {}, std::forward<Receiver>(recv));
-}
-
-template<typename T, typename... Args>
-void Hermes::send(Args&&... args) {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(buffer_mutex_);
-
-  auto pay = std::any(T{std::forward<Args>(args)...});
-  if (e_idx < buffers_.size()) {
-    for (auto& p: buffers_[e_idx])
-      p.second.emplace_back(pay);
-  }
-}
-
-template<typename T, typename... Args>
-void Hermes::send_nowait(Args&&... args) {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(receiver_mutex_);
-
-  auto pay = std::any(T{std::forward<Args>(args)...});
-  if (e_idx < receivers_.size()) {
-    for (const auto& p: receivers_[type_id<T>()])
-      p(pay);
-  }
-}
-
-template<typename T, typename... Args>
-void Hermes::send_nowait_rev(Args&&... args) {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(receiver_mutex_);
-
-  auto pay = std::any(T{std::forward<Args>(args)...});
-  if (e_idx < receivers_.size()) {
-    for (const auto& p: receivers_[type_id<T>()] | std::views::reverse)
-      p(pay);
-  }
-}
-
-template<typename T>
-void Hermes::poll(const std::string& name) {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(buffer_mutex_);
-
-  for (const auto& pay: buffers_[e_idx][name])
-    receivers_[e_idx][name](pay);
-  buffers_[e_idx][name].clear();
-}
-
-template<typename T>
-std::vector<std::string> Hermes::get_prio() {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(receiver_mutex_);
-
-  auto ret = std::vector<std::string>{};
-  for (const auto& p: receivers_[e_idx])
-    ret.emplace_back(receivers_[e_idx].name_from_id(p.id));
-  return ret;
-}
-
-template<typename T>
-bool Hermes::has_pending() {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(receiver_mutex_);
-
-  if (receivers_.size() > e_idx)
-    return receivers_[e_idx].has_pending();
-  return false;
-}
-
-template<typename T>
-std::vector<PendingItemInfo> Hermes::get_pending() {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(receiver_mutex_);
-
-  if (receivers_.size() > e_idx)
-    return receivers_[e_idx].get_pending();
-  return {};
-}
-
-template<typename T>
-void Hermes::check_create_buffer_(const std::string& name) {
-  auto e_idx = type_id<T>();
-
-  const std::lock_guard lock(buffer_mutex_);
-
-  while (e_idx >= buffers_.size())
-    buffers_.emplace_back();
-
-  if (!buffers_[e_idx].contains(name))
-    buffers_[e_idx][name] = std::vector<std::any>{};
-}
 } // namespace imp
 
+#include "imp/core/hermes.ipp"
+
+// Wrap a function in a lambda to any_cast the payload to the correct type
+// See examples of intended usage in any modules that use the event system (Window is a good one)
 #define IMP_MAKE_RECEIVER(T, f)   \
   [&](const std::any& payload) {  \
     f(std::any_cast<T>(payload)); \
   }
 
-#define IMP_PRAISE_HERMES(module)         \
-  template<> struct imp::EPI<module> {    \
-    static constexpr auto name = #module; \
-  }
+// Helper for IMP_HERMES_SUB
+#define IMP_EPI_NAMIFY(module) EPI<module>::name
 
-#define IMP_EPI_NAMIFY(e) EPI<e>::name
-
+// Sub to a given event with an optional set of dependencies
+// Ex:
+//   IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_, Application);
+//
+// NOTE: Dependencies must be registered with IMP_PRAISE_HERMES for this to work
 #define IMP_HERMES_SUB(T, name, f, ...) \
   Hermes::sub<T>(name, {MAP_LIST(IMP_EPI_NAMIFY __VA_OPT__(,) __VA_ARGS__)}, IMP_MAKE_RECEIVER(T, f));
 
+// This does the same thing as IMP_HERMES_SUB but takes the deps as a vector list
+// This mostly exists for the sake of consistency, it's only calling IMP_MAKE_RECEIVER for you
+// and otherwise is nearly equivalent to directly calling Hermes::sub
 #define IMP_HERMES_SUB_VDEPS(T, name, f, deps) \
   Hermes::sub<T>(name, deps, IMP_MAKE_RECEIVER(T, f));
 

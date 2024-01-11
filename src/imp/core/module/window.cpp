@@ -7,30 +7,6 @@
 #include "glm/ext/matrix_clip_space.hpp"
 #include <set>
 
-#if defined(IMP_PLATFORM_WINDOWS)
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW/glfw3native.h"
-#include <dwmapi.h>
-
-#pragma comment(lib, "ntdll.lib")
-
-extern "C" {
-  typedef LONG NTSTATUS, *PNTSTATUS;
-#define STATUS_SUCCESS (0x00000000)
-
-  // Windows 2000 and newer
-  NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
-}
-
-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-
-#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
-#define DWMWA_WINDOW_CORNER_PREFERENCE 33
-#endif
-#endif
-
 namespace imp {
 std::once_flag Window::initialize_glfw_;
 
@@ -369,6 +345,28 @@ GLFWmonitor* Window::get_monitor_(int monitor_num) {
   }
   return monitors[monitor_num];
 }
+
+#if defined(IMP_PLATFORM_WINDOWS)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
+#include <dwmapi.h>
+
+#pragma comment(lib, "ntdll.lib") // For RtlGetVersion
+extern "C" {
+  typedef LONG NTSTATUS, *PNTSTATUS;
+#define STATUS_SUCCESS (0x00000000)
+  // Windows 2000 and newer
+  NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
+}
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
+#define DWMWA_WINDOW_CORNER_PREFERENCE 33
+#endif
+#endif
 
 void Window::open_(const InitializeParams& params) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, params.backend_version.x);
