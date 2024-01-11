@@ -6,21 +6,19 @@ namespace imp {
 Engine::Engine() {
   module_mgr_ = std::make_shared<ModuleMgr>();
 
-  Hermes::sub<E_ShutdownEngine>(EPI<Engine>::name, [&](const auto&) {
-    received_shutdown_ = true;
-  });
+  IMP_HERMES_SUB(E_ShutdownEngine, EPI<Engine>::name, [&](const auto&) { received_shutdown_ = true; });
 }
 
 bool Engine::check_pending_() {
   bool no_pending = true;
 
-#define CHECK(payload)                                                                       \
-  if (Hermes::has_pending<payload>()) {                                                      \
-    auto v = Hermes::get_pending<payload>();                                                 \
-    for (const auto& [name, pending]: v) {                                                   \
+#define CHECK(payload)                                                                 \
+  if (Hermes::has_pending<payload>()) {                                                \
+    auto v = Hermes::get_pending<payload>();                                           \
+    for (const auto& [name, pending]: v) {                                             \
       IMP_LOG_ERROR("{}: {} relies on {}", name, PayloadInfo<payload>::name, pending); \
-    }                                                                                        \
-    no_pending = false;                                                                      \
+    }                                                                                  \
+    no_pending = false;                                                                \
   }
 
   CHECK(E_Initialize)

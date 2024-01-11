@@ -32,6 +32,7 @@ set(imp_INCLUDE_FILES ${imp_INCLUDE_FILES}
         util/helpers.hpp
         util/io.hpp
         util/log.hpp
+        util/map_macro.hpp
         util/memusage.hpp
         util/platform.hpp
         util/rnd.hpp

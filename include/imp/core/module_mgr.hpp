@@ -88,20 +88,18 @@ template<typename T>
 Module<T>::Module(std::vector<std::string>&& dependencies) : ModuleI() {
   module_name = EPI<T>::name;
 
-  Hermes::sub<E_Initialize>(
+  IMP_HERMES_SUB_VDEPS(
+    E_Initialize,
     module_name,
-    std::forward<std::vector<std::string>>(dependencies),
-    IMP_MAKE_RECEIVER(E_Initialize, [&](const auto& e) {
-      std::call_once(is_initialized_, [&]() { r_initialize_(e); });
-    })
+    [&](const E_Initialize& e) { std::call_once(is_initialized_, [&] { r_initialize_(e); }); },
+    std::forward<std::vector<std::string>>(dependencies)
   );
 
-  Hermes::sub<E_Shutdown>(
+  IMP_HERMES_SUB_VDEPS(
+    E_Shutdown,
     module_name,
-    std::forward<std::vector<std::string>>(dependencies),
-    IMP_MAKE_RECEIVER(E_Shutdown, [&](const auto& e) {
-      std::call_once(is_shutdown_, [&]() { r_shutdown_(e); });
-    })
+    [&](const E_Shutdown& e) { std::call_once(is_shutdown_, [&] { r_shutdown_(e); }); },
+    std::forward<std::vector<std::string>>(dependencies)
   );
 
   IMP_LOG_DEBUG("Module created: {}", module_name);

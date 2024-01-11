@@ -5,6 +5,7 @@
 #include "imp/core/prio_list.hpp"
 #include "imp/core/type_id.hpp"
 #include "imp/util/log.hpp"
+#include "imp/util/map_macro.hpp"
 #include <any>
 #include <mutex>
 #include <string>
@@ -15,22 +16,10 @@ namespace imp {
 template<typename T>
 struct EPI;
 
-using Receiver = std::function<void(const std::any&)>;
-} // namespace imp
-
-#define IMP_MAKE_RECEIVER(T, f)       \
-  [&](const std::any& payload) {  \
-    f(std::any_cast<T>(payload)); \
-  }
-
-#define IMP_PRAISE_HERMES(module)   \
-  template<> struct imp::EPI<module> {    \
-    static constexpr auto name = #module; \
-  }
-
-namespace imp {
 class Hermes {
 public:
+  using Receiver = std::function<void(const std::any&)>;
+
   template<typename T>
   static void presub_cache(const std::string& name);
 
@@ -198,5 +187,23 @@ void Hermes::check_create_buffer_(const std::string& name) {
     buffers_[e_idx][name] = std::vector<std::any>{};
 }
 } // namespace imp
+
+#define IMP_MAKE_RECEIVER(T, f)   \
+  [&](const std::any& payload) {  \
+    f(std::any_cast<T>(payload)); \
+  }
+
+#define IMP_PRAISE_HERMES(module)         \
+  template<> struct imp::EPI<module> {    \
+    static constexpr auto name = #module; \
+  }
+
+#define IMP_EPI_NAMIFY(e) EPI<e>::name
+
+#define IMP_HERMES_SUB(T, name, f, ...) \
+  Hermes::sub<T>(name, {MAP_LIST(IMP_EPI_NAMIFY __VA_OPT__(,) __VA_ARGS__)}, IMP_MAKE_RECEIVER(T, f));
+
+#define IMP_HERMES_SUB_VDEPS(T, name, f, deps) \
+  Hermes::sub<T>(name, deps, IMP_MAKE_RECEIVER(T, f));
 
 #endif//IMP_CORE_HERMES_HPP

@@ -39,7 +39,7 @@ void CursorMgr::r_initialize_(const E_Initialize& p) {
   standard_cursors_[ImGuiMouseCursor_NotAllowed] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
   curr_cursor_ = standard_cursors_[ImGuiMouseCursor_Arrow];
 
-  Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, IMP_MAKE_RECEIVER(E_EndFrame, r_end_frame_));
+  IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_, Application);
 
   Module::r_initialize_(p);
 }

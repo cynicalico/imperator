@@ -67,10 +67,10 @@ void DebugOverlay::set_console_binding(const std::string& binding) {
 }
 
 void DebugOverlay::r_initialize_(const E_Initialize& p) {
-  Hermes::sub<E_Draw>(module_name, {EPI<Application>::name}, IMP_MAKE_RECEIVER(E_Draw, r_draw_));
-  Hermes::sub<E_Update>(module_name, IMP_MAKE_RECEIVER(E_Update, r_update_));
-  Hermes::sub<E_LogMsg>(module_name, IMP_MAKE_RECEIVER(E_LogMsg, r_log_msg_));
-  Hermes::sub<E_GlfwWindowSize>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowSize, r_glfw_window_size_));
+  IMP_HERMES_SUB(E_Draw, module_name, r_draw_, Application);
+  IMP_HERMES_SUB(E_Update, module_name, r_update_);
+  IMP_HERMES_SUB(E_LogMsg, module_name, r_log_msg_);
+  IMP_HERMES_SUB(E_GlfwWindowSize, module_name, r_glfw_window_size_);
 
   Module::r_initialize_(p);
 }

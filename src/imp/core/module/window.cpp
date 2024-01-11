@@ -182,20 +182,19 @@ void Window::set_monitor(WindowMode mode, int monitor_num, int x, int y, int w, 
 void Window::r_initialize_(const E_Initialize& p) {
   debug_overlay = module_mgr->get<DebugOverlay>();
 
-  // Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name})
-  Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, IMP_MAKE_RECEIVER(E_EndFrame, r_end_frame_));
-  Hermes::sub<E_Update>(module_name, IMP_MAKE_RECEIVER(E_Update, r_update_));
+  IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_, Application);
+  IMP_HERMES_SUB(E_Update, module_name, r_update_);
 
-  Hermes::sub<E_GlfwWindowClose>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowClose, r_glfw_window_close_));
-  Hermes::sub<E_GlfwWindowSize>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowSize, r_glfw_window_size_));
-  Hermes::sub<E_GlfwFramebufferSize>(module_name, IMP_MAKE_RECEIVER(E_GlfwFramebufferSize, r_glfw_framebuffer_size_));
-  Hermes::sub<E_GlfwWindowContentScale>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowContentScale, r_glfw_window_content_scale_));
-  Hermes::sub<E_GlfwWindowPos>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowPos, r_glfw_window_pos_));
-  Hermes::sub<E_GlfwWindowIconify>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowIconify, r_glfw_window_iconify_));
-  Hermes::sub<E_GlfwWindowMaximize>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowMaximize, r_glfw_window_maximize_));
-  Hermes::sub<E_GlfwWindowFocus>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowFocus, r_glfw_window_focus_));
-  Hermes::sub<E_GlfwWindowRefresh>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowRefresh, r_glfw_window_refresh_));
-  Hermes::sub<E_GlfwMonitor>(module_name, IMP_MAKE_RECEIVER(E_GlfwMonitor, r_glfw_monitor_));
+  IMP_HERMES_SUB(E_GlfwWindowClose, module_name, r_glfw_window_close_);
+  IMP_HERMES_SUB(E_GlfwWindowSize, module_name, r_glfw_window_size_);
+  IMP_HERMES_SUB(E_GlfwFramebufferSize, module_name, r_glfw_framebuffer_size_);
+  IMP_HERMES_SUB(E_GlfwWindowContentScale, module_name, r_glfw_window_content_scale_);
+  IMP_HERMES_SUB(E_GlfwWindowPos, module_name, r_glfw_window_pos_);
+  IMP_HERMES_SUB(E_GlfwWindowIconify, module_name, r_glfw_window_iconify_);
+  IMP_HERMES_SUB(E_GlfwWindowMaximize, module_name, r_glfw_window_maximize_);
+  IMP_HERMES_SUB(E_GlfwWindowFocus, module_name, r_glfw_window_focus_);
+  IMP_HERMES_SUB(E_GlfwWindowRefresh, module_name, r_glfw_window_refresh_);
+  IMP_HERMES_SUB(E_GlfwMonitor, module_name, r_glfw_monitor_);
 
   std::call_once(initialize_glfw_, [&]() {
     register_glfw_error_callback();
