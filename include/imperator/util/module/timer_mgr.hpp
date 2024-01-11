@@ -324,6 +324,6 @@ void TimerMgr::UntilTimer<T, T2>::fire() {
 }
 } // namespace imp
 
-IMPERATOR_PRAISE_HERMES(imp::TimerMgr);
+IMP_PRAISE_HERMES(imp::TimerMgr);
 
 #endif//IMPERATOR_UTIL_MODULE_TIMER_MGR_HPP

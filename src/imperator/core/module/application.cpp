@@ -10,14 +10,14 @@ void Application::r_initialize_(const E_Initialize& e) {
   timers = module_mgr->get<TimerMgr>();
   window = module_mgr->get<Window>();
 
-  Hermes::sub<E_StartFrame>(module_name, [&](const auto& p) { r_start_frame_(p); });
-  Hermes::sub<E_Draw>(module_name, [&](const auto& p) { r_draw_(p); });
-  Hermes::sub<E_EndFrame>(module_name, [&](const auto& p) { r_end_frame_(p); });
+  Hermes::sub<E_StartFrame>(module_name, IMP_MAKE_RECEIVER(E_StartFrame, r_start_frame_));
+  Hermes::sub<E_Draw>(module_name, IMP_MAKE_RECEIVER(E_Draw, r_draw_));
+  Hermes::sub<E_EndFrame>(module_name, IMP_MAKE_RECEIVER(E_EndFrame, r_end_frame_));
   Hermes::sub<E_Update>(module_name, {
                           EPI<InputMgr>::name,
                           EPI<TimerMgr>::name,
                           EPI<Window>::name
-                        }, [&](const auto& p) { r_update_(p); });
+                        }, IMP_MAKE_RECEIVER(E_Update, r_update_));
 
   initialize();
 

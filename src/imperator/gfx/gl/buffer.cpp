@@ -35,13 +35,13 @@ void Buffer::unbind(const BufTarget& target) const {
 
 void Buffer::gen_id_() {
   gl.GenBuffers(1, &id);
-  IMPERATOR_LOG_DEBUG("GEN_ID({}): Buffer", id);
+  IMP_LOG_DEBUG("GEN_ID({}): Buffer", id);
 }
 
 void Buffer::del_id_() {
   if (id != 0) {
     gl.DeleteBuffers(1, &id);
-    IMPERATOR_LOG_DEBUG("DEL_ID({}): Buffer", id);
+    IMP_LOG_DEBUG("DEL_ID({}): Buffer", id);
     id = 0;
   }
 }

@@ -11,6 +11,7 @@
 
 #include "imperator/gfx/module/dear_imgui.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
+#include "imperator/gfx/module/shader_mgr.hpp"
 
 #include "imperator/util/module/debug_overlay.hpp"
 #include "imperator/util/module/timer_mgr.hpp"
@@ -40,7 +41,7 @@ private:
 };
 }
 
-IMPERATOR_PRAISE_HERMES(imp::Engine);
+IMP_PRAISE_HERMES(imp::Engine);
 
 namespace imp {
 template<typename T>
@@ -57,6 +58,7 @@ void Engine::run_application(const InitializeParams& initialize_params) {
   module_mgr_->create<DebugOverlay>();
   module_mgr_->create<InputMgr>();
   module_mgr_->create<GfxContext>();
+  module_mgr_->create<ShaderMgr>();
   module_mgr_->create<TimerMgr>();
   module_mgr_->create<Window>();
 

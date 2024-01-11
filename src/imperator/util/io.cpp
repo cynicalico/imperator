@@ -12,7 +12,7 @@ ImageData::ImageData(const std::filesystem::path& path, int desired_channels) {
   int w, h, comp;
   auto data = stbi_load(path.string().c_str(), &w, &h, &comp, desired_channels);
   if (!data)
-    IMPERATOR_LOG_ERROR("Failed to load image data '{}': {}", path.string(), stbi_failure_reason());
+    IMP_LOG_ERROR("Failed to load image data '{}': {}", path.string(), stbi_failure_reason());
   else {
     w_ = w;
     h_ = h;
@@ -100,7 +100,7 @@ std::optional<nlohmann::json> read_json(const std::filesystem::path& path) {
   try {
     j = nlohmann::json::parse(ifs);
   } catch (const nlohmann::json::exception& e) {
-    IMPERATOR_LOG_ERROR("Failed to parse json '{}': {}", path.string(), e.what());
+    IMP_LOG_ERROR("Failed to parse json '{}': {}", path.string(), e.what());
   }
 
   return j;

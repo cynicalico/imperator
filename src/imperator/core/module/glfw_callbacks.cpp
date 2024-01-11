@@ -31,7 +31,7 @@ void register_glfw_callbacks(GLFWwindow* window) {
 
   glfwSetMonitorCallback(internal::monitor_callback);
 
-  IMPERATOR_LOG_DEBUG("Registered GLFW callbacks");
+  IMP_LOG_DEBUG("Registered GLFW callbacks");
 }
 
 void set_ignore_imgui_capture(const std::vector<int>& keys, int action) {
@@ -73,7 +73,7 @@ bool check_ignore_imgui_capture(int key, int action) {
 }
 
 void error_callback(int code, const char* description) {
-  IMPERATOR_LOG_ERROR("GLFW ({}): {}", code, description);
+  IMP_LOG_ERROR("GLFW ({}): {}", code, description);
 }
 
 void window_close_callback(GLFWwindow* window) {

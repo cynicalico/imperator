@@ -37,7 +37,7 @@ bool TimerMgr::is_paused(const std::string& tag) {
 }
 
 void TimerMgr::r_initialize_(const E_Initialize& p) {
-  Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
+  Hermes::sub<E_Update>(module_name, IMP_MAKE_RECEIVER(E_Update, r_update_));
 
   Module::r_initialize_(p);
 }

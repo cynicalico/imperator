@@ -8,6 +8,9 @@
 #include "GLFW/glfw3.h"
 #include "glm/mat4x4.hpp"
 #include <mutex>
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+#include <windows.h>
+#endif
 
 namespace imp {
 class Window : public Module<Window> {
@@ -118,9 +121,19 @@ private:
   void r_glfw_window_focus_(const E_GlfwWindowFocus& p);
   void r_glfw_window_refresh_(const E_GlfwWindowRefresh& p);
   void r_glfw_monitor_(const E_GlfwMonitor& p);
+
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+  HWND win32_hwnd_{nullptr};
+  WNDPROC win32_saved_WndProc_{nullptr};
+  bool win32_force_light_mode_{false};
+  bool win32_force_dark_mode_{false};
+
+  static void set_win32_titlebar_color_(HWND hwnd);
+  static LRESULT CALLBACK WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+#endif
 };
 } // namespace imp
 
-IMPERATOR_PRAISE_HERMES(imp::Window);
+IMP_PRAISE_HERMES(imp::Window);
 
 #endif//IMPERATOR_CORE_MODULE_WINDOW_HPP

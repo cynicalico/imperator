@@ -19,7 +19,7 @@ void VertexArray::attrib(Shader& shader, BufTarget target, Buffer& buf, const st
   const static RE2 attrib_pat(R"((\w+):(\d+)(i|f|u|s)(?::(n))?(?::s(\d+)(i|f|u|s)?)?(?::o(\d+)(i|f|u|s)?)?(?::i(\d+))?)");
   assert(attrib_pat.ok());
 
-  const static RE2 spaces_pat{IMPERATOR_SPLIT_RE(R"((\s+))")};
+  const static RE2 spaces_pat{IMP_SPLIT_RE(R"((\s+))")};
   assert(spaces_pat.ok());
 
   static std::unordered_map<std::string, GLenum> type_map = {
@@ -114,13 +114,13 @@ void VertexArray::multi_draw_arrays_indirect(const DrawMode& mode, GLsizei drawc
 
 void VertexArray::gen_id_() {
   gl.GenVertexArrays(1, &id);
-  IMPERATOR_LOG_DEBUG("GEN_ID({}): Vertex array", id);
+  IMP_LOG_DEBUG("GEN_ID({}): Vertex array", id);
 }
 
 void VertexArray::del_id_() {
   if (id != 0) {
     gl.DeleteVertexArrays(1, &id);
-    IMPERATOR_LOG_DEBUG("DEL_ID({}): Vertex array", id);
+    IMP_LOG_DEBUG("DEL_ID({}): Vertex array", id);
     id = 0;
   }
 }

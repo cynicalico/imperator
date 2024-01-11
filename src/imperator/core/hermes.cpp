@@ -2,7 +2,7 @@
 
 namespace imp {
 
-std::vector<PrioList<std::unique_ptr<ReceiverI>>> Hermes::receivers_{};
+std::vector<PrioList<Receiver>> Hermes::receivers_{};
 std::vector<std::unordered_map<std::string, std::vector<std::any>>> Hermes::buffers_{};
 
 std::recursive_mutex Hermes::receiver_mutex_;

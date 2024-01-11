@@ -99,6 +99,6 @@ void DebugOverlay::add_tab(const std::string& name, T&& f) {
 }
 } // namespace imp
 
-IMPERATOR_PRAISE_HERMES(imp::DebugOverlay);
+IMP_PRAISE_HERMES(imp::DebugOverlay);
 
 #endif//IMPERATOR_UTIL_MODULE_DEBUG_OVERLAY_HPP

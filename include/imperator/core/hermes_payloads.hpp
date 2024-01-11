@@ -20,7 +20,7 @@ struct PayloadInfo {
 };
 } // namespace imp
 
-#define IMPERATOR_DECLARE_PAYLOAD(payload)      \
+#define IMP_DECLARE_PAYLOAD(payload)      \
   template<> struct imp::PayloadInfo<payload> { \
     static constexpr auto name = #payload;      \
   }
@@ -177,35 +177,35 @@ struct E_GlfwSetWindowIcon {
 /* MESSAGES */
 } // namespace imp
 
-IMPERATOR_DECLARE_PAYLOAD(imp::E_Initialize);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_ShutdownEngine);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_Shutdown);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_LogMsg);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_StartFrame);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_Draw);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_EndFrame);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_Update);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowClose);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowSize);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwFramebufferSize);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowContentScale);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowPos);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowIconify);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowMaximize);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowFocus);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwWindowRefresh);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwMonitor);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwKey);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwCharacter);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwCursorPos);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwCursorEnter);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwMouseButton);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwScroll);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwJoystick);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwDrop);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwSetWindowSize);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwSetWindowPos);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwSetWindowTitle);
-IMPERATOR_DECLARE_PAYLOAD(imp::E_GlfwSetWindowIcon);
+IMP_DECLARE_PAYLOAD(imp::E_Initialize);
+IMP_DECLARE_PAYLOAD(imp::E_ShutdownEngine);
+IMP_DECLARE_PAYLOAD(imp::E_Shutdown);
+IMP_DECLARE_PAYLOAD(imp::E_LogMsg);
+IMP_DECLARE_PAYLOAD(imp::E_StartFrame);
+IMP_DECLARE_PAYLOAD(imp::E_Draw);
+IMP_DECLARE_PAYLOAD(imp::E_EndFrame);
+IMP_DECLARE_PAYLOAD(imp::E_Update);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowClose);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowSize);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwFramebufferSize);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowContentScale);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowPos);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowIconify);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowMaximize);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowFocus);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwWindowRefresh);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwMonitor);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwKey);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwCharacter);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwCursorPos);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwCursorEnter);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwMouseButton);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwScroll);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwJoystick);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwDrop);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwSetWindowSize);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwSetWindowPos);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwSetWindowTitle);
+IMP_DECLARE_PAYLOAD(imp::E_GlfwSetWindowIcon);
 
 #endif//IMPERATOR_CORE_HERMES_PAYLOADS_HPP

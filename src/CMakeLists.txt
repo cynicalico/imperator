@@ -9,10 +9,13 @@ set(imperator_SRC_FILES ${imperator_SRC_FILES}
         core/prio_list.cpp
 
         gfx/gl/buffer.cpp
+        gfx/gl/renderbuffer.cpp
         gfx/gl/shader.cpp
+        gfx/gl/tex_image.cpp
         gfx/gl/vertex_array.cpp
         gfx/module/dear_imgui.cpp
         gfx/module/gfx_context.cpp
+        gfx/module/shader_mgr.cpp
         gfx/color.cpp
 
         util/module/debug_overlay.cpp

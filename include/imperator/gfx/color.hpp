@@ -12,12 +12,18 @@
 #include <string>
 
 namespace imp {
+class Color {
+public:
+  virtual ~Color() = default;
+  virtual glm::vec4 gl_color() const = 0;
+};
+
 class RGB;
 class HSL;
 class HSV;
-class XYZ;
-class CIELab;
-class CIELCh;
+// class XYZ;
+// class CIELab;
+// class CIELCh;
 
 /*******
  * RGB *
@@ -26,38 +32,33 @@ class CIELCh;
 RGB rgb(int r, int g, int b);
 RGB rgb(std::uint32_t hex);
 RGB rgb(const std::string& css_color);
+RGB rgb_f(float r, float g, float b);
 
 RGB rgba(int r, int g, int b, int a);
 RGB rgba(std::uint64_t hex, bool argb = false);
 RGB rgba(const std::string& css_color, int a);
-
-RGB rgb_f(float r, float g, float b);
-
 RGB rgba_f(float r, float g, float b, float a);
 
-class RGB {
+class RGB : public Color {
 public:
   int r{0}, g{0}, b{0}, a{255};
 
   RGB() = default;
 
+  glm::vec4 gl_color() const override;
+
   friend RGB rgb(int r, int g, int b);
   friend RGB rgb(std::uint32_t hex);
   friend RGB rgb(const std::string& css_color);
+  friend RGB rgb_f(float r, float g, float b);
 
   friend RGB rgba(int r, int g, int b, int a);
   friend RGB rgba(std::uint64_t hex, bool argb);
   friend RGB rgba(const std::string& css_color, int a);
-
-  friend RGB rgb_f(float r, float g, float b);
-
   friend RGB rgba_f(float r, float g, float b, float a);
 
   RGB get_inverse() const;
   void invert();
-
-  glm::vec3 vec3() const;
-  glm::vec4 vec4() const;
 
   HSL to_hsl() const;
   HSV to_hsv() const;
@@ -79,12 +80,14 @@ HSV hsv(const std::string& css_color);
 HSV hsva(double h, double s, double v, int a);
 HSV hsva(const std::string& css_color, int a);
 
-class HSV {
+class HSV : public Color {
 public:
   double h{0.0}, s{0.0}, v{0.0};
   int a{255};
 
   HSV() = default;
+
+  glm::vec4 gl_color() const override;
 
   friend HSV hsv(double h, double s, double v);
   friend HSV hsv(const std::string& css_color);
@@ -115,12 +118,14 @@ HSL hsl(const std::string& css_color);
 HSL hsla(double h, double s, double l, int a);
 HSL hsla(const std::string& css_color, int a);
 
-class HSL {
+class HSL : public Color {
 public:
   double h{0.0}, s{0.0}, l{0.0};
   int a{255};
 
   HSL() = default;
+
+  glm::vec4 gl_color() const override;
 
   friend HSL hsl(double h, double s, double l);
   friend HSL hsl(const std::string& css_color);

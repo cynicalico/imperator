@@ -20,14 +20,14 @@ std::vector<std::string> split(const std::string& s, const std::string& delim);
 
 // Macro for declaring regex splits to use with split_re
 // A special form is required, the macro will do it without being as obtrusive
-#define IMPERATOR_SPLIT_RE(x) RE2("(.+?)(" x ")")
+#define IMP_SPLIT_RE(x) RE2("(.+?)(" x ")")
 
 /**
  * Split a given string on a regular expression
  * The regular expression *must* have the form:
  *   (.+?)(<pat>)
  * where <pat> is the expression to split on
- * To avoid mistakes, use the IMPERATOR_SPLIT_RE macro
+ * To avoid mistakes, use the IMP_SPLIT_RE macro
  * If regexp does not have a match pattern, this will return an empty vector
  *
  * @param s the string to split

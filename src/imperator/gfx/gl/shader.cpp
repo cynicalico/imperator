@@ -21,7 +21,7 @@ std::optional<std::string> read_file_process_includes(
 
   std::ifstream ifs(path.string());
   if (!ifs.is_open()) {
-    IMPERATOR_LOG_ERROR("Failed to open file: '{}'", path.string());
+    IMP_LOG_ERROR("Failed to open file: '{}'", path.string());
     return std::nullopt;
   }
 
@@ -35,7 +35,7 @@ std::optional<std::string> read_file_process_includes(
 
       std::string include;
       if (tokens.size() < 2 || !RE2::FullMatch(tokens[1], path_pat, &include)) {
-        IMPERATOR_LOG_ERROR("Failed to parse include in file {}:{}: '{}'", path.string(), line_no, line);
+        IMP_LOG_ERROR("Failed to parse include in file {}:{}: '{}'", path.string(), line_no, line);
         return std::nullopt;
       }
 
@@ -121,23 +121,23 @@ std::optional<ShaderSrc> try_parse_shader_src(const std::string& src) {
       if (pragma_name == "name")
         s.name = pragma_args;
       else
-        IMPERATOR_LOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+        IMP_LOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
 
       if (!pragma_extra.empty())
-        IMPERATOR_LOG_WARN("Trailing characters on pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+        IMP_LOG_WARN("Trailing characters on pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
     } else if (RE2::FullMatch(line, pragma_no_args, &pragma_name)) {
       if (pragma_name == "vertex") {
         if (s.vertex)
-          IMPERATOR_LOG_WARN("Duplicate vertex pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
+          IMP_LOG_WARN("Duplicate vertex pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
         try_set_shader_part();
         buffer_dst = BufferDst::vertex;
       } else if (pragma_name == "fragment") {
         if (s.fragment)
-          IMPERATOR_LOG_WARN("Duplicate fragment pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
+          IMP_LOG_WARN("Duplicate fragment pragma in shader {}:{}, will ignore", s.name.value_or("undef"), line_no);
         try_set_shader_part();
         buffer_dst = BufferDst::fragment;
       } else
-        IMPERATOR_LOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
+        IMP_LOG_WARN("Unrecognized pragma in shader {}:{}: {}", s.name.value_or("undef"), line_no, line);
     } else {
       read_non_pragma_line = true;
       buffer.append(line + '\n');
@@ -251,7 +251,7 @@ GLint Shader::get_attrib_loc(const std::string& attrib_name) {
 
   GLint loc = gl.GetAttribLocation(id, attrib_name.c_str());
   if (loc == -1)
-    IMPERATOR_LOG_WARN("Attrib '{}' not found in shader ({}:{})", attrib_name, name, id);
+    IMP_LOG_WARN("Attrib '{}' not found in shader ({}:{})", attrib_name, name, id);
   attrib_locs_[attrib_name] = loc;
 
   return loc;
@@ -463,7 +463,7 @@ GLint Shader::get_uniform_loc_(const std::string& uniform_name) {
 
   GLint loc = gl.GetUniformLocation(id, uniform_name.c_str());
   if (loc == -1)
-    IMPERATOR_LOG_WARN("Uniform '{}' not found in shader ({}:{})", uniform_name, name, id);
+    IMP_LOG_WARN("Uniform '{}' not found in shader ({}:{})", uniform_name, name, id);
   uniform_locs_[uniform_name] = loc;
 
   return loc;
@@ -482,7 +482,7 @@ bool Shader::compile_shader_src_(const ShaderSrc& src) {
 
     if (check_compile_(vertex_id, GL_VERTEX_SHADER)) {
       gl.AttachShader(id, vertex_id);
-      IMPERATOR_LOG_DEBUG("Attached vertex shader ({}:{})", name, id);
+      IMP_LOG_DEBUG("Attached vertex shader ({}:{})", name, id);
     } else
       return false;
   }
@@ -496,14 +496,14 @@ bool Shader::compile_shader_src_(const ShaderSrc& src) {
 
     if (check_compile_(fragment_id, GL_FRAGMENT_SHADER)) {
       gl.AttachShader(id, fragment_id);
-      IMPERATOR_LOG_DEBUG("Attached fragment shader ({}:{})", name, id);
+      IMP_LOG_DEBUG("Attached fragment shader ({}:{})", name, id);
     } else
       return false;
   }
 
   gl.LinkProgram(id);
   if (check_link_()) {
-    IMPERATOR_LOG_DEBUG("Linked shader program ({}:{})", name, id);
+    IMP_LOG_DEBUG("Linked shader program ({}:{})", name, id);
     src_ = src;
   } else
     return false;
@@ -539,7 +539,7 @@ bool Shader::check_compile_(GLuint shader_id, GLenum type) {
         std::unreachable();
     }
 
-    IMPERATOR_LOG_ERROR("Failed to compile {} shader ({}:{})! Info log:\n{}", type_str, name, id, &info_log[0]);
+    IMP_LOG_ERROR("Failed to compile {} shader ({}:{})! Info log:\n{}", type_str, name, id, &info_log[0]);
     return false;
   }
 
@@ -556,7 +556,7 @@ bool Shader::check_link_() {
     info_log.resize(512);
     gl.GetProgramInfoLog(id, static_cast<GLsizei>(info_log.size()), nullptr, &info_log[0]);
 
-    IMPERATOR_LOG_ERROR("Failed to link shader program ({}:{})! Info log:\n{}", name, id, &info_log[0]);
+    IMP_LOG_ERROR("Failed to link shader program ({}:{})! Info log:\n{}", name, id, &info_log[0]);
     return false;
   }
 
@@ -565,13 +565,13 @@ bool Shader::check_link_() {
 
 void Shader::gen_id_() {
   id = gl.CreateProgram();
-  IMPERATOR_LOG_DEBUG("GEN_ID({}): Shader/{}", id, name);
+  IMP_LOG_DEBUG("GEN_ID({}): Shader/{}", id, name);
 }
 
 void Shader::del_id_(GLuint id) {
   if (id != 0) {
     gl.DeleteProgram(id);
-    IMPERATOR_LOG_DEBUG("DEL_ID({}): Shader/{}", id, name);
+    IMP_LOG_DEBUG("DEL_ID({}): Shader/{}", id, name);
     id = 0;
   }
 }

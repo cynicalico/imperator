@@ -13,6 +13,7 @@ include(cmake/setup_ccache.cmake)
 set(CMAKE_CXX_STANDARD 23)
 if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-") # Disable RTTI
 endif ()
 
 include(include/CMakeLists.txt)

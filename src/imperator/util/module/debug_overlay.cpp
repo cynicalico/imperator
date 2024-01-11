@@ -1,14 +1,13 @@
 #include "imperator/util/module/debug_overlay.hpp"
 
 #include "imperator/core/module/application.hpp"
+#include "imperator/core/module/glfw_callbacks.hpp"
 #include "imperator/core/module/input_mgr.hpp"
 #include "imperator/gfx/module/gfx_context.hpp"
 #include "imperator/util/io.hpp"
 #include "imperator/util/memusage.hpp"
 #include "imperator/util/sops.hpp"
 #include <fstream>
-
-#include "imperator/core/module/glfw_callbacks.hpp"
 
 namespace imp {
 // This should split a string into arguments like a command line does,
@@ -68,10 +67,10 @@ void DebugOverlay::set_console_binding(const std::string& binding) {
 }
 
 void DebugOverlay::r_initialize_(const E_Initialize& p) {
-  Hermes::sub<E_Draw>(module_name, {EPI<Application>::name}, [&](const auto& p) { r_draw_(p); });
-  Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
-  Hermes::sub<E_LogMsg>(module_name, [&](const auto& p) { r_log_msg_(p); });
-  Hermes::sub<E_GlfwWindowSize>(module_name, [&](const auto& p) { r_glfw_window_size_(p); });
+  Hermes::sub<E_Draw>(module_name, {EPI<Application>::name}, IMP_MAKE_RECEIVER(E_Draw, r_draw_));
+  Hermes::sub<E_Update>(module_name, IMP_MAKE_RECEIVER(E_Update, r_update_));
+  Hermes::sub<E_LogMsg>(module_name, IMP_MAKE_RECEIVER(E_LogMsg, r_log_msg_));
+  Hermes::sub<E_GlfwWindowSize>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowSize, r_glfw_window_size_));
 
   Module::r_initialize_(p);
 }
@@ -163,7 +162,7 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
               console_.input.clear();
               console_.enabled = false;
             } catch (std::exception& e) {
-              IMPERATOR_LOG_ERROR("Parse error: {}", e.what());
+              IMP_LOG_ERROR("Parse error: {}", e.what());
             }
           }
         }
@@ -208,7 +207,7 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
     );
     dl->AddText(
       {pos.x + 1, pos.y - text_size.y - 1},
-      ImGui::GetColorU32(rgba(color.r, color.g, color.b, color.a * a).vec4()),
+      ImGui::GetColorU32(rgba(color.r, color.g, color.b, color.a * a).gl_color()),
       s.c_str()
     );
     pos.y -= text_size.y + 2;

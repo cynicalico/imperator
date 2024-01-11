@@ -7,6 +7,30 @@
 #include "glm/ext/matrix_clip_space.hpp"
 #include <set>
 
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
+#include <dwmapi.h>
+
+#pragma comment(lib, "ntdll.lib")
+
+extern "C" {
+  typedef LONG NTSTATUS, *PNTSTATUS;
+#define STATUS_SUCCESS (0x00000000)
+
+  // Windows 2000 and newer
+  NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
+}
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
+#define DWMWA_WINDOW_CORNER_PREFERENCE 33
+#endif
+#endif
+
 namespace imp {
 std::once_flag Window::initialize_glfw_;
 
@@ -121,7 +145,7 @@ void Window::set_icon_dir(const std::filesystem::path& dir) {
   }
 
   if (icon_paths.empty()) {
-    IMPERATOR_LOG_WARN("No valid icon images found in '{}'", dir.string());
+    IMP_LOG_WARN("No valid icon images found in '{}'", dir.string());
   }
 
   set_icon(icon_paths);
@@ -153,31 +177,32 @@ void Window::set_monitor(WindowMode mode, int monitor_num, int x, int y, int w, 
 void Window::r_initialize_(const E_Initialize& p) {
   debug_overlay = module_mgr->get<DebugOverlay>();
 
-  Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, [&](const auto& p) { r_end_frame_(p); });
-  Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
+  // Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name})
+  Hermes::sub<E_EndFrame>(module_name, {EPI<Application>::name}, IMP_MAKE_RECEIVER(E_EndFrame, r_end_frame_));
+  Hermes::sub<E_Update>(module_name, IMP_MAKE_RECEIVER(E_Update, r_update_));
 
-  Hermes::sub<E_GlfwWindowClose>(module_name, [&](const auto& p) { r_glfw_window_close_(p); });
-  Hermes::sub<E_GlfwWindowSize>(module_name, [&](const auto& p) { r_glfw_window_size_(p); });
-  Hermes::sub<E_GlfwFramebufferSize>(module_name, [&](const auto& p) { r_glfw_framebuffer_size_(p); });
-  Hermes::sub<E_GlfwWindowContentScale>(module_name, [&](const auto& p) { r_glfw_window_content_scale_(p); });
-  Hermes::sub<E_GlfwWindowPos>(module_name, [&](const auto& p) { r_glfw_window_pos_(p); });
-  Hermes::sub<E_GlfwWindowIconify>(module_name, [&](const auto& p) { r_glfw_window_iconify_(p); });
-  Hermes::sub<E_GlfwWindowMaximize>(module_name, [&](const auto& p) { r_glfw_window_maximize_(p); });
-  Hermes::sub<E_GlfwWindowFocus>(module_name, [&](const auto& p) { r_glfw_window_focus_(p); });
-  Hermes::sub<E_GlfwWindowRefresh>(module_name, [&](const auto& p) { r_glfw_window_refresh_(p); });
-  Hermes::sub<E_GlfwMonitor>(module_name, [&](const auto& p) { r_glfw_monitor_(p); });
+  Hermes::sub<E_GlfwWindowClose>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowClose, r_glfw_window_close_));
+  Hermes::sub<E_GlfwWindowSize>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowSize, r_glfw_window_size_));
+  Hermes::sub<E_GlfwFramebufferSize>(module_name, IMP_MAKE_RECEIVER(E_GlfwFramebufferSize, r_glfw_framebuffer_size_));
+  Hermes::sub<E_GlfwWindowContentScale>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowContentScale, r_glfw_window_content_scale_));
+  Hermes::sub<E_GlfwWindowPos>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowPos, r_glfw_window_pos_));
+  Hermes::sub<E_GlfwWindowIconify>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowIconify, r_glfw_window_iconify_));
+  Hermes::sub<E_GlfwWindowMaximize>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowMaximize, r_glfw_window_maximize_));
+  Hermes::sub<E_GlfwWindowFocus>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowFocus, r_glfw_window_focus_));
+  Hermes::sub<E_GlfwWindowRefresh>(module_name, IMP_MAKE_RECEIVER(E_GlfwWindowRefresh, r_glfw_window_refresh_));
+  Hermes::sub<E_GlfwMonitor>(module_name, IMP_MAKE_RECEIVER(E_GlfwMonitor, r_glfw_monitor_));
 
   std::call_once(initialize_glfw_, [&]() {
     register_glfw_error_callback();
 
     if (glfwInit() == GLFW_FALSE) {
-      IMPERATOR_LOG_CRITICAL("Failed to initialize GLFW");
+      IMP_LOG_CRITICAL("Failed to initialize GLFW");
       std::exit(EXIT_FAILURE);
     }
 
     int major, minor, revision;
     glfwGetVersion(&major, &minor, &revision);
-    IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
+    IMP_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
   });
 
   monitors_ = glfwGetMonitors(&monitor_count_);
@@ -185,7 +210,7 @@ void Window::r_initialize_(const E_Initialize& p) {
   overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
   overlay_.current_monitor = detect_monitor_num();
 
-  debug_overlay->add_tab("Window", [&] {
+  debug_overlay->add_tab(module_name, [&] {
     ImGui::SeparatorText("Mode/Pos/Size");
 
     // ImGui::PushItemWidth(-FLT_MIN);
@@ -293,7 +318,7 @@ void Window::r_initialize_(const E_Initialize& p) {
 
 void Window::r_shutdown_(const E_Shutdown& p) {
   glfwTerminate();
-  IMPERATOR_LOG_DEBUG("Terminated GLFW");
+  IMP_LOG_DEBUG("Terminated GLFW");
 
   Module::r_shutdown_(p);
 }
@@ -331,7 +356,7 @@ GLFWmonitor* Window::get_monitor_(int monitor_num) {
   const auto monitors = glfwGetMonitors(&monitor_count);
 
   if (monitor_num >= monitor_count) {
-    IMPERATOR_LOG_WARN(
+    IMP_LOG_WARN(
       "Monitor {} out of range ({} available); defaulting to primary",
       monitor_num,
       monitor_count
@@ -375,6 +400,29 @@ void Window::open_(const InitializeParams& params) {
   // Default logo
   set_icon_dir(DATA_FOLDER / "logo" / "png");
 
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+  win32_hwnd_ = glfwGetWin32Window(glfw_handle_);
+  win32_saved_WndProc_ = (WNDPROC)GetWindowLongPtr(win32_hwnd_, GWLP_WNDPROC);
+  win32_force_light_mode_ = params.win32_force_light_mode;
+  win32_force_dark_mode_ = params.win32_force_dark_mode;
+
+  // Set up our Win32 pointers for callbacks
+  SetWindowLongPtr(win32_hwnd_, GWLP_USERDATA, (LONG_PTR)this);
+  SetWindowLongPtr(win32_hwnd_, GWLP_WNDPROC, (LONG_PTR)WndProc_);
+
+  set_win32_titlebar_color_(win32_hwnd_);
+
+  RTL_OSVERSIONINFOEXW win32_os_ver;
+  win32_os_ver.dwOSVersionInfoSize = sizeof(win32_os_ver);
+  NTSTATUS status = RtlGetVersion(&win32_os_ver);
+  assert(status == STATUS_SUCCESS);
+
+  if (win32_os_ver.dwBuildNumber > 22000 && params.win32_force_square_corners) {
+    DWORD p = 1;
+    DwmSetWindowAttribute(win32_hwnd_, DWMWA_WINDOW_CORNER_PREFERENCE, &p, sizeof(p));
+  }
+#endif
+
   if (params.mode == WindowMode::windowed && !is_flag_set(params.flags, WindowFlags::hidden))
     glfwShowWindow(glfw_handle_);
 }
@@ -404,11 +452,11 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   if (!glfw_handle_) {
     const char* description;
     int code = glfwGetError(&description);
-    IMPERATOR_LOG_CRITICAL("Failed to create GLFW window: ({}) {}", code, description);
+    IMP_LOG_CRITICAL("Failed to create GLFW window: ({}) {}", code, description);
     glfwTerminate();
     std::exit(EXIT_FAILURE);
   }
-  IMPERATOR_LOG_DEBUG("Created GLFW window");
+  IMP_LOG_DEBUG("Created GLFW window");
 
   if (params.mode == WindowMode::borderless) {
     int base_x, base_y;
@@ -442,11 +490,11 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   if (!glfw_handle_) {
     const char* description;
     int code = glfwGetError(&description);
-    IMPERATOR_LOG_CRITICAL("Failed to create GLFW window:\n* ({}) {}", code, description);
+    IMP_LOG_CRITICAL("Failed to create GLFW window:\n* ({}) {}", code, description);
     glfwTerminate();
     std::exit(EXIT_FAILURE);
   } else
-    IMPERATOR_LOG_DEBUG("Created GLFW window");
+    IMP_LOG_DEBUG("Created GLFW window");
 #endif
 }
 
@@ -462,11 +510,11 @@ void Window::open_windowed_(const InitializeParams& params) {
   if (!glfw_handle_) {
     const char* description;
     int code = glfwGetError(&description);
-    IMPERATOR_LOG_CRITICAL("Failed to create GLFW window:\n* ({}) {}", code, description);
+    IMP_LOG_CRITICAL("Failed to create GLFW window:\n* ({}) {}", code, description);
     glfwTerminate();
     std::exit(EXIT_FAILURE);
   }
-  IMPERATOR_LOG_DEBUG("Created GLFW window");
+  IMP_LOG_DEBUG("Created GLFW window");
 
   int base_x, base_y;
   glfwGetMonitorPos(monitor, &base_x, &base_y);
@@ -539,4 +587,55 @@ void Window::r_glfw_window_refresh_(const E_GlfwWindowRefresh& p) {}
 void Window::r_glfw_monitor_(const E_GlfwMonitor& p) {
   monitors_ = glfwGetMonitors(&monitor_count_);
 }
+
+/*******************************************************************************
+ * This code is specifically for setting the titlebar to the dark mode in
+ * Windows. This seems to work on both Windows 10 and 11, though the documentation
+ * on this page is specific to Windows 11.
+ *
+ * https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/apply-windows-themes
+ *
+ * I would assume there are some older versions of Windows 10 that this does not work on,
+ * if anyone ever uses this and has a problem then it can be adjusted
+ */
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+void Window::set_win32_titlebar_color_(HWND hwnd) {
+  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+  DWORD should_use_light_theme{};
+  DWORD should_use_light_theme_size = sizeof(should_use_light_theme);
+  LONG code = RegGetValue(
+      HKEY_CURRENT_USER,
+      R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
+      "AppsUseLightTheme",
+      RRF_RT_REG_DWORD,
+      nullptr,
+      &should_use_light_theme,
+      &should_use_light_theme_size
+  );
+
+  if (code != ERROR_SUCCESS) {
+    IMP_LOG_WARN("Failed to read Windows app theme from registry, error code {}", code);
+    return;
+  }
+
+  if ((should_use_light_theme || window->win32_force_light_mode_) && !window->win32_force_dark_mode_) {
+    const BOOL use_light_mode = 0;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_light_mode, sizeof(use_light_mode));
+  } else if ((!should_use_light_theme || window->win32_force_dark_mode_) && !window->win32_force_light_mode_) {
+    const BOOL use_dark_mode = 1;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &use_dark_mode, sizeof(use_dark_mode));
+  }
+  UpdateWindow(window->win32_hwnd_);
+}
+
+LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+  if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_)
+    set_win32_titlebar_color_(hwnd);
+
+  return CallWindowProc(window->win32_saved_WndProc_, hwnd, message, wParam, lParam);
+}
+#endif
 } // namespace imp

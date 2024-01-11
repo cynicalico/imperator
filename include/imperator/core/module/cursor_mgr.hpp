@@ -59,6 +59,6 @@ private:
 };
 } // namespace imp
 
-IMPERATOR_PRAISE_HERMES(imp::CursorMgr);
+IMP_PRAISE_HERMES(imp::CursorMgr);
 
 #endif//IMPERATOR_CORE_MODULE_CURSOR_MGR_HPP

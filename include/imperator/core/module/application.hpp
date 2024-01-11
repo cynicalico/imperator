@@ -47,6 +47,6 @@ private:
 };
 } // namespace imp
 
-IMPERATOR_PRAISE_HERMES(imp::Application);
+IMP_PRAISE_HERMES(imp::Application);
 
 #endif//IMPERATOR_CORE_MODULE_APPLICATION_HPP

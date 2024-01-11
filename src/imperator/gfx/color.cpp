@@ -281,6 +281,15 @@ RGB rgba_f(float r, float g, float b, float a) {
   };
 }
 
+glm::vec4 RGB::gl_color() const {
+  return {
+    static_cast<float>(r) / 255.0f,
+    static_cast<float>(g) / 255.0f,
+    static_cast<float>(b) / 255.0f,
+    static_cast<float>(a) / 255.0f
+  };
+}
+
 RGB RGB::get_inverse() const {
   return {255 - r, 255 - g, 255 - b, a};
 }
@@ -289,23 +298,6 @@ void RGB::invert() {
   r = 255 - r;
   g = 255 - g;
   b = 255 - b;
-}
-
-glm::vec3 RGB::vec3() const {
-  return {
-    static_cast<float>(r) / 255.0f,
-    static_cast<float>(g) / 255.0f,
-    static_cast<float>(b) / 255.0f
-  };
-}
-
-glm::vec4 RGB::vec4() const {
-  return {
-    static_cast<float>(r) / 255.0f,
-    static_cast<float>(g) / 255.0f,
-    static_cast<float>(b) / 255.0f,
-    static_cast<float>(a) / 255.0f
-  };
 }
 
 HSL RGB::to_hsl() const {
@@ -379,6 +371,10 @@ HSV hsva(const std::string& css_color, int a) {
   return internal::rgba_to_hsv(c[0], c[1], c[2], a);
 }
 
+glm::vec4 HSV::gl_color() const {
+  return to_rgb().gl_color();
+}
+
 HSV HSV::get_inverse() const {
   return {std::fmod(h + 180.0, 360.0), s, v, a};
 }
@@ -448,6 +444,10 @@ HSL hsla(double h, double s, double l, int a) {
 HSL hsla(const std::string& css_color, int a) {
   auto c = get_css_color(css_color);
   return internal::rgba_to_hsl(c[0], c[1], c[2], a);
+}
+
+glm::vec4 HSL::gl_color() const {
+  return to_rgb().gl_color();
 }
 
 HSL HSL::get_inverse() const {

@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_NONE
 #include "imperator/util/log.hpp"
 #include "imperator/util/platform.hpp"
+#include "imgui.h"
 #if defined(IMPERATOR_PLATFORM_WINDOWS)
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
@@ -13,6 +14,9 @@
 #define GLFW_EXPOSE_NATIVE_GLX
 #define GLFW_NATIVE_INCLUDE_NONE
 #include "GLFW/glfw3native.h"
+#include "glad/glx.h"
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
 #endif
 
 namespace imp {
@@ -24,26 +28,34 @@ void GfxContext::set_vsync(bool v) {
   platform_set_vsync_(v);
 }
 
+void GfxContext::clear(const Color& color, const ClearBit& mask) {
+  auto gl_color = color.gl_color();
+  gl.ClearColor(gl_color.r, gl_color.g, gl_color.b, gl_color.a);
+  gl.Clear(unwrap(mask));
+}
+
 void GfxContext::r_initialize_(const E_Initialize& p) {
+  debug_overlay = module_mgr->get<DebugOverlay>();
   window = module_mgr->get<Window>();
+
   glfwMakeContextCurrent(window->handle());
 
   gl = GladGLContext();
   auto glad_version = gladLoadGLContext(&gl, glfwGetProcAddress);
   if (glad_version == 0) {
-    IMPERATOR_LOG_CRITICAL("Failed to initialize OpenGL");
+    IMP_LOG_CRITICAL("Failed to initialize OpenGL");
     std::exit(EXIT_FAILURE);
   }
 
   version.x = GLAD_VERSION_MAJOR(glad_version);
   version.y = GLAD_VERSION_MINOR(glad_version);
-  IMPERATOR_LOG_DEBUG("Initialized OpenGL");
-  IMPERATOR_LOG_DEBUG("=> Version: {}", (char *)gl.GetString(GL_VERSION));
-  IMPERATOR_LOG_DEBUG("=> Vendor: {}", (char *)gl.GetString(GL_VENDOR));
-  IMPERATOR_LOG_DEBUG("=> Renderer: {}", (char *)gl.GetString(GL_RENDERER));
+  IMP_LOG_DEBUG("Initialized OpenGL");
+  IMP_LOG_DEBUG("=> Version: {}", (char *)gl.GetString(GL_VERSION));
+  IMP_LOG_DEBUG("=> Vendor: {}", (char *)gl.GetString(GL_VENDOR));
+  IMP_LOG_DEBUG("=> Renderer: {}", (char *)gl.GetString(GL_RENDERER));
 
   if (version.x != p.params.backend_version.x || version.y != p.params.backend_version.y)
-    IMPERATOR_LOG_WARN("Requested OpenGL v{}.{}", p.params.backend_version.x, p.params.backend_version.y);
+    IMP_LOG_WARN("Requested OpenGL v{}.{}", p.params.backend_version.x, p.params.backend_version.y);
 
   initialize_platform_extensions_();
 
@@ -58,6 +70,14 @@ void GfxContext::r_initialize_(const E_Initialize& p) {
   gl.Enable(GL_DEBUG_OUTPUT);
   gl.DebugMessageCallback(gl_message_callback_, nullptr);
 #endif
+
+  debug_overlay->add_tab(module_name, [&] {
+    ImGui::Separator();
+
+    if (bool v = is_vsync(); ImGui::Checkbox("Vsync", &v)) {
+      set_vsync(v);
+    }
+  });
 
   Module::r_initialize_(p);
 }
@@ -76,7 +96,7 @@ void GfxContext::gl_message_callback_(
   const void* userParam
 ) {
 #define STRINGIFY(e) case e: return #e;
-  std::string source_str = ([source]() {
+  const std::string source_str = std::invoke([source] {
     switch (source) {
       STRINGIFY(GL_DEBUG_SOURCE_API)
       STRINGIFY(GL_DEBUG_SOURCE_WINDOW_SYSTEM)
@@ -86,9 +106,9 @@ void GfxContext::gl_message_callback_(
       STRINGIFY(GL_DEBUG_SOURCE_OTHER)
       default: return "?";
     }
-  })();
+  });
 
-  std::string type_str = ([type]() {
+  const std::string type_str = std::invoke([type] {
     switch (type) {
       STRINGIFY(GL_DEBUG_TYPE_ERROR)
       STRINGIFY(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
@@ -101,20 +121,20 @@ void GfxContext::gl_message_callback_(
       STRINGIFY(GL_DEBUG_TYPE_OTHER)
       default: return "?";
     }
-  })();
+  });
 
   switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
-      IMPERATOR_LOG_ERROR("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
+      IMP_LOG_ERROR("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
       break;
     case GL_DEBUG_SEVERITY_MEDIUM:
-      IMPERATOR_LOG_WARN("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
+      IMP_LOG_WARN("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
       break;
     case GL_DEBUG_SEVERITY_LOW:
-      IMPERATOR_LOG_DEBUG("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
+      IMP_LOG_DEBUG("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
       break;
     case GL_DEBUG_SEVERITY_NOTIFICATION:
-      IMPERATOR_LOG_TRACE("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
+      IMP_LOG_TRACE("OpenGL: source={} type={} id={} msg={}", source_str.substr(9), type_str.substr(9), id, message);
       break;
     default:
       break; // won't happen
@@ -127,21 +147,21 @@ void GfxContext::initialize_platform_extensions_() {
   HDC dc = GetDC(glfwGetWin32Window(window->handle()));
   auto wgl_version = gladLoadWGL(dc, glfwGetProcAddress);
   if (wgl_version == 0) {
-    IMPERATOR_LOG_WARN("Failed to initialize WGL");
+    IMP_LOG_WARN("Failed to initialize WGL");
     return;
   }
 
   auto version_major = GLAD_VERSION_MAJOR(wgl_version);
   auto version_minor = GLAD_VERSION_MINOR(wgl_version);
-  IMPERATOR_LOG_DEBUG("Initialized WGL v{}.{}", version_major, version_minor);
+  IMP_LOG_DEBUG("Initialized WGL v{}.{}", version_major, version_minor);
 
   wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
   if (!wglSwapIntervalEXT)
-    IMPERATOR_LOG_WARN("Failed to load extension wglSwapIntervalEXT");
+    IMP_LOG_WARN("Failed to load extension wglSwapIntervalEXT");
 
   wglGetSwapIntervalEXT = (PFNWGLGETSWAPINTERVALEXTPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
   if (!wglGetSwapIntervalEXT)
-    IMPERATOR_LOG_WARN("Failed to load extension wglGetSwapIntervalEXT");
+    IMP_LOG_WARN("Failed to load extension wglGetSwapIntervalEXT");
 }
 
 bool GfxContext::platform_is_vsync_() const {
@@ -166,13 +186,13 @@ void GfxContext::initialize_platform_extensions_() {
   int screen = DefaultScreen(dpy);
   auto glx_version = gladLoadGLX(dpy, screen, glfwGetProcAddress);
   if (glx_version == 0) {
-    IMPERATOR_LOG_CRITICAL("Failed to initialize GLX");
+    IMP_LOG_CRITICAL("Failed to initialize GLX");
     std::exit(EXIT_FAILURE);
   }
 
   auto version_major = GLAD_VERSION_MAJOR(glx_version);
   auto version_minor = GLAD_VERSION_MINOR(glx_version);
-  IMPERATOR_LOG_DEBUG("Initialized GLX v{}.{}", version_major, version_minor);
+  IMP_LOG_DEBUG("Initialized GLX v{}.{}", version_major, version_minor);
 }
 
 bool GfxContext::platform_is_vsync_() const {

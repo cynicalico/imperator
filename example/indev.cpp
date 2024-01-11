@@ -21,8 +21,7 @@ void Indev::update(double dt) {
 }
 
 void Indev::draw() {
-  gfx->gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  gfx->gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  gfx->clear(imp::rgb("black"));
 }
 
 int main(int, char*[]) {
@@ -31,6 +30,6 @@ int main(int, char*[]) {
     .title = "Indev",
     .size = {1280, 720},
     .mode = imp::WindowMode::windowed,
-    .flags = imp::WindowFlags::centered // | imp::WindowFlags::vsync
+    .flags = imp::WindowFlags::centered | imp::WindowFlags::vsync
   });
 }

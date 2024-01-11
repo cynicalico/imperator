@@ -34,6 +34,6 @@ private:
 };
 } // namespace imp
 
-IMPERATOR_PRAISE_HERMES(imp::DearImgui);
+IMP_PRAISE_HERMES(imp::DearImgui);
 
 #endif//IMPERATOR_GFX_MODULE_DEAR_IMGUI_HPP

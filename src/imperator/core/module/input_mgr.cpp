@@ -181,13 +181,13 @@ void InputMgr::r_initialize_(const E_Initialize& p) {
     bind(a, a);
   }
 
-  Hermes::sub<E_Update>(module_name, [&](const auto& p) { r_update_(p); });
-  Hermes::sub<E_GlfwKey>(module_name, [&](const auto& p) { r_glfw_key_(p); });
-  Hermes::sub<E_GlfwCharacter>(module_name, [&](const auto& p) { r_glfw_character_(p); });
-  Hermes::sub<E_GlfwCursorPos>(module_name, [&](const auto& p) { r_glfw_cursor_pos_(p); });
-  Hermes::sub<E_GlfwCursorEnter>(module_name, [&](const auto& p) { r_glfw_cursor_enter_(p); });
-  Hermes::sub<E_GlfwMouseButton>(module_name, [&](const auto& p) { r_glfw_mouse_button_(p); });
-  Hermes::sub<E_GlfwScroll>(module_name, [&](const auto& p) { r_glfw_scroll_(p); });
+  Hermes::sub<E_Update>(module_name, IMP_MAKE_RECEIVER(E_Update, r_update_));
+  Hermes::sub<E_GlfwKey>(module_name, IMP_MAKE_RECEIVER(E_GlfwKey, r_glfw_key_));
+  Hermes::sub<E_GlfwCharacter>(module_name, IMP_MAKE_RECEIVER(E_GlfwCharacter, r_glfw_character_));
+  Hermes::sub<E_GlfwCursorPos>(module_name, IMP_MAKE_RECEIVER(E_GlfwCursorPos, r_glfw_cursor_pos_));
+  Hermes::sub<E_GlfwCursorEnter>(module_name, IMP_MAKE_RECEIVER(E_GlfwCursorEnter, r_glfw_cursor_enter_));
+  Hermes::sub<E_GlfwMouseButton>(module_name, IMP_MAKE_RECEIVER(E_GlfwMouseButton, r_glfw_mouse_button_));
+  Hermes::sub<E_GlfwScroll>(module_name, IMP_MAKE_RECEIVER(E_GlfwScroll, r_glfw_scroll_));
 
   Module::r_initialize_(p);
 }

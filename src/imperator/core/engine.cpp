@@ -18,7 +18,7 @@ bool Engine::check_pending_() {
   if (Hermes::has_pending<payload>()) {                                                      \
     auto v = Hermes::get_pending<payload>();                                                 \
     for (const auto& [name, pending]: v) {                                                   \
-      IMPERATOR_LOG_ERROR("{}: {} relies on {}", name, PayloadInfo<payload>::name, pending); \
+      IMP_LOG_ERROR("{}: {} relies on {}", name, PayloadInfo<payload>::name, pending); \
     }                                                                                        \
     no_pending = false;                                                                      \
   }

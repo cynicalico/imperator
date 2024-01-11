@@ -69,7 +69,7 @@ std::shared_ptr<T> ModuleMgr::create(const Args&&... args) {
   modules_[EPI<T>::name] = std::shared_ptr<ModuleI>(new TR(std::forward<Args>(args)...));
   modules_[EPI<T>::name]->set_module_mgr_(shared_from_this());
 
-  return std::dynamic_pointer_cast<T>(modules_[EPI<T>::name]);
+  return std::static_pointer_cast<T>(modules_[EPI<T>::name]);
 }
 
 template<typename T, typename... Args>
@@ -81,7 +81,7 @@ std::shared_ptr<T> ModuleMgr::create(const Args&&... args) {
 template<typename T>
   requires std::derived_from<T, ModuleI>
 std::shared_ptr<T> ModuleMgr::get() const {
-  return std::dynamic_pointer_cast<T>(modules_.at(EPI<T>::name));
+  return std::static_pointer_cast<T>(modules_.at(EPI<T>::name));
 }
 
 template<typename T>
@@ -91,30 +91,30 @@ Module<T>::Module(std::vector<std::string>&& dependencies) : ModuleI() {
   Hermes::sub<E_Initialize>(
     module_name,
     std::forward<std::vector<std::string>>(dependencies),
-    [&](const auto& e) {
+    IMP_MAKE_RECEIVER(E_Initialize, [&](const auto& e) {
       std::call_once(is_initialized_, [&]() { r_initialize_(e); });
-    }
+    })
   );
 
   Hermes::sub<E_Shutdown>(
     module_name,
     std::forward<std::vector<std::string>>(dependencies),
-    [&](const auto& e) {
+    IMP_MAKE_RECEIVER(E_Shutdown, [&](const auto& e) {
       std::call_once(is_shutdown_, [&]() { r_shutdown_(e); });
-    }
+    })
   );
 
-  IMPERATOR_LOG_DEBUG("Module created: {}", module_name);
+  IMP_LOG_DEBUG("Module created: {}", module_name);
 }
 
 template<typename T>
 Module<T>::~Module() {
-  IMPERATOR_LOG_DEBUG("Module destroyed: {}", module_name);
+  IMP_LOG_DEBUG("Module destroyed: {}", module_name);
 }
 
 template<typename T>
 void Module<T>::r_initialize_(const E_Initialize& e) {
-  IMPERATOR_LOG_DEBUG("Module initialized: {}", module_name);
+  IMP_LOG_DEBUG("Module initialized: {}", module_name);
 }
 
 template<typename T>
@@ -123,7 +123,7 @@ void Module<T>::r_shutdown_(const E_Shutdown& e) {
   module_mgr = nullptr;
 
   received_shutdown_ = true;
-  IMPERATOR_LOG_DEBUG("Module shutdown: {}", module_name);
+  IMP_LOG_DEBUG("Module shutdown: {}", module_name);
 }
 } // namespace imp
 

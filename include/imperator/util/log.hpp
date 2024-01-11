@@ -31,11 +31,11 @@ std::shared_ptr<spdlog::logger> logger();
 
 } // namespace imp
 
-#define IMPERATOR_LOG_TRACE(...)    SPDLOG_LOGGER_TRACE(imp::logger(), __VA_ARGS__)
-#define IMPERATOR_LOG_DEBUG(...)    SPDLOG_LOGGER_DEBUG(imp::logger(), __VA_ARGS__)
-#define IMPERATOR_LOG_INFO(...)     SPDLOG_LOGGER_INFO(imp::logger(), __VA_ARGS__)
-#define IMPERATOR_LOG_WARN(...)     SPDLOG_LOGGER_WARN(imp::logger(), __VA_ARGS__)
-#define IMPERATOR_LOG_ERROR(...)    SPDLOG_LOGGER_ERROR(imp::logger(), __VA_ARGS__)
-#define IMPERATOR_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(imp::logger(), __VA_ARGS__)
+#define IMP_LOG_TRACE(...)    SPDLOG_LOGGER_TRACE(imp::logger(), __VA_ARGS__)
+#define IMP_LOG_DEBUG(...)    SPDLOG_LOGGER_DEBUG(imp::logger(), __VA_ARGS__)
+#define IMP_LOG_INFO(...)     SPDLOG_LOGGER_INFO(imp::logger(), __VA_ARGS__)
+#define IMP_LOG_WARN(...)     SPDLOG_LOGGER_WARN(imp::logger(), __VA_ARGS__)
+#define IMP_LOG_ERROR(...)    SPDLOG_LOGGER_ERROR(imp::logger(), __VA_ARGS__)
+#define IMP_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(imp::logger(), __VA_ARGS__)
 
 #endif//IMPERATOR_UTIL_LOG_HPP
