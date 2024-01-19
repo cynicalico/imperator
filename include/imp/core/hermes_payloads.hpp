@@ -41,13 +41,7 @@ struct PayloadInfo {
 namespace imp {
 /* EVENTS */
 
-IMP_DECLARE_PAYLOAD_INTERNAL(E_Initialize,
-  const InitializeParams params;
-)
-
 IMP_DECLARE_PAYLOAD_INTERNAL(E_ShutdownEngine)
-
-IMP_DECLARE_PAYLOAD_INTERNAL(E_Shutdown)
 
 IMP_DECLARE_PAYLOAD_INTERNAL(E_LogMsg,
   std::string text;
@@ -167,7 +161,5 @@ IMP_DECLARE_PAYLOAD_INTERNAL(E_GlfwDrop,
 
 /* MESSAGES */
 } // namespace imp
-
-#undef IMP_DECLARE_PAYLOAD_INTERNAL
 
 #endif//IMP_CORE_HERMES_PAYLOADS_HPP

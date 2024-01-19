@@ -4,20 +4,62 @@
 #define GLFW_INCLUDE_NONE
 #include "imp/core/module_mgr.hpp"
 #include "imp/util/module/debug_overlay.hpp"
+#include "imp/util/enum_bitops.hpp"
 #include "imp/util/platform.hpp"
 #include "GLFW/glfw3.h"
 #include "glm/mat4x4.hpp"
 #include <mutex>
+#include <utility>
+
 #if defined(IMP_PLATFORM_WINDOWS)
 #include <windows.h>
 #endif
+
+namespace imp {
+enum class WindowMode {
+  windowed,
+  fullscreen,
+  borderless
+};
+
+enum class WindowFlags {
+  none        = 1 << 0,
+  resizable   = 1 << 1,
+  hidden      = 1 << 2,
+  undecorated = 1 << 3,
+  centered    = 1 << 4,
+  vsync       = 1 << 5,
+};
+
+struct WindowOpenParams {
+  std::string title{"Imperator Window"};
+
+  glm::ivec2 size{1, 1};
+  glm::ivec2 pos{0, 0};
+
+  int monitor_num{0};
+
+  WindowMode mode{WindowMode::windowed};
+  WindowFlags flags{WindowFlags::none};
+
+  glm::ivec2 backend_version{4, 3};
+
+  bool win32_force_light_mode{false};
+  bool win32_force_dark_mode{false};
+  bool win32_force_square_corners{true};
+};
+} // namespace imp
+
+ENUM_ENABLE_BITOPS(imp::WindowFlags);
 
 namespace imp {
 class Window : public Module<Window> {
 public:
   std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
 
-  Window() : Module({EPI<DebugOverlay>::name}) {}
+  explicit Window(WindowOpenParams params)
+    : Module({EPI<DebugOverlay>::name}),
+      initialize_params_(std::move(params)) {}
 
   GLFWwindow* handle() const { return glfw_handle_; }
 
@@ -74,6 +116,7 @@ protected:
 
 private:
   static std::once_flag initialize_glfw_;
+  WindowOpenParams initialize_params_;
 
   int detect_monitor_num() const;
   static GLFWmonitor* get_monitor_(int monitor_num);
@@ -104,9 +147,9 @@ private:
     int size[2];
   } overlay_{};
 
-  void open_(const InitializeParams& params);
-  void open_fullscreen_(const InitializeParams& params);
-  void open_windowed_(const InitializeParams& params);
+  void open_();
+  void open_fullscreen_();
+  void open_windowed_();
 
   void r_end_frame_(const E_EndFrame& p);
   void r_update_(const E_Update& p);

@@ -54,8 +54,8 @@ void GfxContext::r_initialize_(const E_Initialize& p) {
   IMP_LOG_DEBUG("=> Vendor: {}", (char *)gl.GetString(GL_VENDOR));
   IMP_LOG_DEBUG("=> Renderer: {}", (char *)gl.GetString(GL_RENDERER));
 
-  if (version.x != p.params.backend_version.x || version.y != p.params.backend_version.y)
-    IMP_LOG_WARN("Requested OpenGL v{}.{}", p.params.backend_version.x, p.params.backend_version.y);
+  if (version.x != initialize_params_.backend_version.x || version.y != initialize_params_.backend_version.y)
+    IMP_LOG_WARN("Requested OpenGL v{}.{}", initialize_params_.backend_version.x, initialize_params_.backend_version.y);
 
   initialize_platform_extensions_();
 
@@ -63,7 +63,7 @@ void GfxContext::r_initialize_(const E_Initialize& p) {
   // seem to return the correct value on an initial call unless we have
   // explicitly set something beforehand
   set_vsync(false);
-  if (is_flag_set(p.params.flags, WindowFlags::vsync))
+  if (is_flag_set(initialize_params_.flags, WindowFlags::vsync))
     set_vsync(true);
 
 #if !defined(NDEBUG)

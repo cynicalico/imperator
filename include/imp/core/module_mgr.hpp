@@ -6,6 +6,9 @@
 #include <memory>
 
 namespace imp {
+IMP_DECLARE_PAYLOAD_INTERNAL(E_Initialize)
+IMP_DECLARE_PAYLOAD_INTERNAL(E_Shutdown)
+
 class ModuleI;
 
 template<typename T>
@@ -15,11 +18,11 @@ class ModuleMgr : public std::enable_shared_from_this<ModuleMgr> {
 public:
   template<class T, class TR, typename... Args>
     requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
-  std::shared_ptr<T> create(const Args&&... args);
+  std::shared_ptr<T> create(Args&&... args);
 
   template<typename T, typename... Args>
     requires std::derived_from<T, ModuleI>
-  std::shared_ptr<T> create(const Args&&... args);
+  std::shared_ptr<T> create(Args&&... args);
 
   template<typename T>
     requires std::derived_from<T, ModuleI>
@@ -65,7 +68,7 @@ private:
 
 template<class T, class TR, typename... Args>
   requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
-std::shared_ptr<T> ModuleMgr::create(const Args&&... args) {
+std::shared_ptr<T> ModuleMgr::create(Args&&... args) {
   modules_[EPI<T>::name] = std::shared_ptr<ModuleI>(new TR(std::forward<Args>(args)...));
   modules_[EPI<T>::name]->set_module_mgr_(shared_from_this());
 
@@ -74,7 +77,7 @@ std::shared_ptr<T> ModuleMgr::create(const Args&&... args) {
 
 template<typename T, typename... Args>
   requires std::derived_from<T, ModuleI>
-std::shared_ptr<T> ModuleMgr::create(const Args&&... args) {
+std::shared_ptr<T> ModuleMgr::create(Args&&... args) {
   return create<T, T>(std::forward<Args>(args)...);
 }
 

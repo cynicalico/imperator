@@ -27,7 +27,9 @@ public:
   std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  GfxContext() : Module({EPI<DebugOverlay>::name, EPI<Window>::name}) {}
+  GfxContext(WindowOpenParams initialize_params)
+    : Module({EPI<DebugOverlay>::name, EPI<Window>::name}),
+      initialize_params_(std::move(initialize_params)) {}
 
   GladGLContext gl;
   glm::ivec2 version{};
@@ -42,6 +44,8 @@ protected:
   void r_shutdown_(const E_Shutdown& p) override;
 
 private:
+  WindowOpenParams initialize_params_;
+
   static void GLAPIENTRY gl_message_callback_(
     GLenum source,
     GLenum type,

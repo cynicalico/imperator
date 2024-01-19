@@ -186,7 +186,7 @@ void Window::r_initialize_(const E_Initialize& p) {
   });
 
   monitors_ = glfwGetMonitors(&monitor_count_);
-  open_(p.params);
+  open_();
   overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
   overlay_.current_monitor = detect_monitor_num();
 
@@ -368,30 +368,30 @@ extern "C" {
 #endif
 #endif
 
-void Window::open_(const InitializeParams& params) {
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, params.backend_version.x);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, params.backend_version.y);
+void Window::open_() {
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, initialize_params_.backend_version.x);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, initialize_params_.backend_version.y);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #if !defined(NDEBUG)
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  if (params.mode == WindowMode::fullscreen || params.mode == WindowMode::borderless)
-    open_fullscreen_(params);
+  if (initialize_params_.mode == WindowMode::fullscreen || initialize_params_.mode == WindowMode::borderless)
+    open_fullscreen_();
   else
-    open_windowed_(params);
+    open_windowed_();
 
-  mode_ = params.mode;
-  title_ = params.title;
+  mode_ = initialize_params_.mode;
+  title_ = initialize_params_.title;
 
   // This isn't sent at the beginning of the program, so we send it first
   // Sent as an immediate event in case we ever do anything special when
   // the window size is changed
-  if (params.mode == WindowMode::windowed) {
-    Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, params.size.x, params.size.y);
+  if (initialize_params_.mode == WindowMode::windowed) {
+    Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, initialize_params_.size.x, initialize_params_.size.y);
   } else {
-    GLFWmonitor* monitor = get_monitor_(params.monitor_num);
+    GLFWmonitor* monitor = get_monitor_(initialize_params_.monitor_num);
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
     Hermes::send_nowait<E_GlfwWindowSize>(glfw_handle_, mode->width, mode->height);
@@ -405,8 +405,8 @@ void Window::open_(const InitializeParams& params) {
 #if defined(IMP_PLATFORM_WINDOWS)
   win32_hwnd_ = glfwGetWin32Window(glfw_handle_);
   win32_saved_WndProc_ = (WNDPROC)GetWindowLongPtr(win32_hwnd_, GWLP_WNDPROC);
-  win32_force_light_mode_ = params.win32_force_light_mode;
-  win32_force_dark_mode_ = params.win32_force_dark_mode;
+  win32_force_light_mode_ = initialize_params_.win32_force_light_mode;
+  win32_force_dark_mode_ = initialize_params_.win32_force_dark_mode;
 
   // Set up our Win32 pointers for callbacks
   SetWindowLongPtr(win32_hwnd_, GWLP_USERDATA, (LONG_PTR)this);
@@ -419,19 +419,19 @@ void Window::open_(const InitializeParams& params) {
   NTSTATUS status = RtlGetVersion(&win32_os_ver);
   assert(status == STATUS_SUCCESS);
 
-  if (win32_os_ver.dwBuildNumber > 22000 && params.win32_force_square_corners) {
+  if (win32_os_ver.dwBuildNumber > 22000 && initialize_params_.win32_force_square_corners) {
     DWORD p = 1;
     DwmSetWindowAttribute(win32_hwnd_, DWMWA_WINDOW_CORNER_PREFERENCE, &p, sizeof(p));
   }
 #endif
 
-  if (params.mode == WindowMode::windowed && !is_flag_set(params.flags, WindowFlags::hidden))
+  if (initialize_params_.mode == WindowMode::windowed && !is_flag_set(initialize_params_.flags, WindowFlags::hidden))
     glfwShowWindow(glfw_handle_);
 }
 
-void Window::open_fullscreen_(const InitializeParams& params) {
+void Window::open_fullscreen_() {
 #if defined(IMP_PLATFORM_WINDOWS)
-  GLFWmonitor* monitor = get_monitor_(params.monitor_num);
+  GLFWmonitor* monitor = get_monitor_(initialize_params_.monitor_num);
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Why is this necessary?
@@ -440,16 +440,16 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  if (params.mode == WindowMode::borderless) {
+  if (initialize_params_.mode == WindowMode::borderless) {
     // borderless = true;
 
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
     // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     // This seems to cause flickering
     glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
-    glfw_handle_ = glfwCreateWindow(mode->width, mode->height, params.title.c_str(), nullptr, nullptr);
+    glfw_handle_ = glfwCreateWindow(mode->width, mode->height, initialize_params_.title.c_str(), nullptr, nullptr);
   } else
-    glfw_handle_ = glfwCreateWindow(mode->width, mode->height, params.title.c_str(), monitor, nullptr);
+    glfw_handle_ = glfwCreateWindow(mode->width, mode->height, initialize_params_.title.c_str(), monitor, nullptr);
 
   if (!glfw_handle_) {
     const char* description;
@@ -460,7 +460,7 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   }
   IMP_LOG_DEBUG("Created GLFW window");
 
-  if (params.mode == WindowMode::borderless) {
+  if (initialize_params_.mode == WindowMode::borderless) {
     int base_x, base_y;
     glfwGetMonitorPos(monitor, &base_x, &base_y);
     glfwSetWindowPos(glfw_handle_, base_x, base_y);
@@ -473,7 +473,7 @@ void Window::open_fullscreen_(const InitializeParams& params) {
    * way to tell ahead of time.
    */
 
-  GLFWmonitor* monitor = get_monitor_(params.monitor_num);
+  GLFWmonitor* monitor = get_monitor_(initialize_params_.monitor_num);
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Why is this necessary?
@@ -482,13 +482,13 @@ void Window::open_fullscreen_(const InitializeParams& params) {
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  if (params.mode == WindowMode::borderless) {
+  if (initialize_params_.mode == WindowMode::borderless) {
     //    borderless = true;
 
     glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
   }
 
-  glfw_handle_ = glfwCreateWindow(mode->width, mode->height, params.title.c_str(), monitor, nullptr);
+  glfw_handle_ = glfwCreateWindow(mode->width, mode->height, initialize_params_.title.c_str(), monitor, nullptr);
   if (!glfw_handle_) {
     const char* description;
     int code = glfwGetError(&description);
@@ -500,15 +500,15 @@ void Window::open_fullscreen_(const InitializeParams& params) {
 #endif
 }
 
-void Window::open_windowed_(const InitializeParams& params) {
-  GLFWmonitor* monitor = get_monitor_(params.monitor_num);
+void Window::open_windowed_() {
+  GLFWmonitor* monitor = get_monitor_(initialize_params_.monitor_num);
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-  glfwWindowHint(GLFW_RESIZABLE, is_flag_set(params.flags, WindowFlags::resizable) ? GLFW_TRUE : GLFW_FALSE);
-  glfwWindowHint(GLFW_DECORATED, is_flag_set(params.flags, WindowFlags::undecorated) ? GLFW_FALSE : GLFW_TRUE);
+  glfwWindowHint(GLFW_RESIZABLE, is_flag_set(initialize_params_.flags, WindowFlags::resizable) ? GLFW_TRUE : GLFW_FALSE);
+  glfwWindowHint(GLFW_DECORATED, is_flag_set(initialize_params_.flags, WindowFlags::undecorated) ? GLFW_FALSE : GLFW_TRUE);
 
-  glfw_handle_ = glfwCreateWindow(params.size.x, params.size.y, params.title.c_str(), nullptr, nullptr);
+  glfw_handle_ = glfwCreateWindow(initialize_params_.size.x, initialize_params_.size.y, initialize_params_.title.c_str(), nullptr, nullptr);
   if (!glfw_handle_) {
     const char* description;
     int code = glfwGetError(&description);
@@ -520,17 +520,17 @@ void Window::open_windowed_(const InitializeParams& params) {
 
   int base_x, base_y;
   glfwGetMonitorPos(monitor, &base_x, &base_y);
-  if (is_flag_set(params.flags, WindowFlags::centered))
+  if (is_flag_set(initialize_params_.flags, WindowFlags::centered))
     glfwSetWindowPos(
       glfw_handle_,
-      base_x + (mode->width - params.size.x) / 2,
-      base_y + (mode->height - params.size.y) / 2
+      base_x + (mode->width - initialize_params_.size.x) / 2,
+      base_y + (mode->height - initialize_params_.size.y) / 2
     );
   else
     glfwSetWindowPos(
       glfw_handle_,
-      base_x + params.pos.x,
-      base_y + params.pos.y
+      base_x + initialize_params_.pos.x,
+      base_y + initialize_params_.pos.y
     );
 }
 

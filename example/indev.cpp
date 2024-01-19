@@ -26,7 +26,7 @@ void Indev::draw() {
 
 int main(int, char*[]) {
   auto e = imp::Engine();
-  e.run_application<Indev>(imp::InitializeParams{
+  e.run_application<Indev>(imp::WindowOpenParams{
     .title = "Indev",
     .size = {1280, 720},
     .mode = imp::WindowMode::windowed,
