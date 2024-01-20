@@ -17,7 +17,7 @@ public:
   std::shared_ptr<DearImgui> dear{nullptr};
   std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
   std::shared_ptr<InputMgr> inputs{nullptr};
-  std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<GfxContext> ctx{nullptr};
   std::shared_ptr<TimerMgr> timers{nullptr};
   std::shared_ptr<Window> window{nullptr};
 

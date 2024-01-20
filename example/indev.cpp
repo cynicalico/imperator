@@ -12,16 +12,22 @@ public:
 void Indev::initialize() {
   debug_overlay->set_flying_log_enabled(true);
   debug_overlay->set_console_binding("grave_accent");
+
+  // gfx = module_mgr->create<imp::Gfx2D>();
 }
 
 void Indev::update(double dt) {
   if (inputs->pressed("escape")) {
     window->set_should_close(true);
   }
+
+  if (inputs->pressed("1")) {
+    // gfx->say_hello();
+  }
 }
 
 void Indev::draw() {
-  gfx->clear(imp::rgb("black"));
+  ctx->clear(imp::rgb("black"));
 }
 
 int main(int, char*[]) {

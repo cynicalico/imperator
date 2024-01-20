@@ -23,12 +23,12 @@ enum class WindowMode {
 };
 
 enum class WindowFlags {
-  none        = 1 << 0,
-  resizable   = 1 << 1,
-  hidden      = 1 << 2,
+  none = 1 << 0,
+  resizable = 1 << 1,
+  hidden = 1 << 2,
   undecorated = 1 << 3,
-  centered    = 1 << 4,
-  vsync       = 1 << 5,
+  centered = 1 << 4,
+  vsync = 1 << 5,
 };
 
 struct WindowOpenParams {

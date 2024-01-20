@@ -29,7 +29,7 @@ public:
 
   template<typename T>
     requires std::derived_from<T, Application>
-  void run_application(WindowOpenParams initialize_params);
+  void run_application(const WindowOpenParams& initialize_params);
 
 private:
   FrameCounter frame_counter_{};
@@ -46,7 +46,7 @@ IMP_PRAISE_HERMES(imp::Engine);
 namespace imp {
 template<typename T>
   requires std::derived_from<T, Application>
-void Engine::run_application(const WindowOpenParams initialize_params) {
+void Engine::run_application(const WindowOpenParams& initialize_params) {
   // Make sure the DebugOverlay gets *all* log messages from the beginning
   Hermes::presub_cache<E_LogMsg>(EPI<DebugOverlay>::name);
 
@@ -62,9 +62,9 @@ void Engine::run_application(const WindowOpenParams initialize_params) {
   module_mgr_->create<TimerMgr>();
   module_mgr_->create<Window>(initialize_params);
 
-  Hermes::send_nowait<E_Initialize>();
-
   if (check_pending_()) {
+    Hermes::send_nowait<E_Initialize>();
+
     while (!received_shutdown_) {
       Hermes::send_nowait<E_Update>(frame_counter_.dt(), frame_counter_.fps());
 
@@ -76,9 +76,9 @@ void Engine::run_application(const WindowOpenParams initialize_params) {
 
       glfwPollEvents();
     }
-  }
 
-  Hermes::send_nowait_rev<E_Shutdown>();
+    Hermes::send_nowait_rev<E_Shutdown>();
+  }
 }
 } // namespace imp
 

@@ -9,6 +9,9 @@
 #include "imp/core/prio_list.hpp"
 #include "imp/core/type_id.hpp"
 
+#include "imp/gfx/module/gfx_2d.hpp"
+#include "imp/gfx/color.hpp"
+
 #include "imp/util/averagers.hpp"
 #include "imp/util/enum_bitops.hpp"
 #include "imp/util/helpers.hpp"

@@ -6,7 +6,7 @@ void Application::r_initialize_(const E_Initialize& e) {
   dear = module_mgr->get<DearImgui>();
   debug_overlay = module_mgr->get<DebugOverlay>();
   inputs = module_mgr->get<InputMgr>();
-  gfx = module_mgr->get<GfxContext>();
+  ctx = module_mgr->get<GfxContext>();
   timers = module_mgr->get<TimerMgr>();
   window = module_mgr->get<Window>();
 

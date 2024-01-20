@@ -24,6 +24,14 @@ public:
     requires std::derived_from<T, ModuleI>
   std::shared_ptr<T> create(Args&&... args);
 
+  template<class T, class TR, typename... Args>
+    requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
+  std::shared_ptr<T> create_and_init(Args&&... args);
+
+  template<typename T, typename... Args>
+    requires std::derived_from<T, ModuleI>
+  std::shared_ptr<T> create_and_init(Args&&... args);
+
   template<typename T>
     requires std::derived_from<T, ModuleI>
   std::shared_ptr<T> get() const;
@@ -79,6 +87,22 @@ template<typename T, typename... Args>
   requires std::derived_from<T, ModuleI>
 std::shared_ptr<T> ModuleMgr::create(Args&&... args) {
   return create<T, T>(std::forward<Args>(args)...);
+}
+
+template<class T, class TR, typename... Args>
+  requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
+std::shared_ptr<T> ModuleMgr::create_and_init(Args&&... args) {
+  auto m = create<T, TR>(std::forward<Args>(args)...);
+  Hermes::send_nowait<E_Initialize>();
+  return m;
+}
+
+template<typename T, typename... Args>
+  requires std::derived_from<T, ModuleI>
+std::shared_ptr<T> ModuleMgr::create_and_init(Args&&... args) {
+  auto m = create<T>(std::forward<Args>(args)...);
+  Hermes::send_nowait<E_Initialize>();
+  return m;
 }
 
 template<typename T>

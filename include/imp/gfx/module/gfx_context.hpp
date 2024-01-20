@@ -27,7 +27,7 @@ public:
   std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  GfxContext(WindowOpenParams initialize_params)
+  explicit GfxContext(WindowOpenParams initialize_params)
     : Module({EPI<DebugOverlay>::name, EPI<Window>::name}),
       initialize_params_(std::move(initialize_params)) {}
 

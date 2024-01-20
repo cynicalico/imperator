@@ -14,6 +14,7 @@ set(imp_SRC_FILES ${imp_SRC_FILES}
         gfx/gl/tex_image.cpp
         gfx/gl/vertex_array.cpp
         gfx/module/dear_imgui.cpp
+        gfx/module/gfx_2d.cpp
         gfx/module/gfx_context.cpp
         gfx/module/shader_mgr.cpp
         gfx/color.cpp
