@@ -28,6 +28,24 @@ std::vector<std::string> argument_split(const std::string& s) {
   return args;
 }
 
+DebugOverlay::DebugOverlay(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(module_mgr) {
+  IMP_HERMES_SUB(E_Draw, module_name, r_draw_, Application);
+  IMP_HERMES_SUB(E_Update, module_name, r_update_);
+  IMP_HERMES_SUB(E_LogMsg, module_name, r_log_msg_);
+  IMP_HERMES_SUB(E_GlfwWindowSize, module_name, r_glfw_window_size_);
+}
+
+void DebugOverlay::lateinit_modules() {
+  // Late-initialization of required modules
+  inputs = module_mgr.lock()->get<InputMgr>();
+  gfx = module_mgr.lock()->get<GfxContext>();
+}
+
+// void DebugOverlay::free_modules() {
+//   inputs.reset();
+//   gfx.reset();
+// }
+
 void DebugOverlay::set_flying_log_enabled(bool enabled) {
   flying_log_.enabled = enabled;
 }
@@ -66,24 +84,7 @@ void DebugOverlay::set_console_binding(const std::string& binding) {
   console_.binding = binding;
 }
 
-void DebugOverlay::r_initialize_(const E_Initialize& p) {
-  IMP_HERMES_SUB(E_Draw, module_name, r_draw_, Application);
-  IMP_HERMES_SUB(E_Update, module_name, r_update_);
-  IMP_HERMES_SUB(E_LogMsg, module_name, r_log_msg_);
-  IMP_HERMES_SUB(E_GlfwWindowSize, module_name, r_glfw_window_size_);
-
-  Module::r_initialize_(p);
-}
-
-void DebugOverlay::r_shutdown_(const E_Shutdown& p) {
-  Module::r_shutdown_(p);
-}
-
 void DebugOverlay::r_update_(const E_Update& p) {
-  // Late-initialization of required modules
-  if (!inputs) { inputs = module_mgr->get<InputMgr>(); }
-  if (!gfx) { gfx = module_mgr->get<GfxContext>(); }
-
   Hermes::poll<E_GlfwWindowSize>(module_name);
 
   fps = p.fps;
@@ -96,9 +97,9 @@ void DebugOverlay::r_update_(const E_Update& p) {
   }
   Hermes::poll<E_LogMsg>(module_name);
 
-  if (inputs->pressed(console_.binding)) {
+  if (inputs.lock()->pressed(console_.binding)) {
     console_.enabled = true;
-    set_ignore_imgui_capture(inputs->get_glfw_actions(console_.binding), GLFW_RELEASE);
+    set_ignore_imgui_capture(inputs.lock()->get_glfw_actions(console_.binding), GLFW_RELEASE);
   }
 }
 
@@ -107,7 +108,7 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0, 0});
   ImGui::SetNextWindowPos({WINDOW_EDGE_PADDING, WINDOW_EDGE_PADDING});
   if (ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize)) {
-    const auto vsync_str = gfx->is_vsync() ? " (vsync)" : "";
+    const auto vsync_str = gfx.lock()->is_vsync() ? " (vsync)" : "";
     ImGui::Text("%s", fmt::format("{:.2f} fps{}{}", fps, vsync_str, BUILD_TYPE).c_str());
     ImGui::Text("%s", fmt::format("{:.2f} MB", imp::memusage_mb()).c_str());
   }

@@ -11,18 +11,12 @@
 namespace imp {
 class DearImgui : public Module<DearImgui> {
 public:
-  DearImgui() : Module({
-    EPI<GfxContext>::name,
-    EPI<Window>::name,
-  }) {}
+  DearImgui(const std::weak_ptr<ModuleMgr>& module_mgr);
+  ~DearImgui() override;
 
   void new_frame();
 
   void render();
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   ImGuiContext* ctx_{nullptr};

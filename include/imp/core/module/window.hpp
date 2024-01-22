@@ -57,9 +57,8 @@ class Window : public Module<Window> {
 public:
   std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
 
-  explicit Window(WindowOpenParams params)
-    : Module({EPI<DebugOverlay>::name}),
-      initialize_params_(std::move(params)) {}
+  explicit Window(const std::weak_ptr<ModuleMgr>& module_mgr, WindowOpenParams params);
+  ~Window() override;
 
   GLFWwindow* handle() const { return glfw_handle_; }
 
@@ -109,10 +108,6 @@ public:
     int x, int y,
     int w, int h
   );
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   static std::once_flag initialize_glfw_;

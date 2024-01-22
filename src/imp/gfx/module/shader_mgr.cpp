@@ -3,6 +3,10 @@
 #include "imp/util/rnd.hpp"
 
 namespace imp {
+ShaderMgr::ShaderMgr(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
+  gfx = module_mgr.lock()->get<GfxContext>();
+}
+
 std::shared_ptr<Shader> ShaderMgr::get(const std::string& name) {
   // TODO: Make this return optional if the name doesn't exist
   return shaders_[name];
@@ -17,15 +21,5 @@ std::shared_ptr<Shader> ShaderMgr::compile(const std::string& name, const Shader
 
 std::shared_ptr<Shader> ShaderMgr::compile(const ShaderSrc& src) {
   return compile(src.name.value_or(rnd::base58(11)), src);
-}
-
-void ShaderMgr::r_initialize_(const E_Initialize& p) {
-  gfx = module_mgr->get<GfxContext>();
-
-  Module::r_initialize_(p);
-}
-
-void ShaderMgr::r_shutdown_(const E_Shutdown& p) {
-  Module::r_shutdown_(p);
 }
 } // namespace imp

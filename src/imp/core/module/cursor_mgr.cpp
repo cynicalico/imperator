@@ -16,17 +16,8 @@ void Cursor::set() {
   mgr->set_(glfw_cursor_);
 }
 
-std::shared_ptr<Cursor> CursorMgr::create(const std::filesystem::path& path, int xhot, int yhot) {
-  auto image_data = ImageData(path);
-  auto glfw_image = image_data.glfw_image();
-  auto glfw_cursor = glfwCreateCursor(&glfw_image, xhot, yhot);
-  cursors_.emplace_back(std::make_shared<Cursor>(shared_from_this(), glfw_cursor));
-
-  return cursors_.back();
-}
-
-void CursorMgr::r_initialize_(const E_Initialize& p) {
-  window = module_mgr->get<Window>();
+CursorMgr::CursorMgr(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
+  window = module_mgr.lock()->get<Window>();
 
   standard_cursors_[ImGuiMouseCursor_Arrow] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
   standard_cursors_[ImGuiMouseCursor_TextInput] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
@@ -40,16 +31,21 @@ void CursorMgr::r_initialize_(const E_Initialize& p) {
   curr_cursor_ = standard_cursors_[ImGuiMouseCursor_Arrow];
 
   IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_, Application);
-
-  Module::r_initialize_(p);
 }
 
-void CursorMgr::r_shutdown_(const E_Shutdown& p) {
+CursorMgr::~CursorMgr() {
   for (auto& p: standard_cursors_)
     glfwDestroyCursor(p.second);
   standard_cursors_.clear();
+}
 
-  Module::r_shutdown_(p);
+std::shared_ptr<Cursor> CursorMgr::create(const std::filesystem::path& path, int xhot, int yhot) {
+  auto image_data = ImageData(path);
+  auto glfw_image = image_data.glfw_image();
+  auto glfw_cursor = glfwCreateCursor(&glfw_image, xhot, yhot);
+  cursors_.emplace_back(std::make_shared<Cursor>(shared_from_this(), glfw_cursor));
+
+  return cursors_.back();
 }
 
 bool CursorMgr::is_imgui_hovered_() {

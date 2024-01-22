@@ -20,23 +20,10 @@
 #endif
 
 namespace imp {
-bool GfxContext::is_vsync() const {
-  return platform_is_vsync_();
-}
-
-void GfxContext::set_vsync(bool v) {
-  platform_set_vsync_(v);
-}
-
-void GfxContext::clear(const Color& color, const ClearBit& mask) {
-  auto gl_color = color.gl_color();
-  gl.ClearColor(gl_color.r, gl_color.g, gl_color.b, gl_color.a);
-  gl.Clear(unwrap(mask));
-}
-
-void GfxContext::r_initialize_(const E_Initialize& p) {
-  debug_overlay = module_mgr->get<DebugOverlay>();
-  window = module_mgr->get<Window>();
+GfxContext::GfxContext(const std::weak_ptr<ModuleMgr>& module_mgr, WindowOpenParams initialize_params)
+  : Module(module_mgr), initialize_params_(std::move(initialize_params)) {
+  debug_overlay = module_mgr.lock()->get<DebugOverlay>();
+  window = module_mgr.lock()->get<Window>();
 
   glfwMakeContextCurrent(window->handle());
 
@@ -78,12 +65,20 @@ void GfxContext::r_initialize_(const E_Initialize& p) {
       set_vsync(v);
     }
   });
-
-  Module::r_initialize_(p);
 }
 
-void GfxContext::r_shutdown_(const E_Shutdown& p) {
-  Module::r_shutdown_(p);
+bool GfxContext::is_vsync() const {
+  return platform_is_vsync_();
+}
+
+void GfxContext::set_vsync(bool v) {
+  platform_set_vsync_(v);
+}
+
+void GfxContext::clear(const Color& color, const ClearBit& mask) {
+  auto gl_color = color.gl_color();
+  gl.ClearColor(gl_color.r, gl_color.g, gl_color.b, gl_color.a);
+  gl.Clear(unwrap(mask));
 }
 
 void GfxContext::gl_message_callback_(

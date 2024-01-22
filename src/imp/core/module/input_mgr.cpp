@@ -48,6 +48,34 @@ std::vector<std::string> InputMgr::all_str_buttons_{
 std::unordered_map<int, std::string> InputMgr::glfw_button_to_str_{};
 std::unordered_map<std::string, int> InputMgr::str_to_glfw_button_{};
 
+InputMgr::InputMgr(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
+  std::call_once(initialize_glfw_action_maps_, [&] {
+    for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
+      glfw_key_to_str_[all_glfw_keys_[i]] = all_str_keys_[i];
+      str_to_glfw_key_[all_str_keys_[i]] = all_glfw_keys_[i];
+    }
+    for (std::size_t i = 0; i < all_glfw_buttons_.size(); ++i) {
+      glfw_button_to_str_[all_glfw_buttons_[i]] = all_str_buttons_[i];
+      str_to_glfw_button_[all_str_buttons_[i]] = all_glfw_buttons_[i];
+    }
+  });
+
+  for (const auto& a: all_str_keys_) {
+    bind(a, a);
+  }
+  for (const auto& a: all_str_buttons_) {
+    bind(a, a);
+  }
+
+  IMP_HERMES_SUB(E_Update, module_name, r_update_);
+  IMP_HERMES_SUB(E_GlfwKey, module_name, r_glfw_key_);
+  IMP_HERMES_SUB(E_GlfwCharacter, module_name, r_glfw_character_);
+  IMP_HERMES_SUB(E_GlfwCursorPos, module_name, r_glfw_cursor_pos_);
+  IMP_HERMES_SUB(E_GlfwCursorEnter, module_name, r_glfw_cursor_enter_);
+  IMP_HERMES_SUB(E_GlfwMouseButton, module_name, r_glfw_mouse_button_);
+  IMP_HERMES_SUB(E_GlfwScroll, module_name, r_glfw_scroll_);
+}
+
 void InputMgr::bind(const std::string& name, const std::string& action) {
   if (auto it = bindings_.find(name); it == bindings_.end())
     bindings_[name] = {};
@@ -160,40 +188,6 @@ bool InputMgr::mouse_entered() const {
 
 bool InputMgr::mouse_left() const {
   return mouse_state_.entered == -1;
-}
-
-void InputMgr::r_initialize_(const E_Initialize& p) {
-  std::call_once(initialize_glfw_action_maps_, [&] {
-    for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
-      glfw_key_to_str_[all_glfw_keys_[i]] = all_str_keys_[i];
-      str_to_glfw_key_[all_str_keys_[i]] = all_glfw_keys_[i];
-    }
-    for (std::size_t i = 0; i < all_glfw_buttons_.size(); ++i) {
-      glfw_button_to_str_[all_glfw_buttons_[i]] = all_str_buttons_[i];
-      str_to_glfw_button_[all_str_buttons_[i]] = all_glfw_buttons_[i];
-    }
-  });
-
-  for (const auto& a: all_str_keys_) {
-    bind(a, a);
-  }
-  for (const auto& a: all_str_buttons_) {
-    bind(a, a);
-  }
-
-  IMP_HERMES_SUB(E_Update, module_name, r_update_);
-  IMP_HERMES_SUB(E_GlfwKey, module_name, r_glfw_key_);
-  IMP_HERMES_SUB(E_GlfwCharacter, module_name, r_glfw_character_);
-  IMP_HERMES_SUB(E_GlfwCursorPos, module_name, r_glfw_cursor_pos_);
-  IMP_HERMES_SUB(E_GlfwCursorEnter, module_name, r_glfw_cursor_enter_);
-  IMP_HERMES_SUB(E_GlfwMouseButton, module_name, r_glfw_mouse_button_);
-  IMP_HERMES_SUB(E_GlfwScroll, module_name, r_glfw_scroll_);
-
-  Module::r_initialize_(p);
-}
-
-void InputMgr::r_shutdown_(const E_Shutdown& p) {
-  Module::r_shutdown_(p);
 }
 
 void InputMgr::r_update_(const E_Update& p) {

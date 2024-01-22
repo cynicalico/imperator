@@ -32,7 +32,7 @@ struct no_op {
 
 class TimerMgr : public Module<TimerMgr> {
 public:
-  TimerMgr(): Module() {}
+  TimerMgr(const std::weak_ptr<ModuleMgr>& module_mgr);
 
   void cancel(const std::string& tag);
   void cancel_all();
@@ -98,10 +98,6 @@ public:
 
   template<UntilFunc T, AfterFunc T2 = no_op>
   std::string until(double delay, T&& f, T2&& after_f = T2());
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   struct TimerI {

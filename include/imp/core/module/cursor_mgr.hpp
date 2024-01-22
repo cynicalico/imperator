@@ -31,13 +31,10 @@ class CursorMgr : public Module<CursorMgr>, public std::enable_shared_from_this<
 public:
   std::shared_ptr<Window> window{nullptr};
 
-  CursorMgr() : Module({EPI<Window>::name}) {}
+  explicit CursorMgr(const std::weak_ptr<ModuleMgr>& module_mgr);
+  ~CursorMgr() override;
 
   std::shared_ptr<Cursor> create(const std::filesystem::path& path, int xhot, int yhot);
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   GLFWcursor* curr_cursor_{nullptr};

@@ -4,16 +4,19 @@ const auto CWD = std::filesystem::current_path();
 
 class Indev : public imp::Application {
 public:
-  void initialize() override;
+  std::shared_ptr<imp::Gfx2D> gfx{nullptr};
+
+  explicit Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr);
+
   void update(double dt) override;
   void draw() override;
 };
 
-void Indev::initialize() {
+Indev::Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr) : Application(module_mgr) {
   debug_overlay->set_flying_log_enabled(true);
   debug_overlay->set_console_binding("grave_accent");
 
-  // gfx = module_mgr->create<imp::Gfx2D>();
+  gfx = module_mgr.lock()->create<imp::Gfx2D>();
 }
 
 void Indev::update(double dt) {
@@ -22,7 +25,7 @@ void Indev::update(double dt) {
   }
 
   if (inputs->pressed("1")) {
-    // gfx->say_hello();
+    gfx->say_hello();
   }
 }
 
@@ -31,8 +34,7 @@ void Indev::draw() {
 }
 
 int main(int, char*[]) {
-  auto e = imp::Engine();
-  e.run_application<Indev>(imp::WindowOpenParams{
+  imp::Engine().run_application<Indev>(imp::WindowOpenParams{
     .title = "Indev",
     .size = {1280, 720},
     .mode = imp::WindowMode::windowed,

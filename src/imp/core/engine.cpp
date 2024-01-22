@@ -21,9 +21,7 @@ bool Engine::check_pending_() {
     no_pending = false;                                                                \
   }
 
-  CHECK(E_Initialize)
   CHECK(E_ShutdownEngine)
-  CHECK(E_Shutdown)
   CHECK(E_LogMsg)
   CHECK(E_StartFrame)
   CHECK(E_Draw)

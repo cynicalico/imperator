@@ -16,16 +16,15 @@ using ConsoleCallbackFunc = std::function<void(argparse::ArgumentParser&)>;
 
 class DebugOverlay : public Module<DebugOverlay> {
 public:
-  std::shared_ptr<InputMgr> inputs{nullptr};
-  std::shared_ptr<GfxContext> gfx{nullptr};
+  std::weak_ptr<InputMgr> inputs;
+  std::weak_ptr<GfxContext> gfx;
 
-  /* ImGui is required for display
-   * GfxContext is required for vsync status
-   *
-   * Required modules are not listed as dependencies because this module must be
-   * initialized first so other modules can add controls if they desire.
-   */
-  DebugOverlay() = default;
+  explicit DebugOverlay(const std::weak_ptr<ModuleMgr>& module_mgr);
+
+  // DebugOverlay needs to be initialized first to ensure it can be used
+  // by anything that wants it, but also uses some modules to get information
+  // This is a circular relationship, and shared pointers cannot free this automatically
+  void lateinit_modules();
 
   template<typename T>
   void add_tab(const std::string& name, T&& f);
@@ -41,10 +40,6 @@ public:
     const ConsoleCallbackFunc&& callback
   );
   void set_console_binding(const std::string& binding);
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   const float WINDOW_EDGE_PADDING = 4.0f;

@@ -10,6 +10,151 @@
 namespace imp {
 std::once_flag Window::initialize_glfw_;
 
+Window::Window(const std::weak_ptr<ModuleMgr>& module_mgr, WindowOpenParams params)
+  : Module(module_mgr), initialize_params_(std::move(params)) {
+  debug_overlay = module_mgr.lock()->get<DebugOverlay>();
+
+  IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_, Application);
+  IMP_HERMES_SUB(E_Update, module_name, r_update_);
+
+  IMP_HERMES_SUB(E_GlfwWindowClose, module_name, r_glfw_window_close_);
+  IMP_HERMES_SUB(E_GlfwWindowSize, module_name, r_glfw_window_size_);
+  IMP_HERMES_SUB(E_GlfwFramebufferSize, module_name, r_glfw_framebuffer_size_);
+  IMP_HERMES_SUB(E_GlfwWindowContentScale, module_name, r_glfw_window_content_scale_);
+  IMP_HERMES_SUB(E_GlfwWindowPos, module_name, r_glfw_window_pos_);
+  IMP_HERMES_SUB(E_GlfwWindowIconify, module_name, r_glfw_window_iconify_);
+  IMP_HERMES_SUB(E_GlfwWindowMaximize, module_name, r_glfw_window_maximize_);
+  IMP_HERMES_SUB(E_GlfwWindowFocus, module_name, r_glfw_window_focus_);
+  IMP_HERMES_SUB(E_GlfwWindowRefresh, module_name, r_glfw_window_refresh_);
+  IMP_HERMES_SUB(E_GlfwMonitor, module_name, r_glfw_monitor_);
+
+  std::call_once(initialize_glfw_, [&]() {
+    register_glfw_error_callback();
+
+    if (glfwInit() == GLFW_FALSE) {
+      IMP_LOG_CRITICAL("Failed to initialize GLFW");
+      std::exit(EXIT_FAILURE);
+    }
+
+    int major, minor, revision;
+    glfwGetVersion(&major, &minor, &revision);
+    IMP_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
+  });
+
+  monitors_ = glfwGetMonitors(&monitor_count_);
+  open_();
+  overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
+  overlay_.current_monitor = detect_monitor_num();
+
+  debug_overlay->add_tab(module_name, [&] {
+    ImGui::SeparatorText("Mode/Pos/Size");
+
+    // ImGui::PushItemWidth(-FLT_MIN);
+    if (ImGui::BeginCombo("Mode", overlay_.modes[overlay_.current_mode].second.c_str())) {
+      for (std::size_t i = 0; i < overlay_.modes.size(); ++i) {
+        const bool is_selected = overlay_.current_mode == i;
+        if (ImGui::Selectable(overlay_.modes[i].second.c_str(), is_selected)) {
+          overlay_.current_mode = i;
+        }
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+    // ImGui::PopItemWidth();
+
+    const auto mname = [](const char* name, int i) {
+      return fmt::format("{}: {}", i, name);
+    };
+    // ImGui::PushItemWidth(-FLT_MIN);
+    if (ImGui::BeginCombo("Monitor",
+                          mname(glfwGetMonitorName(monitors_[overlay_.current_monitor]),
+                                overlay_.current_monitor).c_str())) {
+      for (std::size_t i = 0; i < monitor_count_; ++i) {
+        const bool is_selected = overlay_.current_monitor == i;
+        if (ImGui::Selectable(mname(glfwGetMonitorName(monitors_[i]), i).c_str(), is_selected)) {
+          overlay_.current_monitor = i;
+        }
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+    // ImGui::PopItemWidth();
+
+    if (overlay_.modes[overlay_.current_mode].first != WindowMode::windowed) { ImGui::BeginDisabled(); }
+    ImGui::InputInt2("pos", overlay_.pos);
+    ImGui::InputInt2("size", overlay_.size);
+    if (overlay_.modes[overlay_.current_mode].first != WindowMode::windowed) { ImGui::EndDisabled(); }
+
+    const int n = 3;
+    const auto item_spacing = ImGui::GetStyle().ItemSpacing;
+    const auto avail_space = ImGui::GetContentRegionAvail();
+    const float mrw = (avail_space.x - item_spacing.x * (n - 1)) / static_cast<float>(n);
+
+    if (ImGui::Button("Set", {mrw, 0})) {
+      set_monitor(
+        overlay_.modes[overlay_.current_mode].first,
+        overlay_.current_monitor,
+        overlay_.pos[0], overlay_.pos[1],
+        overlay_.size[0], overlay_.size[1]
+      );
+    }
+
+    if (mode_ != WindowMode::windowed) { ImGui::BeginDisabled(); }
+    ImGui::SameLine();
+    if (ImGui::Button("Center", {mrw, 0}) && mode_ == WindowMode::windowed) {
+      int base_x, base_y;
+      glfwGetMonitorPos(monitors_[overlay_.current_monitor], &base_x, &base_y);
+      auto vidmode = glfwGetVideoMode(monitors_[overlay_.current_monitor]);
+      set_pos(
+        base_x + (vidmode->width - size_.x) / 2,
+        base_y + (vidmode->height - size_.y) / 2
+      );
+    }
+    if (mode_ != WindowMode::windowed) { ImGui::EndDisabled(); }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Clear", {mrw, 0})) {
+      overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
+      overlay_.current_monitor = detect_monitor_num();
+      overlay_.pos[0] = pos_.x;
+      overlay_.pos[1] = pos_.y;
+      overlay_.size[0] = size_.x;
+      overlay_.size[1] = size_.y;
+    }
+
+    ImGui::SeparatorText("Attributes");
+
+    if (bool v = resizable(); ImGui::Checkbox("Resizable", &v)) {
+      set_resizable(v);
+    }
+
+    if (bool v = decorated(); ImGui::Checkbox("Decorated", &v)) {
+      set_decorated(v);
+    }
+
+    if (bool v = auto_iconify(); ImGui::Checkbox("Auto iconify", &v)) {
+      set_auto_iconify(v);
+    }
+
+    if (bool v = floating(); ImGui::Checkbox("Floating", &v)) {
+      set_floating(v);
+    }
+
+    if (bool v = focus_on_show(); ImGui::Checkbox("Focus on show", &v)) {
+      set_focus_on_show(v);
+    }
+  });
+}
+
+Window::~Window() {
+  glfwTerminate();
+  IMP_LOG_DEBUG("Terminated GLFW");
+}
+
 bool Window::should_close() const {
   return glfwWindowShouldClose(glfw_handle_);
 }
@@ -155,154 +300,6 @@ void Window::set_monitor(WindowMode mode, int monitor_num, int x, int y, int w, 
   mode_ = mode;
 }
 
-void Window::r_initialize_(const E_Initialize& p) {
-  debug_overlay = module_mgr->get<DebugOverlay>();
-
-  IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_, Application);
-  IMP_HERMES_SUB(E_Update, module_name, r_update_);
-
-  IMP_HERMES_SUB(E_GlfwWindowClose, module_name, r_glfw_window_close_);
-  IMP_HERMES_SUB(E_GlfwWindowSize, module_name, r_glfw_window_size_);
-  IMP_HERMES_SUB(E_GlfwFramebufferSize, module_name, r_glfw_framebuffer_size_);
-  IMP_HERMES_SUB(E_GlfwWindowContentScale, module_name, r_glfw_window_content_scale_);
-  IMP_HERMES_SUB(E_GlfwWindowPos, module_name, r_glfw_window_pos_);
-  IMP_HERMES_SUB(E_GlfwWindowIconify, module_name, r_glfw_window_iconify_);
-  IMP_HERMES_SUB(E_GlfwWindowMaximize, module_name, r_glfw_window_maximize_);
-  IMP_HERMES_SUB(E_GlfwWindowFocus, module_name, r_glfw_window_focus_);
-  IMP_HERMES_SUB(E_GlfwWindowRefresh, module_name, r_glfw_window_refresh_);
-  IMP_HERMES_SUB(E_GlfwMonitor, module_name, r_glfw_monitor_);
-
-  std::call_once(initialize_glfw_, [&]() {
-    register_glfw_error_callback();
-
-    if (glfwInit() == GLFW_FALSE) {
-      IMP_LOG_CRITICAL("Failed to initialize GLFW");
-      std::exit(EXIT_FAILURE);
-    }
-
-    int major, minor, revision;
-    glfwGetVersion(&major, &minor, &revision);
-    IMP_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, revision);
-  });
-
-  monitors_ = glfwGetMonitors(&monitor_count_);
-  open_();
-  overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
-  overlay_.current_monitor = detect_monitor_num();
-
-  debug_overlay->add_tab(module_name, [&] {
-    ImGui::SeparatorText("Mode/Pos/Size");
-
-    // ImGui::PushItemWidth(-FLT_MIN);
-    if (ImGui::BeginCombo("Mode", overlay_.modes[overlay_.current_mode].second.c_str())) {
-      for (std::size_t i = 0; i < overlay_.modes.size(); ++i) {
-        const bool is_selected = overlay_.current_mode == i;
-        if (ImGui::Selectable(overlay_.modes[i].second.c_str(), is_selected)) {
-          overlay_.current_mode = i;
-        }
-        if (is_selected) {
-          ImGui::SetItemDefaultFocus();
-        }
-      }
-      ImGui::EndCombo();
-    }
-    // ImGui::PopItemWidth();
-
-    const auto mname = [](const char* name, int i) {
-      return fmt::format("{}: {}", i, name);
-    };
-    // ImGui::PushItemWidth(-FLT_MIN);
-    if (ImGui::BeginCombo("Monitor",
-                          mname(glfwGetMonitorName(monitors_[overlay_.current_monitor]),
-                                overlay_.current_monitor).c_str())) {
-      for (std::size_t i = 0; i < monitor_count_; ++i) {
-        const bool is_selected = overlay_.current_monitor == i;
-        if (ImGui::Selectable(mname(glfwGetMonitorName(monitors_[i]), i).c_str(), is_selected)) {
-          overlay_.current_monitor = i;
-        }
-        if (is_selected) {
-          ImGui::SetItemDefaultFocus();
-        }
-      }
-      ImGui::EndCombo();
-    }
-    // ImGui::PopItemWidth();
-
-    if (overlay_.modes[overlay_.current_mode].first != WindowMode::windowed) { ImGui::BeginDisabled(); }
-    ImGui::InputInt2("pos", overlay_.pos);
-    ImGui::InputInt2("size", overlay_.size);
-    if (overlay_.modes[overlay_.current_mode].first != WindowMode::windowed) { ImGui::EndDisabled(); }
-
-    const int n = 3;
-    const auto item_spacing = ImGui::GetStyle().ItemSpacing;
-    const auto avail_space = ImGui::GetContentRegionAvail();
-    const float mrw = (avail_space.x - item_spacing.x * (n - 1)) / static_cast<float>(n);
-
-    if (ImGui::Button("Set", {mrw, 0})) {
-      set_monitor(
-        overlay_.modes[overlay_.current_mode].first,
-        overlay_.current_monitor,
-        overlay_.pos[0], overlay_.pos[1],
-        overlay_.size[0], overlay_.size[1]
-      );
-    }
-
-    if (mode_ != WindowMode::windowed) { ImGui::BeginDisabled(); }
-    ImGui::SameLine();
-    if (ImGui::Button("Center", {mrw, 0}) && mode_ == WindowMode::windowed) {
-      int base_x, base_y;
-      glfwGetMonitorPos(monitors_[overlay_.current_monitor], &base_x, &base_y);
-      auto vidmode = glfwGetVideoMode(monitors_[overlay_.current_monitor]);
-      set_pos(
-        base_x + (vidmode->width - size_.x) / 2,
-        base_y + (vidmode->height - size_.y) / 2
-      );
-    }
-    if (mode_ != WindowMode::windowed) { ImGui::EndDisabled(); }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Clear", {mrw, 0})) {
-      overlay_.current_mode = mode_ == WindowMode::windowed ? 0 : mode_ == WindowMode::fullscreen ? 1 : 2;
-      overlay_.current_monitor = detect_monitor_num();
-      overlay_.pos[0] = pos_.x;
-      overlay_.pos[1] = pos_.y;
-      overlay_.size[0] = size_.x;
-      overlay_.size[1] = size_.y;
-    }
-
-    ImGui::SeparatorText("Attributes");
-
-    if (bool v = resizable(); ImGui::Checkbox("Resizable", &v)) {
-      set_resizable(v);
-    }
-
-    if (bool v = decorated(); ImGui::Checkbox("Decorated", &v)) {
-      set_decorated(v);
-    }
-
-    if (bool v = auto_iconify(); ImGui::Checkbox("Auto iconify", &v)) {
-      set_auto_iconify(v);
-    }
-
-    if (bool v = floating(); ImGui::Checkbox("Floating", &v)) {
-      set_floating(v);
-    }
-
-    if (bool v = focus_on_show(); ImGui::Checkbox("Focus on show", &v)) {
-      set_focus_on_show(v);
-    }
-  });
-
-  Module::r_initialize_(p);
-}
-
-void Window::r_shutdown_(const E_Shutdown& p) {
-  glfwTerminate();
-  IMP_LOG_DEBUG("Terminated GLFW");
-
-  Module::r_shutdown_(p);
-}
-
 int Window::detect_monitor_num() const {
   if (mode_ == WindowMode::windowed) {
     for (std::size_t i = 0; i < monitor_count_; ++i) {
@@ -353,10 +350,10 @@ GLFWmonitor* Window::get_monitor_(int monitor_num) {
 
 #pragma comment(lib, "ntdll.lib") // For RtlGetVersion
 extern "C" {
-  typedef LONG NTSTATUS, *PNTSTATUS;
+typedef LONG NTSTATUS, *PNTSTATUS;
 #define STATUS_SUCCESS (0x00000000)
-  // Windows 2000 and newer
-  NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
+// Windows 2000 and newer
+NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOEXW lpVersionInformation);
 }
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
@@ -505,10 +502,15 @@ void Window::open_windowed_() {
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-  glfwWindowHint(GLFW_RESIZABLE, is_flag_set(initialize_params_.flags, WindowFlags::resizable) ? GLFW_TRUE : GLFW_FALSE);
-  glfwWindowHint(GLFW_DECORATED, is_flag_set(initialize_params_.flags, WindowFlags::undecorated) ? GLFW_FALSE : GLFW_TRUE);
+  glfwWindowHint(GLFW_RESIZABLE, is_flag_set(initialize_params_.flags, WindowFlags::resizable)
+                                   ? GLFW_TRUE
+                                   : GLFW_FALSE);
+  glfwWindowHint(GLFW_DECORATED, is_flag_set(initialize_params_.flags, WindowFlags::undecorated)
+                                   ? GLFW_FALSE
+                                   : GLFW_TRUE);
 
-  glfw_handle_ = glfwCreateWindow(initialize_params_.size.x, initialize_params_.size.y, initialize_params_.title.c_str(), nullptr, nullptr);
+  glfw_handle_ = glfwCreateWindow(initialize_params_.size.x, initialize_params_.size.y,
+                                  initialize_params_.title.c_str(), nullptr, nullptr);
   if (!glfw_handle_) {
     const char* description;
     int code = glfwGetError(&description);
@@ -602,18 +604,18 @@ void Window::r_glfw_monitor_(const E_GlfwMonitor& p) {
  */
 #if defined(IMP_PLATFORM_WINDOWS)
 void Window::set_win32_titlebar_color_(HWND hwnd) {
-  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+  auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
   DWORD should_use_light_theme{};
   DWORD should_use_light_theme_size = sizeof(should_use_light_theme);
   LONG code = RegGetValue(
-      HKEY_CURRENT_USER,
-      R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
-      "AppsUseLightTheme",
-      RRF_RT_REG_DWORD,
-      nullptr,
-      &should_use_light_theme,
-      &should_use_light_theme_size
+    HKEY_CURRENT_USER,
+    R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
+    "AppsUseLightTheme",
+    RRF_RT_REG_DWORD,
+    nullptr,
+    &should_use_light_theme,
+    &should_use_light_theme_size
   );
 
   if (code != ERROR_SUCCESS) {
@@ -632,7 +634,7 @@ void Window::set_win32_titlebar_color_(HWND hwnd) {
 }
 
 LRESULT CALLBACK Window::WndProc_(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
-  auto window = reinterpret_cast<Window *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+  auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
   if (message == WM_SETTINGCHANGE && hwnd == window->win32_hwnd_)
     set_win32_titlebar_color_(hwnd);

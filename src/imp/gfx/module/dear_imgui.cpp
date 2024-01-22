@@ -4,20 +4,9 @@
 #include "imgui_impl_opengl3.h"
 
 namespace imp {
-void DearImgui::new_frame() {
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-}
-
-void DearImgui::render() {
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
-void DearImgui::r_initialize_(const E_Initialize& p) {
-  auto window = module_mgr->get<Window>();
-  auto gfx = module_mgr->get<GfxContext>();
+DearImgui::DearImgui(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
+  auto window = module_mgr.lock()->get<Window>();
+  auto gfx = module_mgr.lock()->get<GfxContext>();
 
   IMGUI_CHECKVERSION();
   ctx_ = ImGui::CreateContext();
@@ -39,11 +28,9 @@ void DearImgui::r_initialize_(const E_Initialize& p) {
   ImGui_ImplOpenGL3_Init(glsl_version.c_str());
 
   implot_ctx_ = ImPlot::CreateContext();
-
-  Module::r_initialize_(p);
 }
 
-void DearImgui::r_shutdown_(const E_Shutdown& p) {
+DearImgui::~DearImgui() {
   ImPlot::DestroyContext(implot_ctx_);
   implot_ctx_ = nullptr;
 
@@ -53,8 +40,17 @@ void DearImgui::r_shutdown_(const E_Shutdown& p) {
   (void)io_;
   ImGui::DestroyContext(ctx_);
   ctx_ = nullptr;
+}
 
-  Module::r_shutdown_(p);
+void DearImgui::new_frame() {
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
+}
+
+void DearImgui::render() {
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void DearImgui::setup_style_() {

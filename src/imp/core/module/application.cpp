@@ -1,27 +1,19 @@
 #include "imp/core/module/application.hpp"
 
 namespace imp {
-void Application::r_initialize_(const E_Initialize& e) {
-  cursors = module_mgr->get<CursorMgr>();
-  dear = module_mgr->get<DearImgui>();
-  debug_overlay = module_mgr->get<DebugOverlay>();
-  inputs = module_mgr->get<InputMgr>();
-  ctx = module_mgr->get<GfxContext>();
-  timers = module_mgr->get<TimerMgr>();
-  window = module_mgr->get<Window>();
+Application::Application(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
+  cursors = module_mgr.lock()->get<CursorMgr>();
+  dear = module_mgr.lock()->get<DearImgui>();
+  debug_overlay = module_mgr.lock()->get<DebugOverlay>();
+  inputs = module_mgr.lock()->get<InputMgr>();
+  ctx = module_mgr.lock()->get<GfxContext>();
+  timers = module_mgr.lock()->get<TimerMgr>();
+  window = module_mgr.lock()->get<Window>();
 
   IMP_HERMES_SUB(E_StartFrame, module_name, r_start_frame_);
   IMP_HERMES_SUB(E_Draw, module_name, r_draw_);
   IMP_HERMES_SUB(E_EndFrame, module_name, r_end_frame_);
   IMP_HERMES_SUB(E_Update, module_name, r_update_, InputMgr, TimerMgr, Window);
-
-  initialize();
-
-  Module::r_initialize_(e);
-}
-
-void Application::r_shutdown_(const E_Shutdown& e) {
-  Module::r_shutdown_(e);
 }
 
 void Application::r_start_frame_(const E_StartFrame& p) {

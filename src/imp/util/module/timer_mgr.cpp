@@ -1,6 +1,10 @@
 #include "imp/util/module/timer_mgr.hpp"
 
 namespace imp {
+TimerMgr::TimerMgr(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
+  IMP_HERMES_SUB(E_Update, module_name, r_update_);
+}
+
 void TimerMgr::cancel(const std::string& tag) {
   if (auto it = timers_.find(tag); it != timers_.end())
     timers_.erase(it);
@@ -29,16 +33,6 @@ bool TimerMgr::is_paused(const std::string& tag) {
   if (auto it = timers_.find(tag); it != timers_.end())
     return it->second->paused;
   return false;
-}
-
-void TimerMgr::r_initialize_(const E_Initialize& p) {
-  IMP_HERMES_SUB(E_Update, module_name, r_update_);
-
-  Module::r_initialize_(p);
-}
-
-void TimerMgr::r_shutdown_(const E_Shutdown& p) {
-  Module::r_shutdown_(p);
 }
 
 void TimerMgr::r_update_(const E_Update& p) {

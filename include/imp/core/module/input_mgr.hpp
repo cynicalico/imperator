@@ -21,9 +21,7 @@ enum class Mods {
 
 class InputMgr : public Module<InputMgr> {
 public:
-  InputMgr() : Module({
-    EPI<Window>::name
-  }) {}
+  InputMgr(const std::weak_ptr<ModuleMgr>& module_mgr);
 
   void bind(const std::string& name, const std::string& action);
   std::vector<int> get_glfw_actions(const std::string& name);
@@ -53,10 +51,6 @@ public:
 
   bool mouse_entered() const;
   bool mouse_left() const;
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   static std::once_flag initialize_glfw_action_maps_;

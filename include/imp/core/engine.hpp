@@ -52,18 +52,22 @@ void Engine::run_application(const WindowOpenParams& initialize_params) {
 
   log_platform();
 
-  module_mgr_->create<Application, T>();
-  module_mgr_->create<CursorMgr>();
-  module_mgr_->create<DearImgui>();
-  module_mgr_->create<DebugOverlay>();
+  const auto debug_overlay = module_mgr_->create<DebugOverlay>();
+
+  module_mgr_->create<Window>(initialize_params);
   module_mgr_->create<InputMgr>();
+  module_mgr_->create<CursorMgr>();
+
   module_mgr_->create<GfxContext>(initialize_params);
   module_mgr_->create<ShaderMgr>();
+  module_mgr_->create<DearImgui>();
+
   module_mgr_->create<TimerMgr>();
-  module_mgr_->create<Window>(initialize_params);
+
+  module_mgr_->create<Application, T>();
 
   if (check_pending_()) {
-    Hermes::send_nowait<E_Initialize>();
+    debug_overlay->lateinit_modules();
 
     while (!received_shutdown_) {
       Hermes::send_nowait<E_Update>(frame_counter_.dt(), frame_counter_.fps());
@@ -76,8 +80,6 @@ void Engine::run_application(const WindowOpenParams& initialize_params) {
 
       glfwPollEvents();
     }
-
-    Hermes::send_nowait_rev<E_Shutdown>();
   }
 }
 } // namespace imp

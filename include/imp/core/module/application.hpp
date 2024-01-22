@@ -21,23 +21,10 @@ public:
   std::shared_ptr<TimerMgr> timers{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  Application() : Module({
-    EPI<CursorMgr>::name,
-    EPI<DearImgui>::name,
-    EPI<DebugOverlay>::name,
-    EPI<InputMgr>::name,
-    EPI<GfxContext>::name,
-    EPI<TimerMgr>::name,
-    EPI<Window>::name,
-  }) {}
+  explicit Application(const std::weak_ptr<ModuleMgr>& module_mgr);
 
-  virtual void initialize() {}
   virtual void update(double dt) {}
   virtual void draw() {}
-
-protected:
-  void r_initialize_(const E_Initialize& e) override;
-  void r_shutdown_(const E_Shutdown& e) override;
 
 private:
   void r_start_frame_(const E_StartFrame& p);

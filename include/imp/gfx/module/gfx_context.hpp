@@ -27,9 +27,7 @@ public:
   std::shared_ptr<DebugOverlay> debug_overlay{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  explicit GfxContext(WindowOpenParams initialize_params)
-    : Module({EPI<DebugOverlay>::name, EPI<Window>::name}),
-      initialize_params_(std::move(initialize_params)) {}
+  explicit GfxContext(const std::weak_ptr<ModuleMgr>& module_mgr, WindowOpenParams initialize_params);
 
   GladGLContext gl;
   glm::ivec2 version{};
@@ -38,10 +36,6 @@ public:
   void set_vsync(bool v);
 
   void clear(const Color& color, const ClearBit& mask = ClearBit::color | ClearBit::depth);
-
-protected:
-  void r_initialize_(const E_Initialize& p) override;
-  void r_shutdown_(const E_Shutdown& p) override;
 
 private:
   WindowOpenParams initialize_params_;

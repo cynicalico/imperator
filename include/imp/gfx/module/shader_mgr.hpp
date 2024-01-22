@@ -11,22 +11,19 @@
 namespace imp {
 class ShaderMgr : public Module<ShaderMgr> {
 public:
-    std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<GfxContext> gfx{nullptr};
 
-    ShaderMgr() : Module({EPI<GfxContext>::name}) {}
+  explicit ShaderMgr(const std::weak_ptr<ModuleMgr>& module_mgr);
 
-    std::shared_ptr<Shader> get(const std::string &name);
+  std::shared_ptr<Shader> get(const std::string& name);
 
-    // Names must be unique, and a previously compiled shader will be returned if
-    // a shader with that name has already been compiled (rather than recompiling)
-    std::shared_ptr<Shader> compile(const std::string &name, const ShaderSrc &src);
-    std::shared_ptr<Shader> compile(const ShaderSrc &src);
+  // Names must be unique, and a previously compiled shader will be returned if
+  // a shader with that name has already been compiled (rather than recompiling)
+  std::shared_ptr<Shader> compile(const std::string& name, const ShaderSrc& src);
+  std::shared_ptr<Shader> compile(const ShaderSrc& src);
 
-protected:
-    std::unordered_map<std::string, std::shared_ptr<Shader>> shaders_{};
-
-    void r_initialize_(const E_Initialize& p) override;
-    void r_shutdown_(const E_Shutdown& p) override;
+private:
+  std::unordered_map<std::string, std::shared_ptr<Shader>> shaders_{};
 };
 } // namespace imp
 
