@@ -56,7 +56,7 @@ private:
 
   Shader& shader_;
 
-  std::vector<std::unique_ptr<Batch>> batches_{};
+  std::vector<Batch> batches_{};
   std::size_t curr_batch_{0};
   std::vector<DrawCall> stored_draw_calls_{};
 
@@ -70,7 +70,7 @@ private:
 
 class Batcher : public Module<Batcher> {
 public:
-  float z{2.0f};
+  float z{1.0f};
 
   std::shared_ptr<GfxContext> ctx{nullptr};
   std::shared_ptr<ShaderMgr> shaders{nullptr};
@@ -89,13 +89,15 @@ private:
   std::unordered_map<DrawMode, std::size_t> vertices_per_obj_{};
   std::unordered_map<DrawMode, std::size_t> floats_per_vertex_{};
 
-  std::unordered_map<DrawMode, std::unique_ptr<BatchList>> opaque_batches_{};
-  std::unordered_map<DrawMode, std::unique_ptr<BatchList>> trans_batches_{};
+  std::unordered_map<DrawMode, BatchList> opaque_batches_{};
+  std::unordered_map<DrawMode, BatchList> trans_batches_{};
 
   /* TEXTURES */
   // TODO
 
   /* GENERAL */
+  DrawMode last_trans_draw_mode_{DrawMode::none};
+
   std::vector<DrawCall> opaque_draw_calls_{};
   std::vector<DrawCall> trans_draw_calls_{};
 

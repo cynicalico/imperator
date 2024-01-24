@@ -27,14 +27,15 @@ void Indev::update(double dt) {
 
 void Indev::draw() {
   ctx->gl.Viewport(0, 0, window->w(), window->h());
-
   gfx->clear(imp::rgb("black"));
 
-  gfx->batcher->add_opaque(imp::DrawMode::triangles, {
-    300.0f, 300.0f, gfx->batcher->z,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f,
-    350.0f, 350.0f, gfx->batcher->z,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f,
-    300.0f, 350.0f, gfx->batcher->z,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f,
-  });
+  gfx->tri({300, 300}, {350, 350}, {300, 350}, imp::rgb("white"));
+
+  gfx->rect({500, 500}, {100, 100}, imp::rgb("blue"));
+  gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgb("lime"));
+  gfx->rect({550, 550}, {100, 100}, imp::rgba("red", 128));
+
+  gfx->point({100, 100}, imp::rgb("yellow"));
 
   gfx->batcher->draw(window->projection_matrix());
 }

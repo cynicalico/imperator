@@ -74,45 +74,42 @@ BatchList::BatchList(
     fill_reverse_(fill_reverse) {}
 
 std::size_t BatchList::size() const {
-  return batches_[curr_batch_]->size();
+  return batches_[curr_batch_].size();
 }
 
 void BatchList::clear() {
-  for (auto& b: batches_) {
-    b->clear();
-  }
-
+  std::ranges::for_each(batches_, [](auto& b) { b.clear(); });
   curr_batch_ = 0;
   stored_draw_calls_.clear();
 }
 
 void BatchList::add(std::initializer_list<float> data) {
   if (batches_.empty()) {
-    batches_.emplace_back(std::make_unique<Batch>(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
-                          fill_reverse_));
-  } else if (batches_[curr_batch_]->size() > BATCH_SIZE_LIMIT) {
-    stored_draw_calls_.emplace_back(batches_[curr_batch_]->get_draw_call());
+    batches_.emplace_back(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
+                          fill_reverse_);
+  } else if (batches_[curr_batch_].size() > BATCH_SIZE_LIMIT) {
+    stored_draw_calls_.emplace_back(batches_[curr_batch_].get_draw_call());
 
     if (curr_batch_ == batches_.size() - 1) {
-      batches_.emplace_back(std::make_unique<Batch>(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
-                            fill_reverse_));
+      batches_.emplace_back(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
+                            fill_reverse_);
     }
     curr_batch_++;
   }
 
-  batches_[curr_batch_]->add(data);
+  batches_[curr_batch_].add(data);
 }
 
 std::vector<DrawCall> BatchList::get_draw_calls() {
   std::vector<DrawCall> draw_calls{};
 
   if (!stored_draw_calls_.empty()) {
-    draw_calls.insert_range(draw_calls.begin(), stored_draw_calls_);
+    draw_calls.insert(draw_calls.begin(), stored_draw_calls_.begin(), stored_draw_calls_.end());
     stored_draw_calls_.clear();
   }
 
   if (!batches_.empty()) {
-    draw_calls.emplace_back(batches_[curr_batch_]->get_draw_call());
+    draw_calls.emplace_back(batches_[curr_batch_].get_draw_call());
   }
 
   return draw_calls;
@@ -122,31 +119,41 @@ Batcher::Batcher(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(module_mgr
   ctx = module_mgr.lock()->get<GfxContext>();
   shaders = module_mgr.lock()->get<ShaderMgr>();
 
-  if (const auto src = ShaderSrc::parse(DATA_FOLDER / "shader" / "basic.glsl")) {
-    auto basic_shader = shaders->compile(*src);
+  if (const auto src = ShaderSrc::parse(DATA_FOLDER / "shader" / "points.glsl")) {
+    auto points_shader = shaders->compile(*src);
 
-    shaders_.emplace(DrawMode::lines, basic_shader);
+    shaders_.emplace(DrawMode::points, points_shader);
+    attrib_descs_.emplace(DrawMode::points, "in_pos:3f in_color:4f");
+    vertices_per_obj_.emplace(DrawMode::points, 1);
+    floats_per_vertex_.emplace(DrawMode::points, 7);
+  }
+
+  if (const auto src = ShaderSrc::parse(DATA_FOLDER / "shader" / "lines.glsl")) {
+    auto lines_shader = shaders->compile(*src);
+
+    shaders_.emplace(DrawMode::lines, lines_shader);
     attrib_descs_.emplace(DrawMode::lines, "in_pos:3f in_color:4f in_trans:3f");
     vertices_per_obj_.emplace(DrawMode::lines, 2);
     floats_per_vertex_.emplace(DrawMode::lines, 10);
+  }
 
-    shaders_.emplace(DrawMode::triangles, basic_shader);
+  if (const auto src = ShaderSrc::parse(DATA_FOLDER / "shader" / "triangles.glsl")) {
+    auto triangles_shader = shaders->compile(*src);
+
+    shaders_.emplace(DrawMode::triangles, triangles_shader);
     attrib_descs_.emplace(DrawMode::triangles, "in_pos:3f in_color:4f in_trans:3f");
     vertices_per_obj_.emplace(DrawMode::triangles, 3);
     floats_per_vertex_.emplace(DrawMode::triangles, 10);
-
-    shaders_.emplace(DrawMode::points, basic_shader);
-    attrib_descs_.emplace(DrawMode::points, "in_pos:3f in_color:4f in_trans:3f");
-    vertices_per_obj_.emplace(DrawMode::points, 1);
-    floats_per_vertex_.emplace(DrawMode::points, 10);
   }
 }
 
-void Batcher::add_opaque(const DrawMode& mode, std::initializer_list<float> data) {
-  if (!opaque_batches_.contains(mode)) {
-    opaque_batches_.emplace(
+void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float> data) {
+  auto it = opaque_batches_.find(mode);
+  if (it == opaque_batches_.end()) {
+    it = opaque_batches_.emplace_hint(
+      it,
       mode,
-      std::make_unique<BatchList>(
+      BatchList(
         *ctx,
         *shaders_[mode],
         mode,
@@ -158,12 +165,35 @@ void Batcher::add_opaque(const DrawMode& mode, std::initializer_list<float> data
     );
   }
 
-  opaque_batches_[mode]->add(data);
+  it->second.add(data);
   z += 1.0f;
 }
 
 void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data) {
-  // TODO
+  if (last_trans_draw_mode_ != DrawMode::none && last_trans_draw_mode_ != mode) {
+    collect_trans_draw_calls_();
+  }
+  last_trans_draw_mode_ = mode;
+
+  auto it = trans_batches_.find(mode);
+  if (!trans_batches_.contains(mode)) {
+    it = trans_batches_.emplace_hint(
+      it,
+      mode,
+      BatchList(
+        *ctx,
+        *shaders_[mode],
+        mode,
+        attrib_descs_[mode],
+        vertices_per_obj_[mode],
+        floats_per_vertex_[mode],
+        false
+      )
+    );
+  }
+
+  it->second.add(data);
+  z += 1.0f;
 }
 
 void Batcher::draw(const glm::mat4& projection) {
@@ -175,7 +205,8 @@ void Batcher::draw(const glm::mat4& projection) {
   }
   clear_opaque_();
 
-  ctx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha, BlendFunc::one);
+  ctx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha,
+                           BlendFunc::one);
   ctx->enable(Capability::blend);
   ctx->depth_mask(false);
 
@@ -188,29 +219,33 @@ void Batcher::draw(const glm::mat4& projection) {
   ctx->depth_mask(true);
   ctx->disable(Capability::blend);
 
-  // ctx->disable(Capability::depth_test);
+  ctx->disable(Capability::depth_test);
 
   z = 1.0f;
 }
 
 void Batcher::collect_opaque_draw_calls_() {
   for (auto& b: opaque_batches_ | std::views::values) {
-    opaque_draw_calls_.insert_range(opaque_draw_calls_.end(), b->get_draw_calls());
+    auto draw_calls = b.get_draw_calls();
+    opaque_draw_calls_.insert(opaque_draw_calls_.end(), draw_calls.begin(), draw_calls.end());
   }
 }
 
 void Batcher::collect_trans_draw_calls_() {
-  // TODO
+  if (last_trans_draw_mode_ != DrawMode::none) {
+    auto draw_calls = trans_batches_.at(last_trans_draw_mode_).get_draw_calls();
+    trans_draw_calls_.insert(trans_draw_calls_.end(), draw_calls.begin(), draw_calls.end());
+  }
 }
 
 void Batcher::clear_opaque_() {
-  for (auto& b: opaque_batches_ | std::views::values) {
-    b->clear();
-  }
+  std::ranges::for_each(opaque_batches_ | std::views::values, [](auto& b) { b.clear(); });
   opaque_draw_calls_.clear();
 }
 
 void Batcher::clear_trans_() {
-  // TODO
+  std::ranges::for_each(trans_batches_ | std::views::values, [](auto& b) { b.clear(); });
+  trans_draw_calls_.clear();
+  last_trans_draw_mode_ = DrawMode::none;
 }
 } // namespace imp

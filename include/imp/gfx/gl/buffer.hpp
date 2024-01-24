@@ -8,7 +8,7 @@
 namespace imp {
 
 enum class BufTarget {
-  none = 0,
+  none = 0, // Used as sentinel
   array = GL_ARRAY_BUFFER,
   atomic_counter = GL_ATOMIC_COUNTER_BUFFER,
   copy_read = GL_COPY_READ_BUFFER,
@@ -26,7 +26,7 @@ enum class BufTarget {
 };
 
 enum class BufUsage {
-  none = 0,
+  none = 0, // Used as sentinel
   stream_draw = GL_STREAM_DRAW,
   stream_read = GL_STREAM_READ,
   stream_copy = GL_STREAM_COPY,
