@@ -52,7 +52,6 @@ private:
 using FVBuffer = VecBuffer<float>;
 using IVBuffer = VecBuffer<int>;
 using UVBuffer = VecBuffer<unsigned int>;
-using SVBuffer = VecBuffer<std::int16_t>;
 
 template<Numeric T>
 VecBuffer<T>::VecBuffer(

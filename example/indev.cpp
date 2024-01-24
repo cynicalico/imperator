@@ -23,14 +23,20 @@ void Indev::update(double dt) {
   if (inputs->pressed("escape")) {
     window->set_should_close(true);
   }
-
-  if (inputs->pressed("1")) {
-    gfx->say_hello();
-  }
 }
 
 void Indev::draw() {
-  ctx->clear(imp::rgb("black"));
+  ctx->gl.Viewport(0, 0, window->w(), window->h());
+
+  gfx->clear(imp::rgb("black"));
+
+  gfx->batcher->add_opaque(imp::DrawMode::triangles, {
+    300.0f, 300.0f, gfx->batcher->z,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f,
+    350.0f, 350.0f, gfx->batcher->z,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f,
+    300.0f, 350.0f, gfx->batcher->z,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f,
+  });
+
+  gfx->batcher->draw(window->projection_matrix());
 }
 
 int main(int, char*[]) {

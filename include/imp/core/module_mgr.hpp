@@ -55,7 +55,7 @@ template<class T, class TR, typename... Args>
   requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
 std::shared_ptr<T> ModuleMgr::create(Args&&... args) {
   modules_[EPI<T>::name] = std::shared_ptr<ModuleI>(new TR(shared_from_this(), std::forward<Args>(args)...));
-  return std::static_pointer_cast<T>(modules_[EPI<T>::name]);
+  return get<T>();
 }
 
 template<typename T, typename... Args>

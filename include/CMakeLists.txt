@@ -13,12 +13,14 @@ set(imp_INCLUDE_FILES ${imp_INCLUDE_FILES}
         core/type_id.hpp
 
         gfx/gl/buffer.hpp
+        gfx/gl/enum_types.hpp
         gfx/gl/renderbuffer.hpp
         gfx/gl/shader.hpp
         gfx/gl/static_buffer.hpp
         gfx/gl/tex_image.hpp
         gfx/gl/vec_buffer.hpp
         gfx/gl/vertex_array.hpp
+        gfx/module/batcher.hpp
         gfx/module/dear_imgui.hpp
         gfx/module/gfx_2d.hpp
         gfx/module/gfx_context.hpp

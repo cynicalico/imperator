@@ -180,7 +180,7 @@ bool Window::focus_on_show() const {
 }
 
 glm::mat4 Window::projection_matrix() const {
-  return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f);
+  return glm::ortho(0.0f, static_cast<float>(size_.x), static_cast<float>(size_.y), 0.0f, 0.0f, 1.0f);
 }
 
 void Window::set_should_close(bool should_close) {

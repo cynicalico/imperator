@@ -3,23 +3,13 @@
 
 #include "imp/core/module/window.hpp"
 #include "imp/core/module_mgr.hpp"
+#include "imp/gfx/gl/enum_types.hpp"
 #include "imp/util/module/debug_overlay.hpp"
 #include "imp/util/platform.hpp"
 #if defined(IMP_PLATFORM_WINDOWS)
 #include "glad/wgl.h"
 #endif
-#include "glad/gl.h"
 #include "glm/vec2.hpp"
-
-namespace imp {
-enum class ClearBit {
-  color = GL_COLOR_BUFFER_BIT,
-  depth = GL_DEPTH_BUFFER_BIT,
-  stencil = GL_STENCIL_BUFFER_BIT
-};
-} // namespace imp
-
-ENUM_ENABLE_BITOPS(imp::ClearBit);
 
 namespace imp {
 class GfxContext : public Module<GfxContext> {
@@ -35,7 +25,14 @@ public:
   bool is_vsync() const;
   void set_vsync(bool v);
 
-  void clear(const Color& color, const ClearBit& mask = ClearBit::color | ClearBit::depth);
+  void enable(const Capability& capability);
+  void disable(const Capability& capability);
+
+  void blend_func(const BlendFunc& sfactor, const BlendFunc& dfactor);
+  void blend_func_separate(const BlendFunc& sfactor_rgb, const BlendFunc& dfactor_rgb,
+                           const BlendFunc& sfactor_alpha, const BlendFunc& dfactor_alpha);
+
+  void depth_mask(bool enable);
 
 private:
   WindowOpenParams initialize_params_;

@@ -75,10 +75,26 @@ void GfxContext::set_vsync(bool v) {
   platform_set_vsync_(v);
 }
 
-void GfxContext::clear(const Color& color, const ClearBit& mask) {
-  auto gl_color = color.gl_color();
-  gl.ClearColor(gl_color.r, gl_color.g, gl_color.b, gl_color.a);
-  gl.Clear(unwrap(mask));
+void GfxContext::enable(const Capability& capability) {
+  gl.Enable(unwrap(capability));
+}
+
+void GfxContext::disable(const Capability& capability) {
+  gl.Disable(unwrap(capability));
+}
+
+void GfxContext::blend_func(const BlendFunc& sfactor, const BlendFunc& dfactor) {
+  gl.BlendFunc(unwrap(sfactor), unwrap(dfactor));
+}
+
+void GfxContext::blend_func_separate(const BlendFunc& sfactor_rgb, const BlendFunc& dfactor_rgb,
+                                     const BlendFunc& sfactor_alpha, const BlendFunc& dfactor_alpha) {
+  gl.BlendFuncSeparate(unwrap(sfactor_rgb), unwrap(dfactor_rgb),
+                       unwrap(sfactor_alpha), unwrap(dfactor_alpha));
+}
+
+void GfxContext::depth_mask(bool enable) {
+  gl.DepthMask(enable ? GL_TRUE : GL_FALSE);
 }
 
 void GfxContext::gl_message_callback_(

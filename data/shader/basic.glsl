@@ -1,13 +1,15 @@
-#pragma name(basic)
+#pragma name(tris)
 
 #pragma vertex
+
 #version 330 core
 layout (location = 0) in vec3 in_pos;
-layout (location = 1) in vec3 in_trans;
-layout (location = 2) in vec4 in_color;
+layout (location = 1) in vec4 in_color;
+layout (location = 2) in vec3 in_trans;
 
 out vec4 out_color;
 
+uniform float z_max;
 uniform mat4 mvp;
 
 void main() {
@@ -26,15 +28,18 @@ void main() {
         vec4(m30, m31, 0.0, 1.0)
     );
 
-    gl_Position = mvp * trans * vec4(in_pos, 1.0);
+    float z = -(z_max - in_pos.z) / (z_max + 1.0);
+
+    gl_Position = mvp * trans * vec4(in_pos.xy, z, 1.0);
 }
 
 #pragma fragment
+
 #version 330 core
 in vec4 out_color;
 
 out vec4 FragColor;
 
 void main() {
-    FragColor = out_color;
+    FragColor = vec4(out_color.xyz * out_color.a, out_color.a);
 }

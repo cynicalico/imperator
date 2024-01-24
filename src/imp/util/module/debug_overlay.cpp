@@ -38,7 +38,7 @@ DebugOverlay::DebugOverlay(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(
 void DebugOverlay::lateinit_modules() {
   // Late-initialization of required modules
   inputs = module_mgr.lock()->get<InputMgr>();
-  gfx = module_mgr.lock()->get<GfxContext>();
+  ctx = module_mgr.lock()->get<GfxContext>();
 }
 
 // void DebugOverlay::free_modules() {
@@ -108,7 +108,7 @@ void DebugOverlay::r_draw_(const E_Draw& p) {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, {0, 0});
   ImGui::SetNextWindowPos({WINDOW_EDGE_PADDING, WINDOW_EDGE_PADDING});
   if (ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize)) {
-    const auto vsync_str = gfx.lock()->is_vsync() ? " (vsync)" : "";
+    const auto vsync_str = ctx.lock()->is_vsync() ? " (vsync)" : "";
     ImGui::Text("%s", fmt::format("{:.2f} fps{}{}", fps, vsync_str, BUILD_TYPE).c_str());
     ImGui::Text("%s", fmt::format("{:.2f} MB", imp::memusage_mb()).c_str());
   }

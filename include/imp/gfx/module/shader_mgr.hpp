@@ -11,7 +11,7 @@
 namespace imp {
 class ShaderMgr : public Module<ShaderMgr> {
 public:
-  std::shared_ptr<GfxContext> gfx{nullptr};
+  std::shared_ptr<GfxContext> ctx{nullptr};
 
   explicit ShaderMgr(const std::weak_ptr<ModuleMgr>& module_mgr);
 

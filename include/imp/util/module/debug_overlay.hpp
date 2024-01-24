@@ -17,7 +17,7 @@ using ConsoleCallbackFunc = std::function<void(argparse::ArgumentParser&)>;
 class DebugOverlay : public Module<DebugOverlay> {
 public:
   std::weak_ptr<InputMgr> inputs;
-  std::weak_ptr<GfxContext> gfx;
+  std::weak_ptr<GfxContext> ctx;
 
   explicit DebugOverlay(const std::weak_ptr<ModuleMgr>& module_mgr);
 

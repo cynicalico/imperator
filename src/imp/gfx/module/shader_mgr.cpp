@@ -4,7 +4,7 @@
 
 namespace imp {
 ShaderMgr::ShaderMgr(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
-  gfx = module_mgr.lock()->get<GfxContext>();
+  ctx = module_mgr.lock()->get<GfxContext>();
 }
 
 std::shared_ptr<Shader> ShaderMgr::get(const std::string& name) {
@@ -14,7 +14,7 @@ std::shared_ptr<Shader> ShaderMgr::get(const std::string& name) {
 
 std::shared_ptr<Shader> ShaderMgr::compile(const std::string& name, const ShaderSrc& src) {
   if (!shaders_.contains(name)) {
-    shaders_[name] = std::make_shared<Shader>(*gfx, src);
+    shaders_[name] = std::make_shared<Shader>(*ctx, src);
   }
   return shaders_[name];
 }
