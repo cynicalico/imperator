@@ -21,7 +21,7 @@ public:
   std::size_t size() const;
   void clear();
 
-  void add(std::initializer_list<float> data);
+  void add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart);
 
   DrawCall get_draw_call();
 
@@ -29,6 +29,8 @@ private:
   Shader& shader_;
   VertexArray vao_;
   FVBuffer vbo_;
+  UVBuffer ebo_;
+  unsigned int ebo_offset_{0};
 
   DrawMode draw_mode_;
   std::size_t floats_per_vertex_;
@@ -47,7 +49,7 @@ public:
   std::size_t size() const;
   void clear();
 
-  void add(std::initializer_list<float> data);
+  void add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart);
 
   std::vector<DrawCall> get_draw_calls();
 
@@ -77,8 +79,8 @@ public:
 
   explicit Batcher(const std::weak_ptr<ModuleMgr>& module_mgr);
 
-  void add_opaque(const DrawMode& mode, std::initializer_list<float> data);
-  void add_trans(const DrawMode& mode, std::initializer_list<float> data);
+  void add_opaque(const DrawMode& mode, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart = false);
+  void add_trans(const DrawMode& mode, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart = false);
 
   void draw(const glm::mat4& projection);
 

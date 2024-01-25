@@ -29,13 +29,20 @@ void Indev::draw() {
   ctx->gl.Viewport(0, 0, window->w(), window->h());
   gfx->clear(imp::rgb("black"));
 
-  gfx->tri({300, 300}, {350, 350}, {300, 350}, imp::rgb("white"));
+  gfx->draw_tri({300, 300}, {350, 350}, {300, 350}, imp::rgb("red"));
+  gfx->draw_tri({325, 300}, {375, 350}, {325, 350}, imp::rgb("green"));
+  gfx->draw_tri({350, 300}, {400, 350}, {350, 350}, imp::rgb("blue"));
 
-  gfx->rect({500, 500}, {100, 100}, imp::rgb("blue"));
-  gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgb("lime"));
-  gfx->rect({550, 550}, {100, 100}, imp::rgba("red", 128));
+  gfx->fill_rect({100, 100}, {100, 100}, imp::rgb("blue"));
+  gfx->fill_rect({125, 125}, {100, 100}, imp::rgba("red", 128));
+  gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgba("white", 128));
+  gfx->fill_rect({150, 150}, {100, 100}, imp::rgba("lime", 128));
 
-  gfx->point({100, 100}, imp::rgb("yellow"));
+  gfx->draw_rect({600, 300}, {100, 100}, imp::rgb("red"));
+  gfx->draw_rect({650, 350}, {100, 100}, imp::rgb("green"));
+  gfx->draw_rect({700, 400}, {100, 100}, imp::rgb("blue"));
+
+  gfx->fill_tri({400, 400}, {500, 500}, {400, 500}, imp::rgb(0xff00ff));
 
   gfx->batcher->draw(window->projection_matrix());
 }

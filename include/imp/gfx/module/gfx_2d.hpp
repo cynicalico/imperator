@@ -23,13 +23,21 @@ public:
   void line(glm::vec2 p0, glm::vec2 p1, float angle, const Color& c);
   void line(glm::vec2 p0, glm::vec2 p1, const Color& c);
 
-  void tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 rcenter, float angle, const Color& c);
-  void tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, float angle, const Color& c);
-  void tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, const Color& c);
+  void draw_tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 rcenter, float angle, const Color& c);
+  void draw_tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, float angle, const Color& c);
+  void draw_tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, const Color& c);
 
-  void rect(glm::vec2 xy, glm::vec2 size, glm::vec2 rcenter, float angle, const Color& c);
-  void rect(glm::vec2 xy, glm::vec2 size, float angle, const Color& c);
-  void rect(glm::vec2 xy, glm::vec2 size, const Color& c);
+  void fill_tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, glm::vec2 rcenter, float angle, const Color& c);
+  void fill_tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, float angle, const Color& c);
+  void fill_tri(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2, const Color& c);
+
+  void draw_rect(glm::vec2 xy, glm::vec2 size, glm::vec2 rcenter, float angle, const Color& c);
+  void draw_rect(glm::vec2 xy, glm::vec2 size, float angle, const Color& c);
+  void draw_rect(glm::vec2 xy, glm::vec2 size, const Color& c);
+
+  void fill_rect(glm::vec2 xy, glm::vec2 size, glm::vec2 rcenter, float angle, const Color& c);
+  void fill_rect(glm::vec2 xy, glm::vec2 size, float angle, const Color& c);
+  void fill_rect(glm::vec2 xy, glm::vec2 size, const Color& c);
 
 private:
   static std::once_flag created_required_modules_;

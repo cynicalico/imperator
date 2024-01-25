@@ -100,6 +100,12 @@ void VertexArray::attrib(Shader& shader, Buffer& buf, const std::string& desc) {
   attrib(shader, BufTarget::array, buf, desc);
 }
 
+void VertexArray::element_array(Buffer& buf) {
+  bind();
+  buf.bind(BufTarget::element_array);
+  unbind();
+}
+
 void VertexArray::draw_arrays(const DrawMode& mode, GLsizei count, int first) {
   bind();
   gl.DrawArrays(unwrap(mode), first, count);

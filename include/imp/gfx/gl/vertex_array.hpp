@@ -11,7 +11,7 @@ enum class DrawMode {
   none = 0, // Used as sentinel
   points = GL_POINTS,
   //  line_strip = GL_LINE_STRIP,
-  //  line_loop = GL_LINE_LOOP,
+  line_loop = GL_LINE_LOOP,
   lines = GL_LINES,
   //  triangle_strip = GL_TRIANGLE_STRIP,
   //  triangle_fan = GL_TRIANGLE_FAN,
@@ -44,6 +44,8 @@ public:
    */
   void attrib(Shader& shader, BufTarget target, Buffer& buf, const std::string& desc);
   void attrib(Shader& shader, Buffer& buf, const std::string& desc);
+
+  void element_array(Buffer& buf);
 
   void draw_arrays(const DrawMode& mode, GLsizei count, int first = 0);
 

@@ -37,6 +37,7 @@ set(imp_INCLUDE_FILES ${imp_INCLUDE_FILES}
         util/log.hpp
         util/map_macro.hpp
         util/memusage.hpp
+        util/oneshot_macro.hpp
         util/platform.hpp
         util/rnd.hpp
         util/sops.hpp

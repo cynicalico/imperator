@@ -33,6 +33,9 @@ public:
   void add(const std::vector<T>& new_data);
   void add(std::initializer_list<T> new_data);
 
+  template<std::ranges::input_range R>
+  void add(const R& new_data);
+
   void sync();
 
 private:
@@ -149,6 +152,12 @@ void VecBuffer<T>::add(const std::vector<T>& new_data) {
 template<Numeric T>
 void VecBuffer<T>::add(std::initializer_list<T> new_data) {
   add_(new_data.begin(), new_data.end());
+}
+
+template<Numeric T>
+template<std::ranges::input_range R>
+void VecBuffer<T>::add(const R& new_data) {
+  add_(std::ranges::begin(new_data), std::ranges::end(new_data));
 }
 
 template<Numeric T>

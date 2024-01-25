@@ -11,11 +11,13 @@ Batch::Batch(
   std::size_t vertices_per_obj, std::size_t floats_per_vertex, bool fill_reverse
 ) : shader_(shader),
     vao_(ctx),
-    vbo_(ctx, vertices_per_obj * floats_per_vertex, fill_reverse, BufTarget::array, BufUsage::dynamic_draw),
+    vbo_(ctx, vertices_per_obj * floats_per_vertex, false, BufTarget::array, BufUsage::dynamic_draw),
+    ebo_(ctx, vertices_per_obj, fill_reverse, BufTarget::element_array, BufUsage::dynamic_draw),
     draw_mode_(draw_mode),
     floats_per_vertex_(floats_per_vertex),
     fill_reverse_(fill_reverse) {
   vao_.attrib(shader, vbo_, attrib_desc);
+  vao_.element_array(ebo_);
 }
 
 std::size_t Batch::size() const {
@@ -24,39 +26,47 @@ std::size_t Batch::size() const {
 
 void Batch::clear() {
   vbo_.clear();
+  ebo_.clear();
   draw_start_offset_ = 0;
+  ebo_offset_ = 0;
 }
 
-void Batch::add(std::initializer_list<float> data) {
+void Batch::add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
   vbo_.add(data);
+  if (insert_restart) {
+    ebo_.add({std::numeric_limits<GLuint>::max()});
+  }
+  ebo_.add(std::ranges::views::transform(indices, [&](const auto& i) { return i + ebo_offset_; }));
+  ebo_offset_ += data.size() / floats_per_vertex_;
 }
 
 DrawCall Batch::get_draw_call() {
+  int count, first;
   if (fill_reverse_) {
-    return [&](GladGLContext&, glm::mat4 mvp, float z_max) {
-      vbo_.sync();
-
-      shader_.use();
-      shader_.uniform_mat4f("mvp", mvp);
-      shader_.uniform_1f("z_max", z_max);
-
-      vao_.draw_arrays(draw_mode_, vbo_.size() / floats_per_vertex_, vbo_.front() / floats_per_vertex_);
-    };
+    count = ebo_.size();
+    first = ebo_.front();
+  } else {
+    count = ebo_.size() - draw_start_offset_;
+    first = draw_start_offset_;
+    draw_start_offset_ = ebo_.size();
   }
-
-  int count = vbo_.size() - draw_start_offset_;
-
-  int first = draw_start_offset_;
-  draw_start_offset_ = vbo_.size();
 
   return [&, count, first](GladGLContext&, glm::mat4 mvp, float z_max) {
     vbo_.sync();
+    ebo_.sync();
 
     shader_.use();
     shader_.uniform_mat4f("mvp", mvp);
     shader_.uniform_1f("z_max", z_max);
 
-    vao_.draw_arrays(draw_mode_, count / floats_per_vertex_, first / floats_per_vertex_);
+    vao_.bind();
+    vao_.gl.DrawElements(
+      unwrap(draw_mode_),
+      count,
+      GL_UNSIGNED_INT,
+      reinterpret_cast<void*>(first * sizeof(unsigned int))
+    );
+    vao_.unbind();
   };
 }
 
@@ -83,7 +93,7 @@ void BatchList::clear() {
   stored_draw_calls_.clear();
 }
 
-void BatchList::add(std::initializer_list<float> data) {
+void BatchList::add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
   if (batches_.empty()) {
     batches_.emplace_back(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
                           fill_reverse_);
@@ -97,7 +107,7 @@ void BatchList::add(std::initializer_list<float> data) {
     curr_batch_++;
   }
 
-  batches_[curr_batch_].add(data);
+  batches_[curr_batch_].add(data, indices, insert_restart);
 }
 
 std::vector<DrawCall> BatchList::get_draw_calls() {
@@ -135,6 +145,11 @@ Batcher::Batcher(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(module_mgr
     attrib_descs_.emplace(DrawMode::lines, "in_pos:3f in_color:4f in_trans:3f");
     vertices_per_obj_.emplace(DrawMode::lines, 2);
     floats_per_vertex_.emplace(DrawMode::lines, 10);
+
+    shaders_.emplace(DrawMode::line_loop, lines_shader);
+    attrib_descs_.emplace(DrawMode::line_loop, "in_pos:3f in_color:4f in_trans:3f");
+    vertices_per_obj_.emplace(DrawMode::line_loop, 5);
+    floats_per_vertex_.emplace(DrawMode::line_loop, 10);
   }
 
   if (const auto src = ShaderSrc::parse(DATA_FOLDER / "shader" / "triangles.glsl")) {
@@ -147,7 +162,7 @@ Batcher::Batcher(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(module_mgr
   }
 }
 
-void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float> data) {
+void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
   auto it = opaque_batches_.find(mode);
   if (it == opaque_batches_.end()) {
     it = opaque_batches_.emplace_hint(
@@ -165,11 +180,11 @@ void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float
     );
   }
 
-  it->second.add(data);
+  it->second.add(data, indices, insert_restart);
   z += 1.0f;
 }
 
-void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data) {
+void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
   if (last_trans_draw_mode_ != DrawMode::none && last_trans_draw_mode_ != mode) {
     collect_trans_draw_calls_();
   }
@@ -192,11 +207,14 @@ void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data)
     );
   }
 
-  it->second.add(data);
+  it->second.add(data, indices, insert_restart);
   z += 1.0f;
 }
 
 void Batcher::draw(const glm::mat4& projection) {
+  ctx->enable(Capability::primitive_restart);
+  ctx->gl.PrimitiveRestartIndex(std::numeric_limits<GLuint>::max());
+
   ctx->enable(Capability::depth_test);
 
   collect_opaque_draw_calls_();
