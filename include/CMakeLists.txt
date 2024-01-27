@@ -20,11 +20,12 @@ set(imp_INCLUDE_FILES ${imp_INCLUDE_FILES}
         gfx/gl/tex_image.hpp
         gfx/gl/vec_buffer.hpp
         gfx/gl/vertex_array.hpp
-        gfx/module/batcher.hpp
+        gfx/module/2d/batcher.hpp
+        gfx/module/2d/gfx_2d.hpp
         gfx/module/dear_imgui.hpp
-        gfx/module/gfx_2d.hpp
         gfx/module/gfx_context.hpp
         gfx/module/shader_mgr.hpp
+        gfx/module/texture_mgr.hpp
         gfx/color.hpp
 
         util/ds/trie.hpp

@@ -9,6 +9,8 @@
 namespace imp {
 enum class DrawMode {
   none = 0, // Used as sentinel
+  tex = 0xdeadbeef, // Used for batching
+
   points = GL_POINTS,
   //  line_strip = GL_LINE_STRIP,
   line_loop = GL_LINE_LOOP,

@@ -1,4 +1,4 @@
-#include "imp/gfx/module/batcher.hpp"
+#include "imp/gfx/module/2d/batcher.hpp"
 
 #include "imp/util/io.hpp"
 #include <ranges>
@@ -40,7 +40,7 @@ void Batch::add(std::initializer_list<float> data, std::initializer_list<unsigne
   ebo_offset_ += data.size() / floats_per_vertex_;
 }
 
-DrawCall Batch::get_draw_call() {
+DrawCall Batch::get_draw_call_tex(GLuint id) {
   int count, first;
   if (fill_reverse_) {
     count = ebo_.size();
@@ -51,13 +51,15 @@ DrawCall Batch::get_draw_call() {
     draw_start_offset_ = ebo_.size();
   }
 
-  return [&, count, first](GladGLContext&, glm::mat4 mvp, float z_max) {
+  return [&, id, count, first](GladGLContext& gl, glm::mat4 mvp, float z_max) {
     vbo_.sync();
     ebo_.sync();
 
     shader_.use();
     shader_.uniform_mat4f("mvp", mvp);
     shader_.uniform_1f("z_max", z_max);
+
+    gl.BindTexture(GL_TEXTURE_2D, id);
 
     vao_.bind();
     vao_.gl.DrawElements(
@@ -68,6 +70,10 @@ DrawCall Batch::get_draw_call() {
     );
     vao_.unbind();
   };
+}
+
+DrawCall Batch::get_draw_call() {
+  return get_draw_call_tex(0);
 }
 
 BatchList::BatchList(
@@ -93,12 +99,13 @@ void BatchList::clear() {
   stored_draw_calls_.clear();
 }
 
-void BatchList::add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
+void BatchList::add_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned> indices,
+                        bool insert_restart) {
   if (batches_.empty()) {
     batches_.emplace_back(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
                           fill_reverse_);
   } else if (batches_[curr_batch_].size() > BATCH_SIZE_LIMIT) {
-    stored_draw_calls_.emplace_back(batches_[curr_batch_].get_draw_call());
+    stored_draw_calls_.emplace_back(batches_[curr_batch_].get_draw_call_tex(id));
 
     if (curr_batch_ == batches_.size() - 1) {
       batches_.emplace_back(ctx_, shader_, draw_mode_, attrib_desc_, vertices_per_obj_, floats_per_vertex_,
@@ -110,7 +117,12 @@ void BatchList::add(std::initializer_list<float> data, std::initializer_list<uns
   batches_[curr_batch_].add(data, indices, insert_restart);
 }
 
-std::vector<DrawCall> BatchList::get_draw_calls() {
+void BatchList::add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices,
+                    bool insert_restart) {
+  add_tex(0, data, indices, insert_restart);
+}
+
+std::vector<DrawCall> BatchList::get_draw_calls_tex(GLuint id) {
   std::vector<DrawCall> draw_calls{};
 
   if (!stored_draw_calls_.empty()) {
@@ -119,10 +131,14 @@ std::vector<DrawCall> BatchList::get_draw_calls() {
   }
 
   if (!batches_.empty()) {
-    draw_calls.emplace_back(batches_[curr_batch_].get_draw_call());
+    draw_calls.emplace_back(batches_[curr_batch_].get_draw_call_tex(id));
   }
 
   return draw_calls;
+}
+
+std::vector<DrawCall> BatchList::get_draw_calls() {
+  return get_draw_calls_tex(0);
 }
 
 Batcher::Batcher(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(module_mgr) {
@@ -160,9 +176,14 @@ Batcher::Batcher(const std::weak_ptr<ModuleMgr>& module_mgr) : Module(module_mgr
     vertices_per_obj_.emplace(DrawMode::triangles, 3);
     floats_per_vertex_.emplace(DrawMode::triangles, 10);
   }
+
+  if (const auto src = ShaderSrc::parse(DATA_FOLDER / "shader" / "textures.glsl")) {
+    tex_shader_ = shaders->compile(*src);
+  }
 }
 
-void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
+void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float> data,
+                         std::initializer_list<unsigned int> indices, bool insert_restart) {
   auto it = opaque_batches_.find(mode);
   if (it == opaque_batches_.end()) {
     it = opaque_batches_.emplace_hint(
@@ -184,7 +205,8 @@ void Batcher::add_opaque(const DrawMode& mode, const std::initializer_list<float
   z += 1.0f;
 }
 
-void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart) {
+void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data,
+                        std::initializer_list<unsigned int> indices, bool insert_restart) {
   if (last_trans_draw_mode_ != DrawMode::none && last_trans_draw_mode_ != mode) {
     collect_trans_draw_calls_();
   }
@@ -208,6 +230,32 @@ void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data,
   }
 
   it->second.add(data, indices, insert_restart);
+  z += 1.0f;
+}
+
+void Batcher::add_opaque_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned> indices) {}
+
+void Batcher::add_trans_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned> indices) {
+  if ((last_trans_draw_mode_ != DrawMode::none && last_trans_draw_mode_ != DrawMode::tex) ||
+      (last_tex_id_ != 0 && last_tex_id_ != id)) {
+    collect_trans_draw_calls_();
+  }
+  last_trans_draw_mode_ = DrawMode::tex;
+  last_tex_id_ = id;
+
+  while (tex_batches_.size() <= id) {
+    tex_batches_.emplace_back(
+      *ctx,
+      *tex_shader_,
+      DrawMode::triangles,
+      "in_pos:3f in_color:4f in_tex_coords:2f in_trans:3f",
+      4,
+      12,
+      false
+    );
+  }
+
+  tex_batches_[id].add_tex(id, data, indices, false);
   z += 1.0f;
 }
 
@@ -251,7 +299,11 @@ void Batcher::collect_opaque_draw_calls_() {
 
 void Batcher::collect_trans_draw_calls_() {
   if (last_trans_draw_mode_ != DrawMode::none) {
-    auto draw_calls = trans_batches_.at(last_trans_draw_mode_).get_draw_calls();
+    std::vector<DrawCall> draw_calls;
+    if (last_trans_draw_mode_ == DrawMode::tex)
+      draw_calls = tex_batches_.at(last_tex_id_).get_draw_calls_tex(last_tex_id_);
+    else
+      draw_calls = trans_batches_.at(last_trans_draw_mode_).get_draw_calls();
     trans_draw_calls_.insert(trans_draw_calls_.end(), draw_calls.begin(), draw_calls.end());
   }
 }

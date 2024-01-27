@@ -9,7 +9,7 @@
 #include "imp/core/prio_list.hpp"
 #include "imp/core/type_id.hpp"
 
-#include "imp/gfx/module/gfx_2d.hpp"
+#include "imp/gfx/module/2d/gfx_2d.hpp"
 #include "imp/gfx/color.hpp"
 
 #include "imp/util/averagers.hpp"

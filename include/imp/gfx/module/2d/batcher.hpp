@@ -1,10 +1,10 @@
 #ifndef IMP_GFX_MODULE_BATCHER_HPP
 #define IMP_GFX_MODULE_BATCHER_HPP
 
-#include "imp/core/module_mgr.hpp"
-#include "imp/gfx/gl/vec_buffer.hpp"
-#include "imp/gfx/gl/vertex_array.hpp"
-#include "imp/gfx/module/shader_mgr.hpp"
+#include "../../../core/module_mgr.hpp"
+#include "../../gl/vec_buffer.hpp"
+#include "../../gl/vertex_array.hpp"
+#include "../shader_mgr.hpp"
 
 namespace imp {
 inline constexpr std::size_t BATCH_SIZE_LIMIT = 600'000;
@@ -23,6 +23,7 @@ public:
 
   void add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart);
 
+  DrawCall get_draw_call_tex(GLuint id);
   DrawCall get_draw_call();
 
 private:
@@ -49,8 +50,10 @@ public:
   std::size_t size() const;
   void clear();
 
+  void add_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart);
   void add(std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart);
 
+  std::vector<DrawCall> get_draw_calls_tex(GLuint id);
   std::vector<DrawCall> get_draw_calls();
 
 private:
@@ -82,6 +85,9 @@ public:
   void add_opaque(const DrawMode& mode, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart = false);
   void add_trans(const DrawMode& mode, std::initializer_list<float> data, std::initializer_list<unsigned int> indices, bool insert_restart = false);
 
+  void add_opaque_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned int> indices);
+  void add_trans_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned int> indices);
+
   void draw(const glm::mat4& projection);
 
 private:
@@ -95,7 +101,10 @@ private:
   std::unordered_map<DrawMode, BatchList> trans_batches_{};
 
   /* TEXTURES */
-  // TODO
+  std::shared_ptr<Shader> tex_shader_{};
+  std::vector<BatchList> tex_batches_{};
+
+  GLuint last_tex_id_{0};
 
   /* GENERAL */
   DrawMode last_trans_draw_mode_{DrawMode::none};

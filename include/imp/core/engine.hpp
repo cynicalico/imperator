@@ -12,6 +12,7 @@
 #include "imp/gfx/module/dear_imgui.hpp"
 #include "imp/gfx/module/gfx_context.hpp"
 #include "imp/gfx/module/shader_mgr.hpp"
+#include "imp/gfx/module/texture_mgr.hpp"
 
 #include "imp/util/module/debug_overlay.hpp"
 #include "imp/util/module/timer_mgr.hpp"
@@ -59,8 +60,9 @@ void Engine::run_application(const WindowOpenParams& initialize_params) {
   module_mgr_->create<CursorMgr>();
 
   module_mgr_->create<GfxContext>(initialize_params);
-  module_mgr_->create<ShaderMgr>();
   module_mgr_->create<DearImgui>();
+  module_mgr_->create<ShaderMgr>();
+  module_mgr_->create<TextureMgr>();
 
   module_mgr_->create<TimerMgr>();
 

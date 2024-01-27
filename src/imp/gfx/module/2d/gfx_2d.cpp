@@ -1,4 +1,4 @@
-#include "imp/gfx/module/gfx_2d.hpp"
+#include "imp/gfx/module/2d/gfx_2d.hpp"
 
 namespace imp {
 std::once_flag Gfx2D::created_required_modules_;
@@ -10,6 +10,7 @@ Gfx2D::Gfx2D(const std::weak_ptr<ModuleMgr>& module_mgr): Module(module_mgr) {
 
   batcher = module_mgr.lock()->get<Batcher>();
   ctx = module_mgr.lock()->get<GfxContext>();
+  textures = module_mgr.lock()->get<TextureMgr>();
 }
 
 void Gfx2D::clear(const Color& color, const ClearBit& mask) {
@@ -155,5 +156,31 @@ void Gfx2D::fill_rect(const glm::vec2 xy, const glm::vec2 size, float angle, con
 
 void Gfx2D::fill_rect(const glm::vec2 xy, const glm::vec2 size, const Color& c) {
   fill_rect(xy, size, {0, 0}, 0, c);
+}
+
+void Gfx2D::draw_tex(const Texture& t, glm::vec2 xy, glm::vec2 rcenter, float angle, const Color& c) {
+  const auto gl_c = c.gl_color();
+  const std::initializer_list<float> vdata = {
+    xy.x,         xy.y,         batcher->z, gl_c.r, gl_c.g, gl_c.b, gl_c.a, 0.0f, 0.0f, rcenter.x, rcenter.y, glm::radians(angle),
+    xy.x + t.w(), xy.y,         batcher->z, gl_c.r, gl_c.g, gl_c.b, gl_c.a, 1.0f, 0.0f, rcenter.x, rcenter.y, glm::radians(angle),
+    xy.x + t.w(), xy.y + t.h(), batcher->z, gl_c.r, gl_c.g, gl_c.b, gl_c.a, 1.0f, 1.0f, rcenter.x, rcenter.y, glm::radians(angle),
+    xy.x,         xy.y + t.h(), batcher->z, gl_c.r, gl_c.g, gl_c.b, gl_c.a, 0.0f, 1.0f, rcenter.x, rcenter.y, glm::radians(angle),
+  };
+  const std::initializer_list<unsigned int> idata = {0, 1, 2, 0, 2, 3};
+
+  if (!t.fully_opaque() || gl_c.a < 1.0) {
+    batcher->add_trans_tex(t.id(), vdata, idata);
+  } else {
+    batcher->add_opaque_tex(t.id(), vdata, idata);
+  }
+}
+
+void Gfx2D::draw_tex(const Texture& t, glm::vec2 xy, float angle, const Color& c) {
+  const glm::vec2 center = {xy.x + t.w() / 2.0f, xy.y + t.h() / 2.0f};
+  draw_tex(t, xy, center, angle, c);
+}
+
+void Gfx2D::draw_tex(const Texture& t, glm::vec2 xy, const Color& c) {
+  draw_tex(t, xy, {0, 0}, 0, c);
 }
 } // namespace imp

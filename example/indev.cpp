@@ -6,6 +6,10 @@ class Indev : public imp::Application {
 public:
   std::shared_ptr<imp::Gfx2D> gfx{nullptr};
 
+  std::shared_ptr<imp::Texture> bulbasaur{nullptr};
+  std::shared_ptr<imp::Texture> charmander{nullptr};
+  std::shared_ptr<imp::Texture> squirtle{nullptr};
+
   explicit Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr);
 
   void update(double dt) override;
@@ -17,6 +21,10 @@ Indev::Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr) : Application(modu
   debug_overlay->set_console_binding("grave_accent");
 
   gfx = module_mgr.lock()->create<imp::Gfx2D>();
+
+  bulbasaur = gfx->textures->load(CWD / "example" / "res" / "img" / "bulbasaur.png", true);
+  charmander = gfx->textures->load(CWD / "example" / "res" / "img" / "charmander.png", true);
+  squirtle = gfx->textures->load(CWD / "example" / "res" / "img" / "squirtle.png", true);
 }
 
 void Indev::update(double dt) {
@@ -29,20 +37,9 @@ void Indev::draw() {
   ctx->gl.Viewport(0, 0, window->w(), window->h());
   gfx->clear(imp::rgb("black"));
 
-  gfx->draw_tri({300, 300}, {350, 350}, {300, 350}, imp::rgb("red"));
-  gfx->draw_tri({325, 300}, {375, 350}, {325, 350}, imp::rgb("green"));
-  gfx->draw_tri({350, 300}, {400, 350}, {350, 350}, imp::rgb("blue"));
-
-  gfx->fill_rect({100, 100}, {100, 100}, imp::rgb("blue"));
-  gfx->fill_rect({125, 125}, {100, 100}, imp::rgba("red", 128));
-  gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgba("white", 128));
-  gfx->fill_rect({150, 150}, {100, 100}, imp::rgba("lime", 128));
-
-  gfx->draw_rect({600, 300}, {100, 100}, imp::rgb("red"));
-  gfx->draw_rect({650, 350}, {100, 100}, imp::rgb("green"));
-  gfx->draw_rect({700, 400}, {100, 100}, imp::rgb("blue"));
-
-  gfx->fill_tri({400, 400}, {500, 500}, {400, 500}, imp::rgb(0xff00ff));
+  gfx->draw_tex(*bulbasaur, {100, 100});
+  gfx->draw_tex(*charmander, {110 + bulbasaur->w(), 100});
+  gfx->draw_tex(*squirtle, {120 + bulbasaur->w() + charmander->w(), 100});
 
   gfx->batcher->draw(window->projection_matrix());
 }
