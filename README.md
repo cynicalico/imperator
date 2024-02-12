@@ -1,8 +1,8 @@
 # imperator
-=======
+
 :warning: ***This is undergoing a big rewrite at the moment. No ETA, but progress is being made!*** :warning:
 
-[![build](https://github.com/cyncalico/imperator/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/bofehlan/imperator/actions/workflows/c-cpp.yml)
+[![build](https://github.com/cyncalico/imperator/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/cynicalico/imperator/actions/workflows/c-cpp.yml)
 
 Imperator 2: Electric Boogaloo.
 
