@@ -22,8 +22,8 @@ void main() {
     float m30 = -x * c + y * s + x;
     float m31 = -x * s - y * c + y;
     mat4 trans = mat4(
-        vec4(c,   s,   0.0, 0.0),
-        vec4(-s,  c,   0.0, 0.0),
+        vec4(c, s, 0.0, 0.0),
+        vec4(-s, c, 0.0, 0.0),
         vec4(0.0, 0.0, 1.0, 0.0),
         vec4(m30, m31, 0.0, 1.0)
     );

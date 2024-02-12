@@ -1,59 +1,58 @@
-#include "baphy/baphy.hpp"
+#include "indev.hpp"
 
-const auto HERE = std::filesystem::path(__FILE__).parent_path();
+const auto CWD = std::filesystem::current_path();
+const auto IMG_PATH = CWD / "example" / "res" / "img";
 
-class Indev : public baphy::Application {
+class Indev : public imp::Application {
 public:
-  std::shared_ptr<baphy::Texture> font_tex;
-  std::shared_ptr<baphy::CP437Font> font;
+  std::shared_ptr<imp::Gfx2D> gfx{nullptr};
 
-  std::shared_ptr<baphy::Texture> font_tex2;
-  std::shared_ptr<baphy::CP437Font> font2;
+  std::shared_ptr<imp::Texture> bulbasaur{nullptr};
+  std::shared_ptr<imp::Texture> charmander{nullptr};
+  std::shared_ptr<imp::Texture> squirtle{nullptr};
 
-  void initialize() override {
-    cursors->create(HERE / "res" / "img" / "dot.png", 4, 4)->set();
+  explicit Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr);
 
-    font_tex = textures->load(HERE / "res" / "font" / "cp437_prop" / "dmf_calligraphy_11.png", true);
-    font = fonts->load<baphy::CP437Font>("fantasy", font_tex, HERE / "res" / "font" / "cp437_prop" / "dmf_calligraphy_11.txt", 11, 2);
-
-    font_tex2 = textures->load(HERE / "res" / "font" / "cp437" / "dmf_calligraphy_8x8.png", true);
-    font2 = fonts->load<baphy::CP437Font>("fantasy2", font_tex2, 8, 8, 2);
-  }
-
-  void update(double dt) override {
-    if (input->pressed("escape")) window->set_should_close(true);
-  }
-
-  void draw() override {
-    gfx->clear(baphy::rgb(0x000000));
-
-    auto s1 = std::string(R"(
-This text is written in a proportional font!
-The characters are on a font atlas that is *nearly* Code Page 437,
-but without a fixed width.
-)");
-    s1 = s1.substr(1, s1.size() - 2);
-
-    auto s2 = std::string(R"(
-This text is written in a proportional font!
-The characters are on a font atlas that is *nearly* Code Page 437,
-but without a fixed width.
-)");
-    s2 = s2.substr(1, s2.size() - 2);
-
-    auto s1_bounds = font->bounds(2, s1);
-    primitives->draw_rect(100, 100, s1_bounds.x, s1_bounds.y, baphy::rgb("green"));
-    font->draw(100, 100, 2, s1, baphy::rgb(0xffffff));
-
-    auto s2_bounds = font2->bounds(2, s2);
-    primitives->draw_rect(100, 200, s2_bounds.x, s2_bounds.y, baphy::rgb("green"));
-    font2->draw(100, 200, 2, s2, baphy::rgb(0xffffff));
-  }
+  void update(double dt) override;
+  void draw() override;
 };
 
-BAPHY_RUN(Indev,
+Indev::Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr) : Application(module_mgr) {
+  debug_overlay->set_flying_log_enabled(true);
+  debug_overlay->set_console_binding("grave_accent");
+
+  gfx = module_mgr.lock()->create<imp::Gfx2D>();
+
+  bulbasaur = gfx->textures->load(IMG_PATH / "bulbasaur.png", true);
+  charmander = gfx->textures->load(IMG_PATH / "charmander.png", true);
+  squirtle = gfx->textures->load(IMG_PATH / "squirtle.png", true);
+}
+
+void Indev::update(double dt) {
+  if (inputs->pressed("escape")) {
+    window->set_should_close(true);
+  }
+}
+
+void Indev::draw() {
+  ctx->gl.Viewport(0, 0, window->w(), window->h());
+  gfx->clear(imp::rgb("black"));
+
+  gfx->draw_tex(*bulbasaur, {100, 100});
+  gfx->draw_tex(*charmander, {110 + bulbasaur->w(), 100});
+
+  gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgb("yellow"));
+
+  gfx->draw_tex(*squirtle, {120 + bulbasaur->w() + charmander->w(), 100});
+
+  gfx->batcher->draw(window->projection_matrix());
+}
+
+int main(int, char*[]) {
+  imp::Engine().run_application<Indev>(imp::WindowOpenParams{
     .title = "Indev",
     .size = {1280, 720},
-    .flags = baphy::WindowFlags::centered,
-    .debug_overlay_options_path = HERE / "debug_overlay_options.json"
-)
+    .mode = imp::WindowMode::windowed,
+    .flags = imp::WindowFlags::centered | imp::WindowFlags::vsync
+  });
+}

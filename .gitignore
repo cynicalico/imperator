@@ -5,6 +5,7 @@
 build/
 
 .cache/
+cache/
 
 data/log/
 

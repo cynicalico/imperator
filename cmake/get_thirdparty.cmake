@@ -1,4 +1,10 @@
 CPMAddPackage(
+        NAME argparse
+        GITHUB_REPOSITORY p-ranav/argparse
+        VERSION 3.0
+)
+
+CPMAddPackage(
         NAME fmt
         GITHUB_REPOSITORY fmtlib/fmt
         GIT_TAG 10.1.1
@@ -12,9 +18,9 @@ CPMAddPackage(
 )
 add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
 if (WIN32)
-    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
+    glad_add_library(glad_gl_core_mx_43 REPRODUCIBLE MX API gl:core=4.3 wgl=1.0)
 else ()
-    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4)
+    glad_add_library(glad_gl_core_mx_43 REPRODUCIBLE MX API gl:core=4.3 glx=1.4)
 endif ()
 
 CPMAddPackage(
@@ -36,21 +42,14 @@ CPMAddPackage(
 CPMAddPackage(
         NAME imgui
         GITHUB_REPOSITORY ocornut/imgui
-        GIT_TAG d2291df55190e2f070af2635863f47a96d378a52
+        GIT_TAG 20e1caec858caa8123a6d52d410fa3f2578d3054
         DOWNLOAD_ONLY YES
 )
 
 CPMAddPackage(
         NAME implot
         GITHUB_REPOSITORY epezent/implot
-        GIT_TAG 18758e237e8906a97ddf42de1e75793526f30ce9
-        DOWNLOAD_ONLY
-)
-
-CPMAddPackage(
-        NAME ImGuiColorTextEdit
-        GITHUB_REPOSITORY santaclose/ImGuiColorTextEdit
-        GIT_TAG 23fdb8f6f990711f4643511cb9855482cc7d7ce7
+        GIT_TAG 1f7a8c0314d838a76695bccebe0f66864f507bc0
         DOWNLOAD_ONLY
 )
 
@@ -61,37 +60,9 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-        NAME libnyquist
-        GITHUB_REPOSITORY ddiakopoulos/libnyquist
-        GIT_TAG 767efd97cdd7a281d193296586e708490eb6e54f
-        OPTIONS
-            "BUILD_EXAMPLE OFF"
-)
-
-CPMAddPackage(
-        NAME magic_enum
-        GITHUB_REPOSITORY Neargye/magic_enum
-        GIT_TAG v0.9.3
-)
-
-CPMAddPackage(
         NAME nfd
         GITHUB_REPOSITORY btzy/nativefiledialog-extended
         VERSION 1.1.0
-)
-
-CPMAddPackage(
-        NAME openal-soft
-        GITHUB_REPOSITORY kcat/openal-soft
-        GIT_TAG 1.23.1
-        OPTIONS
-            "ALSOFT_UTILS OFF"
-            "ALSOFT_EXAMPLES OFF"
-            "ALSOFT_INSTALL ON"
-            "ALSOFT_INSTALL_HRTF_DATA ON"
-            "ALSOFT_INSTALL_AMBDEC_PRESETS ON"
-            "ALSOFT_INSTALL_EXAMPLES OFF"
-            "ALSOFT_INSTALL_UTILS OFF"
 )
 
 CPMAddPackage(
@@ -99,12 +70,6 @@ CPMAddPackage(
         GITHUB_REPOSITORY imneme/pcg-cpp
         GIT_TAG 428802d1a5634f96bcd0705fab379ff0113bcf13
         DOWNLOAD_ONLY YES
-)
-
-CPMAddPackage(
-        NAME range-v3
-        GITHUB_REPOSITORY ericniebler/range-v3
-        GIT_TAG 0.12.0
 )
 
 CPMAddPackage(
@@ -152,7 +117,7 @@ CPMAddPackage(
         VERSION 1.2.3
 )
 
-add_library(baphy_thirdparty STATIC
+add_library(imp_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imconfig.h
         ${imgui_SOURCE_DIR}/imgui.h
         ${imgui_SOURCE_DIR}/imgui_internal.h
@@ -161,6 +126,7 @@ add_library(baphy_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imstb_truetype.h
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.h
+        ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
 
         ${imgui_SOURCE_DIR}/imgui.cpp
         ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -169,6 +135,7 @@ add_library(baphy_thirdparty STATIC
         ${imgui_SOURCE_DIR}/imgui_widgets.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+        ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
 
         ${implot_SOURCE_DIR}/implot.h
         ${implot_SOURCE_DIR}/implot_internal.h
@@ -176,11 +143,6 @@ add_library(baphy_thirdparty STATIC
         ${implot_SOURCE_DIR}/implot.cpp
         ${implot_SOURCE_DIR}/implot_demo.cpp
         ${implot_SOURCE_DIR}/implot_items.cpp
-
-        ${ImGuiColorTextEdit_SOURCE_DIR}/TextEditor.h
-
-        ${ImGuiColorTextEdit_SOURCE_DIR}/LanguageDefinitions.cpp
-        ${ImGuiColorTextEdit_SOURCE_DIR}/TextEditor.cpp
 
         ${pcg-cpp_SOURCE_DIR}/include/pcg_extras.hpp
         ${pcg-cpp_SOURCE_DIR}/include/pcg_random.hpp
@@ -191,31 +153,26 @@ add_library(baphy_thirdparty STATIC
         ${stb_SOURCE_DIR}/stb_image_resize.h)
 
 if (MSVC)
-    target_compile_definitions(baphy_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(imp_thirdparty PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 else ()
     set(NFD_PORTAL ON CACHE STRING "" FORCE)
 endif ()
 
-target_include_directories(baphy_thirdparty PUBLIC
+target_include_directories(imp_thirdparty PUBLIC
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
         ${implot_SOURCE_DIR}
-        ${ImGuiColorTextEdit_SOURCE_DIR}
         ${pcg-cpp_SOURCE_DIR}/include
         ${stb_SOURCE_DIR})
 
-target_link_libraries(baphy_thirdparty PUBLIC
+target_link_libraries(imp_thirdparty PUBLIC
+        argparse
         fmt::fmt
-        glad_gl_core_mx_33
-        glfw
+        glad_gl_core_mx_43
         glfw
         glm::glm
-        libnyquist::libnyquist
-        magic_enum::magic_enum
         nfd
         nlohmann_json::nlohmann_json
-        OpenAL::OpenAL
-        range-v3::range-v3
         rapidcsv
         re2::re2
         spdlog::spdlog

@@ -1,60 +1,38 @@
-set(baphy_SRC_FILES ${baphy_SRC_FILES}
-        src/baphy/core/module/application.cpp
-        src/baphy/core/module/audio_mgr.cpp
-        src/baphy/core/module/cursor_mgr.cpp
-        src/baphy/core/module/dear_imgui.cpp
-        src/baphy/core/module/input_mgr.cpp
-        src/baphy/core/module/window.cpp
+set(imp_SRC_FILES ${imp_SRC_FILES}
+        core/module/application.cpp
+        core/module/cursor_mgr.cpp
+        core/module/glfw_callbacks.cpp
+        core/module/input_mgr.cpp
+        core/module/window.cpp
+        core/engine.cpp
+        core/hermes.cpp
+        core/prio_list.cpp
 
-        src/baphy/core/engine.cpp
-        src/baphy/core/event_bus.cpp
-        src/baphy/core/glfw_callbacks.cpp
+        gfx/gl/buffer.cpp
+        gfx/gl/renderbuffer.cpp
+        gfx/gl/shader.cpp
+        gfx/gl/tex_image.cpp
+        gfx/gl/vertex_array.cpp
+        gfx/module/2d/batcher.cpp
+        gfx/module/2d/gfx_2d.cpp
+        gfx/module/dear_imgui.cpp
+        gfx/module/gfx_context.cpp
+        gfx/module/shader_mgr.cpp
+        gfx/module/texture_mgr.cpp
+        gfx/color.cpp
 
-        src/baphy/gfx/internal/font/cp437_font.cpp
-        src/baphy/gfx/internal/font/strip_font.cpp
+        util/module/debug_overlay.cpp
+        util/module/timer_mgr.cpp
+        util/averagers.cpp
+        util/helpers.cpp
+        util/io.cpp
+        util/log.cpp
+        util/memusage.cpp
+        util/platform.cpp
+        util/rnd.cpp
+        util/sops.cpp
+        util/time.cpp
 
-        src/baphy/gfx/internal/gl/buffer.cpp
-        src/baphy/gfx/internal/gl/framebuffer.cpp
-        src/baphy/gfx/internal/gl/renderbuffer.cpp
-        src/baphy/gfx/internal/gl/shader.cpp
-        src/baphy/gfx/internal/gl/texture_unit.cpp
-        src/baphy/gfx/internal/gl/vertex_array.cpp
+        imp.cpp)
 
-        src/baphy/gfx/internal/gui/button.cpp
-        src/baphy/gfx/internal/gui/gui_node.cpp
-        src/baphy/gfx/internal/gui/layout.cpp
-
-        src/baphy/gfx/gui/element/primitive_button.cpp
-
-        src/baphy/gfx/gui/layout/absolute_layout.cpp
-
-        src/baphy/gfx/module/batcher.cpp
-        src/baphy/gfx/module/font_mgr.cpp
-        src/baphy/gfx/module/gfx_context.cpp
-        src/baphy/gfx/module/gui_mgr.cpp
-        src/baphy/gfx/module/primitive_batcher.cpp
-        src/baphy/gfx/module/shader_mgr.cpp
-        src/baphy/gfx/module/surface_mgr.cpp
-        src/baphy/gfx/module/texture_batcher.cpp
-
-        src/baphy/gfx/color.cpp
-        src/baphy/gfx/particle_system.cpp
-        src/baphy/gfx/spritesheet.cpp
-
-        src/baphy/util/module/debug_overlay.cpp
-        src/baphy/util/module/thread_pool.cpp
-        src/baphy/util/module/timer_mgr.cpp
-        src/baphy/util/module/tween_mgr.cpp
-
-        src/baphy/util/noise/opensimplex.cpp
-        src/baphy/util/noise/perlin.cpp
-
-        src/baphy/util/averagers.cpp
-        src/baphy/util/helpers.cpp
-        src/baphy/util/io.cpp
-        src/baphy/util/log.cpp
-        src/baphy/util/memusage.cpp
-        src/baphy/util/platform.cpp
-        src/baphy/util/rnd.cpp
-        src/baphy/util/sops.cpp
-        src/baphy/util/time.cpp)
+list(TRANSFORM imp_SRC_FILES PREPEND src/imp/)

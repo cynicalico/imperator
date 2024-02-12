@@ -1,75 +1,51 @@
-set(baphy_INCLUDE_FILES ${baphy_INCLUDE_FILES}
-        include/baphy/core/internal/dear_wrapper.hpp
+set(imp_INCLUDE_FILES ${imp_INCLUDE_FILES}
+        core/module/application.hpp
+        core/module/cursor_mgr.hpp
+        core/module/glfw_callbacks.hpp
+        core/module/input_mgr.hpp
+        core/module/window.hpp
+        core/engine.hpp
+        core/hermes.hpp
+        core/hermes_payloads.hpp
+        core/hermes_payloads_types.hpp
+        core/module_mgr.hpp
+        core/prio_list.hpp
+        core/type_id.hpp
 
-        include/baphy/core/module/application.hpp
-        include/baphy/core/module/audio_mgr.hpp
-        include/baphy/core/module/cursor_mgr.hpp
-        include/baphy/core/module/dear_imgui.hpp
-        include/baphy/core/module/input_mgr.hpp
-        include/baphy/core/module/window.hpp
+        gfx/gl/buffer.hpp
+        gfx/gl/enum_types.hpp
+        gfx/gl/renderbuffer.hpp
+        gfx/gl/shader.hpp
+        gfx/gl/static_buffer.hpp
+        gfx/gl/tex_image.hpp
+        gfx/gl/vec_buffer.hpp
+        gfx/gl/vertex_array.hpp
+        gfx/module/2d/batcher.hpp
+        gfx/module/2d/gfx_2d.hpp
+        gfx/module/dear_imgui.hpp
+        gfx/module/gfx_context.hpp
+        gfx/module/shader_mgr.hpp
+        gfx/module/texture_mgr.hpp
+        gfx/color.hpp
 
-        include/baphy/core/engine.hpp
-        include/baphy/core/event_bus.hpp
-        include/baphy/core/glfw_callbacks.hpp
-        include/baphy/core/module_mgr.hpp
-        include/baphy/core/msgs.hpp
-        include/baphy/core/prio_list.hpp
+        util/ds/trie.hpp
+        util/module/debug_overlay.hpp
+        util/module/timer_mgr.hpp
+        util/averagers.hpp
+        util/enum_bitops.hpp
+        util/helpers.hpp
+        util/io.hpp
+        util/log.hpp
+        util/map_macro.hpp
+        util/memusage.hpp
+        util/oneshot_macro.hpp
+        util/platform.hpp
+        util/rnd.hpp
+        util/sops.hpp
+        util/time.hpp
 
-        include/baphy/gfx/internal/font/cp437_font.hpp
-        include/baphy/gfx/internal/font/font.hpp
-        include/baphy/gfx/internal/font/strip_font.hpp
+        imp.hpp
+        imp_gl_wrappers.hpp
+        imp_imconfig.hpp)
 
-        include/baphy/gfx/internal/gl/buffer.hpp
-        include/baphy/gfx/internal/gl/framebuffer.hpp
-        include/baphy/gfx/internal/gl/renderbuffer.hpp
-        include/baphy/gfx/internal/gl/shader.hpp
-        include/baphy/gfx/internal/gl/static_buffer.hpp
-        include/baphy/gfx/internal/gl/texture_unit.hpp
-        include/baphy/gfx/internal/gl/vec_buffer.hpp
-        include/baphy/gfx/internal/gl/vertex_array.hpp
-
-        include/baphy/gfx/internal/gui/button.hpp
-        include/baphy/gfx/internal/gui/gui_element.hpp
-        include/baphy/gfx/internal/gui/gui_node.hpp
-        include/baphy/gfx/internal/gui/layout.hpp
-
-        include/baphy/gfx/gui/element/primitive_button.hpp
-
-        include/baphy/gfx/gui/layout/absolute_layout.hpp
-
-        include/baphy/gfx/module/batcher.hpp
-        include/baphy/gfx/module/font_mgr.hpp
-        include/baphy/gfx/module/gfx_context.hpp
-        include/baphy/gfx/module/gui_mgr.hpp
-        include/baphy/gfx/module/primitive_batcher.hpp
-        include/baphy/gfx/module/shader_mgr.hpp
-        include/baphy/gfx/module/surface_mgr.hpp
-        include/baphy/gfx/module/texture_batcher.hpp
-
-        include/baphy/gfx/color.hpp
-        include/baphy/gfx/gfx_enum_types.hpp
-        include/baphy/gfx/particle_system.hpp
-        include/baphy/gfx/spritesheet.hpp
-
-        include/baphy/util/module/debug_overlay.hpp
-        include/baphy/util/module/thread_pool.hpp
-        include/baphy/util/module/timer_mgr.hpp
-        include/baphy/util/module/tween_mgr.hpp
-
-        include/baphy/util/noise/opensimplex.hpp
-        include/baphy/util/noise/perlin.hpp
-
-        include/baphy/util/averagers.hpp
-        include/baphy/util/enum_bitops.hpp
-        include/baphy/util/helpers.hpp
-        include/baphy/util/io.hpp
-        include/baphy/util/log.hpp
-        include/baphy/util/memusage.hpp
-        include/baphy/util/platform.hpp
-        include/baphy/util/rnd.hpp
-        include/baphy/util/sops.hpp
-        include/baphy/util/time.hpp
-        include/baphy/util/type_id.hpp
-
-        include/baphy/baphy.hpp
-        include/baphy/baphy_imconfig.hpp)
+list(TRANSFORM imp_INCLUDE_FILES PREPEND include/imp/)
