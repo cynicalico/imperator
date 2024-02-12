@@ -6,7 +6,6 @@
 #include "imp/core/type_id.hpp"
 #include "imp/util/log.hpp"
 #include "imp/util/map_macro.hpp"
-#include <any>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -28,16 +27,17 @@ struct EPI;
 namespace imp {
 class Hermes {
 public:
-  using Receiver = std::function<void(const std::any&)>;
+  template<typename T>
+  using Receiver = std::function<void(const T&)>;
 
   template<typename T>
   static void presub_cache(const std::string& name);
 
   template<typename T>
-  static void sub(const std::string& name, std::vector<std::string>&& deps, Receiver&& recv);
+  static void sub(const std::string& name, std::vector<std::string>&& deps, Receiver<T>&& recv);
 
   template<typename T>
-  static void sub(const std::string& name, Receiver&& recv);
+  static void sub(const std::string& name, Receiver<T>&& recv);
 
   template<typename T, typename... Args>
   static void send(Args&&... args);
@@ -64,13 +64,16 @@ public:
 
 private:
   template<typename T>
+  inline static PrioList<Receiver<T>> receivers_{};
+
+  template<typename T>
+  inline static std::unordered_map<std::string, std::vector<T>> buffers_{};
+
+  inline static std::recursive_mutex receiver_mutex_;
+  inline static std::recursive_mutex buffer_mutex_;
+
+  template<typename T>
   static void check_create_buffer_(const std::string& name);
-
-  static std::vector<PrioList<Receiver>> receivers_;
-  static std::vector<std::unordered_map<std::string, std::vector<std::any>>> buffers_;
-
-  static std::recursive_mutex receiver_mutex_;
-  static std::recursive_mutex buffer_mutex_;
 };
 } // namespace imp
 
@@ -78,9 +81,9 @@ private:
 
 // Wrap a function in a lambda to any_cast the payload to the correct type
 // See examples of intended usage in any modules that use the event system (Window is a good one)
-#define IMP_MAKE_RECEIVER(T, f)   \
-  [&](const std::any& payload) {  \
-    f(std::any_cast<T>(payload)); \
+#define IMP_MAKE_RECEIVER(T, f)  \
+  [&](const T& payload) {        \
+    f(payload);                  \
   }
 
 // Helper for IMP_HERMES_SUB

@@ -7,7 +7,7 @@
 #include <string>
 
 namespace imp {
-enum class DrawMode {
+enum class DrawMode : unsigned int {
   none = 0, // Used as sentinel
   tex = 0xdeadbeef, // Used for batching
 

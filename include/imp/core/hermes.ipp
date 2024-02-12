@@ -8,122 +8,94 @@ void Hermes::presub_cache(const std::string& name) {
 }
 
 template<typename T>
-void Hermes::sub(const std::string& name, std::vector<std::string>&& deps, Receiver&& recv) {
-  auto e_idx = type_id<T>();
+void Hermes::sub(const std::string& name, std::vector<std::string>&& deps, Receiver<T>&& recv) {
+  const std::lock_guard lock2(receiver_mutex_);
 
-  const std::lock_guard lock(receiver_mutex_);
-
-  while (e_idx >= receivers_.size())
-    receivers_.emplace_back();
-  receivers_[e_idx].add(
-    name,
-    std::forward<std::vector<std::string>>(deps),
-    std::forward<Receiver>(recv)
-  );
-
+  auto& receivers = receivers_<T>;
+  receivers.add(name, std::forward<std::vector<std::string>>(deps), std::forward<Receiver<T>>(recv));
   check_create_buffer_<T>(name);
 }
 
 template<typename T>
-void Hermes::sub(const std::string& name, Receiver&& recv) {
-  sub<T>(name, {}, std::forward<Receiver>(recv));
+void Hermes::sub(const std::string& name, Receiver<T>&& recv) {
+  sub<T>(name, {}, std::forward<Receiver<T>>(recv));
 }
 
 template<typename T, typename... Args>
 void Hermes::send(Args&&... args) {
-  auto e_idx = type_id<T>();
+  const std::lock_guard lock1(buffer_mutex_);
 
-  const std::lock_guard lock(buffer_mutex_);
-
-  auto pay = std::any(T{std::forward<Args>(args)...});
-  if (e_idx < buffers_.size()) {
-    for (auto& p: buffers_[e_idx])
-      p.second.emplace_back(pay);
+  auto pay = T{std::forward<Args>(args)...};
+  for (auto& p: buffers_<T>) {
+    p.second.emplace_back(pay);
   }
 }
 
 template<typename T, typename... Args>
 void Hermes::send_nowait(Args&&... args) {
-  auto e_idx = type_id<T>();
+  const std::lock_guard lock2(receiver_mutex_);
 
-  const std::lock_guard lock(receiver_mutex_);
-
-  auto pay = std::any(T{std::forward<Args>(args)...});
-  if (e_idx < receivers_.size()) {
-    for (const auto& p: receivers_[type_id<T>()])
-      p(pay);
+  auto pay = T{std::forward<Args>(args)...};
+  for (const auto& r: receivers_<T>) {
+    r(pay);
   }
 }
 
 template<typename T, typename... Args>
 void Hermes::send_nowait_rev(Args&&... args) {
-  auto e_idx = type_id<T>();
+  const std::lock_guard lock2(receiver_mutex_);
 
-  const std::lock_guard lock(receiver_mutex_);
-
-  auto pay = std::any(T{std::forward<Args>(args)...});
-  if (e_idx < receivers_.size()) {
-    for (const auto& p: receivers_[type_id<T>()] | std::views::reverse)
-      p(pay);
+  auto pay = T{std::forward<Args>(args)...};
+  for (const auto& r: receivers_<T> | std::views::reverse) {
+    r(pay);
   }
 }
 
 template<typename T>
 void Hermes::poll(const std::string& name) {
-  auto e_idx = type_id<T>();
+  const std::lock_guard lock1(buffer_mutex_);
+  const std::lock_guard lock2(receiver_mutex_);
 
-  const std::lock_guard lock(buffer_mutex_);
-
-  for (const auto& pay: buffers_[e_idx][name])
-    receivers_[e_idx][name](pay);
-  buffers_[e_idx][name].clear();
+  auto& b = buffers_<T>;
+  if (auto it = b.find(name); it != b.end()) {
+    auto& r = receivers_<T>[name];
+    for (const auto& p: it->second) {
+      r(p);
+    }
+    it->second.clear();
+  }
 }
 
 template<typename T>
 std::vector<std::string> Hermes::get_prio() {
-  auto e_idx = type_id<T>();
-
   const std::lock_guard lock(receiver_mutex_);
 
   auto ret = std::vector<std::string>{};
-  for (const auto& p: receivers_[e_idx])
-    ret.emplace_back(receivers_[e_idx].name_from_id(p.id));
+  for (const auto& p: receivers_<T>)
+    ret.emplace_back(receivers_<T>.name_from_id(p.id));
   return ret;
 }
 
 template<typename T>
 bool Hermes::has_pending() {
-  auto e_idx = type_id<T>();
-
   const std::lock_guard lock(receiver_mutex_);
-
-  if (receivers_.size() > e_idx)
-    return receivers_[e_idx].has_pending();
-  return false;
+  return receivers_<T>.has_pending();
 }
 
 template<typename T>
 std::vector<PendingItemInfo> Hermes::get_pending() {
-  auto e_idx = type_id<T>();
-
   const std::lock_guard lock(receiver_mutex_);
-
-  if (receivers_.size() > e_idx)
-    return receivers_[e_idx].get_pending();
-  return {};
+  return receivers_<T>.get_pending();
 }
 
 template<typename T>
 void Hermes::check_create_buffer_(const std::string& name) {
-  auto e_idx = type_id<T>();
+  const std::lock_guard lock1(buffer_mutex_);
 
-  const std::lock_guard lock(buffer_mutex_);
-
-  while (e_idx >= buffers_.size())
-    buffers_.emplace_back();
-
-  if (!buffers_[e_idx].contains(name))
-    buffers_[e_idx][name] = std::vector<std::any>{};
+  auto& buffers = buffers_<T>;
+  if (!buffers.contains(name)) {
+    buffers[name] = std::vector<T>{};
+  }
 }
 } // namespace imp
 

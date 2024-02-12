@@ -1,6 +1,7 @@
 #include "indev.hpp"
 
 const auto CWD = std::filesystem::current_path();
+const auto IMG_PATH = CWD / "example" / "res" / "img";
 
 class Indev : public imp::Application {
 public:
@@ -22,9 +23,9 @@ Indev::Indev(const std::weak_ptr<imp::ModuleMgr>& module_mgr) : Application(modu
 
   gfx = module_mgr.lock()->create<imp::Gfx2D>();
 
-  bulbasaur = gfx->textures->load(CWD / "example" / "res" / "img" / "bulbasaur.png", true);
-  charmander = gfx->textures->load(CWD / "example" / "res" / "img" / "charmander.png", true);
-  squirtle = gfx->textures->load(CWD / "example" / "res" / "img" / "squirtle.png", true);
+  bulbasaur = gfx->textures->load(IMG_PATH / "bulbasaur.png", true);
+  charmander = gfx->textures->load(IMG_PATH / "charmander.png", true);
+  squirtle = gfx->textures->load(IMG_PATH / "squirtle.png", true);
 }
 
 void Indev::update(double dt) {
@@ -39,6 +40,9 @@ void Indev::draw() {
 
   gfx->draw_tex(*bulbasaur, {100, 100});
   gfx->draw_tex(*charmander, {110 + bulbasaur->w(), 100});
+
+  gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgb("yellow"));
+
   gfx->draw_tex(*squirtle, {120 + bulbasaur->w() + charmander->w(), 100});
 
   gfx->batcher->draw(window->projection_matrix());
