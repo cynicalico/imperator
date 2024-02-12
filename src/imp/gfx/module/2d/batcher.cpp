@@ -51,7 +51,7 @@ DrawCall Batch::get_draw_call_tex(GLuint id) {
     draw_start_offset_ = ebo_.size();
   }
 
-  return [&, id, count, first](GladGLContext& gl, glm::mat4 mvp, float z_max) {
+  return [&, id, count, first](GladGLContext& gl_, glm::mat4 mvp, float z_max) {
     vbo_.sync();
     ebo_.sync();
 
@@ -59,7 +59,7 @@ DrawCall Batch::get_draw_call_tex(GLuint id) {
     shader_.uniform_mat4f("mvp", mvp);
     shader_.uniform_1f("z_max", z_max);
 
-    gl.BindTexture(GL_TEXTURE_2D, id);
+    gl_.BindTexture(GL_TEXTURE_2D, id);
 
     vao_.bind();
     vao_.gl.DrawElements(
@@ -233,7 +233,9 @@ void Batcher::add_trans(const DrawMode& mode, std::initializer_list<float> data,
   z += 1.0f;
 }
 
-void Batcher::add_opaque_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned> indices) {}
+void Batcher::add_opaque_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned> indices) {
+  add_trans_tex(id, data, indices);  // TODO: Specialize so we can take advantage of z ordering here
+}
 
 void Batcher::add_trans_tex(GLuint id, std::initializer_list<float> data, std::initializer_list<unsigned> indices) {
   if ((last_trans_draw_mode_ != DrawMode::none && last_trans_draw_mode_ != DrawMode::tex) ||
@@ -271,8 +273,9 @@ void Batcher::draw(const glm::mat4& projection) {
   }
   clear_opaque_();
 
-  ctx->blend_func_separate(BlendFunc::one, BlendFunc::one_minus_src_alpha, BlendFunc::one_minus_dst_alpha,
-                           BlendFunc::one);
+  ctx->blend_func_separate(
+    BlendFunc::one, BlendFunc::one_minus_src_alpha,
+    BlendFunc::one_minus_dst_alpha, BlendFunc::one);
   ctx->enable(Capability::blend);
   ctx->depth_mask(false);
 
@@ -315,6 +318,7 @@ void Batcher::clear_opaque_() {
 
 void Batcher::clear_trans_() {
   std::ranges::for_each(trans_batches_ | std::views::values, [](auto& b) { b.clear(); });
+  std::ranges::for_each(tex_batches_, [](auto& b) { b.clear(); });
   trans_draw_calls_.clear();
   last_trans_draw_mode_ = DrawMode::none;
 }
