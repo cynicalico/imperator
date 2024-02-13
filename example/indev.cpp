@@ -38,12 +38,16 @@ void Indev::draw() {
   ctx->gl.Viewport(0, 0, window->w(), window->h());
   gfx->clear(imp::rgb("black"));
 
+  gfx->draw_rect({100, 100}, {bulbasaur->w() - 1, bulbasaur->h() - 1}, imp::rgb("white"));
   gfx->draw_tex(*bulbasaur, {100, 100});
+
   gfx->draw_tex(*charmander, {110 + bulbasaur->w(), 100});
 
   gfx->line({0, 0}, {inputs->mouse_x(), inputs->mouse_y()}, imp::rgb("yellow"));
 
   gfx->draw_tex(*squirtle, {120 + bulbasaur->w() + charmander->w(), 100});
+
+  gfx->draw_rect({0, 0}, {window->w() - 1, window->h() - 1}, imp::rgb("yellow"));
 
   gfx->batcher->draw(window->projection_matrix());
 }
