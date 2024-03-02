@@ -1,15 +1,5 @@
 .idea/
-.vscode/
-
 .build/
-build/
 
-.cache/
-cache/
-
-data/log/
-
-scratch/
-
-example/*_buddhabrot.png
-example/*_buddhabrot.ppm
+subprojects/*
+!subprojects/*.wrap
