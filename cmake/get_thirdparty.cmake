@@ -25,6 +25,13 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME glm
+        GITHUB_REPOSITORY g-truc/glm
+        GIT_TAG 1.0.1
+        OPTIONS "GLM_ENABLE_CXX_20 ON"
+)
+
+CPMAddPackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
         VERSION 1.13.0
@@ -57,5 +64,6 @@ target_link_libraries(imperator_thirdparty INTERFACE
         fmt::fmt
         glad_gl_core_mx_33
         glfw
+        glm::glm
         spdlog::spdlog
         stduuid)

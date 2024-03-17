@@ -10,8 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "imperator/util/log.h"
-
 namespace imp {
 class EventBus {
 public:
@@ -96,7 +94,7 @@ template<typename T>
 void EventBus::poll(const std::string& name) {
   auto& buffers = buffers_<T>();
   if (auto it = buffers.find(name); it != buffers.end()) {
-    for (auto& r = receivers_<T>[name]; const auto& payload: it->second) {
+    for (auto& r = receivers_<T>()[name]; const auto& payload: it->second) {
       r(payload);
     }
     it->second.clear();

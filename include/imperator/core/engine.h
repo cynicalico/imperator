@@ -2,40 +2,77 @@
 #define IMPERATOR_CORE_ENGINE_H
 
 #include "imperator/core/event_bus.h"
-#include "imperator/module/module_mgr.h"
-#include "imperator/util/platform.h"
+#include "imperator/core/glfw_callbacks.h"
+#include "imperator/core/glfw_wrap.h"
+#include "imperator/core/type_id.h"
+#include "imperator/util/log.h"
 #include <memory>
+#include <utility>
 
 namespace imp {
-class Engine : public std::enable_shared_from_this<Engine> {
+template<typename T>
+struct ModuleInfo;
+} // namespace imp
+
+#define IMPERATOR_DECLARE_MODULE(module)      \
+  template<> struct imp::ModuleInfo<module> { \
+    static constexpr auto name = #module;     \
+  }
+
+namespace imp {
+class Engine;
+
+class Module {
 public:
-  static std::shared_ptr<Engine> create() {
-    const auto e = std::make_shared<Engine>();
-    e->initialize();
+  std::shared_ptr<Engine> imp_engine;
+  std::string imp_module_name;
 
-    return e;
-  }
+  Module(std::shared_ptr<Engine> engine, std::string name);
 
-  void initialize() {
-    log_platform();
+  template<typename T>
+  explicit Module(std::shared_ptr<Engine> engine);
 
-    event_bus_ = std::make_shared<EventBus>();
-    module_mgr_ = std::make_shared<ModuleMgr>(shared_from_this());
+  virtual ~Module();
+};
 
-    IMPERATOR_LOG_DEBUG("Engine initialized");
-  }
+template<typename T>
+Module::Module(std::shared_ptr<Engine> engine)
+  : Module(std::move(engine), ModuleInfo<T>::name) {}
+
+inline Module::Module(std::shared_ptr<Engine> engine, std::string name)
+  : imp_engine(std::move(engine)), imp_module_name(std::move(name)) {
+  IMPERATOR_LOG_DEBUG("Module created: {}", imp_module_name);
+}
+
+inline Module::~Module() {
+  IMPERATOR_LOG_DEBUG("Module destroyed: {}", imp_module_name);
+}
+
+class Application;
+
+class Engine : public Module<Engine>, public std::enable_shared_from_this<Engine> {
+public:
+  static std::shared_ptr<Engine> create();
+
+  template<typename T>
+    requires std::derived_from<T, Application>
+  void run_application(WindowOpenParams params);
 
   template<class T, class TR, typename... Args>
-    requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
+    requires std::derived_from<T, Module> && std::derived_from<TR, T>
   std::shared_ptr<T> create_module(Args&&... args);
 
   template<typename T, typename... Args>
-    requires std::derived_from<T, ModuleI>
+    requires std::derived_from<T, Module>
   std::shared_ptr<T> create_module(Args&&... args);
 
   template<typename T>
-    requires std::derived_from<T, ModuleI>
+    requires std::derived_from<T, Module>
   std::shared_ptr<T> get_module() const;
+
+  /********************
+   * EVENT BUS FACADE *
+   ********************/
 
   template<typename T>
   void presub_cache_event(const std::string& name);
@@ -60,25 +97,54 @@ public:
 
 private:
   std::shared_ptr<EventBus> event_bus_{nullptr};
-  std::shared_ptr<ModuleMgr> module_mgr_{nullptr};
+  std::vector<std::shared_ptr<Module>> modules_{};
+
+  void mainloop_(WindowOpenParams params, const std::function<void()>& application_creation_function);
 };
 
+template<typename T>
+  requires std::derived_from<T, Application>
+void Engine::run_application(WindowOpenParams params) {
+  register_glfw_error_callback();
+  set_global_user_pointer(shared_from_this().get());
+
+  if (!glfwInit()) {
+    std::exit(EXIT_FAILURE);
+  }
+
+  int major, minor, rev;
+  glfwGetVersion(&major, &minor, &rev);
+  IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
+
+  mainloop_(params, [&] { create_module<Application, T>(); });
+
+  clear_global_user_pointer();
+  glfwTerminate();
+  IMPERATOR_LOG_DEBUG("Terminated GLFW");
+}
+
 template<class T, class TR, typename... Args>
-  requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
+  requires std::derived_from<T, Module> && std::derived_from<TR, T>
 std::shared_ptr<T> Engine::create_module(Args&&... args) {
-  return module_mgr_->create<T, TR>(std::forward<Args>(args)...);
+  auto idx = type_id<T>();
+  while (modules_.size() <= idx)
+    modules_.emplace_back();
+
+  modules_[idx] = std::make_shared<TR>(shared_from_this(), std::forward<Args>(args)...);
+  return get_module<T>();
 }
 
 template<typename T, typename... Args>
-  requires std::derived_from<T, ModuleI>
+  requires std::derived_from<T, Module>
 std::shared_ptr<T> Engine::create_module(Args&&... args) {
-  return module_mgr_->create<T>(std::forward<Args>(args)...);
+  return create_module<T, T>(std::forward<Args>(args)...);
 }
 
 template<typename T>
-  requires std::derived_from<T, ModuleI>
+  requires std::derived_from<T, Module>
 std::shared_ptr<T> Engine::get_module() const {
-  return module_mgr_->get<T>();
+  auto idx = type_id<T>();
+  return std::static_pointer_cast<T>(modules_[idx]);
 }
 
 template<typename T>
@@ -116,5 +182,7 @@ void Engine::poll_event(const std::string& name) {
   event_bus_->poll<T>(name);
 }
 } // namespace imp
+
+IMPERATOR_DECLARE_MODULE(imp::Engine);
 
 #endif//IMPERATOR_CORE_ENGINE_H
