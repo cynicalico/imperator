@@ -1,8 +1,9 @@
 #include "imperator/module/application.h"
 
 namespace imp {
-Application::Application(std::shared_ptr<Engine> engine)
-  : Module<Application>(std::move(engine)) {
-  window = imp_engine->get_module<Window>();
+Application::Application(std::weak_ptr<ModuleMgr> module_mgr)
+  : Module(std::move(module_mgr)) {
+  event_bus = module_mgr_.lock()->get<EventBus>();
+  window = module_mgr_.lock()->get<Window>();
 }
 } // namespace imp

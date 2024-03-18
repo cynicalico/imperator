@@ -1,7 +1,6 @@
 #ifndef IMPERATOR_IMPERATOR_H
 #define IMPERATOR_IMPERATOR_H
 
-#include "imperator/core/engine.h"
 #include "imperator/core/event_bus.h"
 #include "imperator/core/events.h"
 #include "imperator/core/type_id.h"

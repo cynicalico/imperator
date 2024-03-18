@@ -1,12 +1,17 @@
 #ifndef IMPERATOR_MODULE_WINDOW_H
 #define IMPERATOR_MODULE_WINDOW_H
 
-#include "imperator/core/engine.h"
+#include "imperator/core/event_bus.h"
+#include "imperator/core/glfw_callbacks.h"
+#include "imperator/core/glfw_wrap.h"
+#include "imperator/core/module_mgr.h"
 
 namespace imp {
-class Window : public Module {
+class Window : public Module<Window> {
 public:
-  Window(std::shared_ptr<Engine> engine, WindowOpenParams open_params);
+  std::shared_ptr<EventBus> event_bus{nullptr};
+
+  Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params);
   ~Window() override;
 
   GLFWwindow* handle() const { return glfw_window_.get(); }

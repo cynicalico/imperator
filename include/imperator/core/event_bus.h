@@ -2,6 +2,7 @@
 #define IMPERATOR_CORE_EVENT_BUS_H
 
 #include "imperator/core/events.h"
+#include "imperator/core/module_mgr.h"
 #include "imperator/ds/prio_list.h"
 #include <functional>
 #include <memory>
@@ -11,8 +12,10 @@
 #include <vector>
 
 namespace imp {
-class EventBus {
+class EventBus final : public Module<EventBus> {
 public:
+  explicit EventBus(std::weak_ptr<ModuleMgr> module_mgr);
+
   template<typename T>
   using Receiver = std::function<void(const T&)>;
 
@@ -21,6 +24,9 @@ public:
 
   template<typename T>
   void sub(const std::string& name, std::vector<std::string>&& deps, Receiver<T>&& recv);
+
+  template<typename T>
+  void sub(const std::string& name, Receiver<T>&& recv);
 
   template<typename T, typename... Args>
   void send(Args&&... args);
@@ -64,6 +70,11 @@ void EventBus::sub(const std::string& name, std::vector<std::string>&& deps, Rec
   auto& receivers = receivers_<T>();
   receivers.add(name, std::forward<std::vector<std::string>>(deps), std::forward<Receiver<T>>(recv));
   check_create_buffer_<T>(name);
+}
+
+template<typename T>
+void EventBus::sub(const std::string& name, Receiver<T>&& recv) {
+  sub(name, {}, std::forward<Receiver<T>>(recv));
 }
 
 template<typename T, typename... Args>
@@ -138,5 +149,7 @@ void EventBus::check_create_buffer_(const std::string& name) {
   }
 }
 } // namespace imp
+
+IMPERATOR_DECLARE_MODULE(imp::EventBus);
 
 #endif//IMPERATOR_CORE_EVENT_BUS_H

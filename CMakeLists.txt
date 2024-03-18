@@ -12,11 +12,11 @@ if (MSVC)
 endif ()
 
 add_library(imperator
-        "include/imperator/core/engine.h"
         "include/imperator/core/event_bus.h"
         "include/imperator/core/events.h"
         "include/imperator/core/glfw_callbacks.h"
         "include/imperator/core/glfw_wrap.h"
+        "include/imperator/core/module_mgr.h"
         "include/imperator/core/type_id.h"
         "include/imperator/ds/prio_list.h"
         "include/imperator/ds/trie.h"
@@ -31,7 +31,7 @@ add_library(imperator
         "include/imperator/util/time.h"
         "include/imperator/imperator.h"
 
-        "src/imperator/core/engine.cpp"
+        "src/imperator/core/event_bus.cpp"
         "src/imperator/core/glfw_callbacks.cpp"
         "src/imperator/ds/prio_list.cpp"
         "src/imperator/ds/trie.cpp"

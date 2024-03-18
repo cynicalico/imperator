@@ -4,22 +4,22 @@
 #include "imperator/util/platform.h"
 
 namespace imp {
-Window::Window(std::shared_ptr<Engine> engine, WindowOpenParams open_params)
-  : Module(std::move(engine), ModuleInfo<Window>::name) {
-  imp_engine->sub_event<E_Update>(imp_module_name, [&](const auto& p) { r_update_(p); });
+Window::Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params)
+  : Module(std::move(module_mgr), ModuleInfo<Window>::name) {
+  event_bus = module_mgr_.lock()->get<EventBus>();
 
-  imp_engine->sub_event<E_GlfwWindowClose>(imp_module_name, [&](const auto& p) { r_glfw_window_close_(p); });
-  imp_engine->sub_event<E_GlfwWindowSize>(imp_module_name, [&](const auto& p) { r_glfw_window_size_(p); });
-  imp_engine->sub_event<E_GlfwFramebufferSize>(imp_module_name, [&](const auto& p) { r_glfw_framebuffer_size_(p); });
-  imp_engine->sub_event<E_GlfwWindowContentScale>(imp_module_name, [&](const auto& p) {
-    r_glfw_window_content_scale_(p);
-  });
-  imp_engine->sub_event<E_GlfwWindowPos>(imp_module_name, [&](const auto& p) { r_glfw_window_pos_(p); });
-  imp_engine->sub_event<E_GlfwWindowIconify>(imp_module_name, [&](const auto& p) { r_glfw_window_iconify_(p); });
-  imp_engine->sub_event<E_GlfwWindowMaximize>(imp_module_name, [&](const auto& p) { r_glfw_window_maximize_(p); });
-  imp_engine->sub_event<E_GlfwWindowFocus>(imp_module_name, [&](const auto& p) { r_glfw_window_focus_(p); });
-  imp_engine->sub_event<E_GlfwWindowRefresh>(imp_module_name, [&](const auto& p) { r_glfw_window_refresh_(p); });
-  imp_engine->sub_event<E_GlfwMonitor>(imp_module_name, [&](const auto& p) { r_glfw_monitor_(p); });
+  event_bus->sub<E_Update>(module_name_, [&](const auto& p) { r_update_(p); });
+
+  event_bus->sub<E_GlfwWindowClose>(module_name_, [&](const auto& p) { r_glfw_window_close_(p); });
+  event_bus->sub<E_GlfwWindowSize>(module_name_, [&](const auto& p) { r_glfw_window_size_(p); });
+  event_bus->sub<E_GlfwFramebufferSize>(module_name_, [&](const auto& p) { r_glfw_framebuffer_size_(p); });
+  event_bus->sub<E_GlfwWindowContentScale>(module_name_, [&](const auto& p) { r_glfw_window_content_scale_(p); });
+  event_bus->sub<E_GlfwWindowPos>(module_name_, [&](const auto& p) { r_glfw_window_pos_(p); });
+  event_bus->sub<E_GlfwWindowIconify>(module_name_, [&](const auto& p) { r_glfw_window_iconify_(p); });
+  event_bus->sub<E_GlfwWindowMaximize>(module_name_, [&](const auto& p) { r_glfw_window_maximize_(p); });
+  event_bus->sub<E_GlfwWindowFocus>(module_name_, [&](const auto& p) { r_glfw_window_focus_(p); });
+  event_bus->sub<E_GlfwWindowRefresh>(module_name_, [&](const auto& p) { r_glfw_window_refresh_(p); });
+  event_bus->sub<E_GlfwMonitor>(module_name_, [&](const auto& p) { r_glfw_monitor_(p); });
 
   open_(open_params);
 }
@@ -65,7 +65,7 @@ void Window::open_(WindowOpenParams open_params) {
   else
     open_windowed_(open_params);
 
-  set_glfw_user_pointer(handle(), imp_engine.get());
+  set_glfw_user_pointer(handle(), event_bus.get());
   register_glfw_callbacks(handle());
 
   mode_ = open_params.mode;
@@ -75,12 +75,12 @@ void Window::open_(WindowOpenParams open_params) {
   // Sent as an immediate event in case we ever do anything special when
   // the window size is changed
   if (open_params.mode == WindowMode::windowed) {
-    imp_engine->send_event_nowait<E_GlfwWindowSize>(handle(), open_params.size.x, open_params.size.y);
+    event_bus->send_nowait<E_GlfwWindowSize>(handle(), open_params.size.x, open_params.size.y);
   }
   else {
     GLFWmonitor* monitor = get_monitor_(open_params.monitor_num);
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    imp_engine->send_event_nowait<E_GlfwWindowSize>(handle(), mode->width, mode->height);
+    event_bus->send_nowait<E_GlfwWindowSize>(handle(), mode->width, mode->height);
   }
 
   if (open_params.mode == WindowMode::windowed && !is_flag_set(open_params.flags, WindowFlags::hidden))
@@ -206,16 +206,16 @@ void Window::open_windowed_(WindowOpenParams open_params) {
 }
 
 void Window::r_update_(const E_Update& p) {
-  imp_engine->poll_event<E_GlfwWindowClose>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowSize>(imp_module_name);
-  imp_engine->poll_event<E_GlfwFramebufferSize>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowContentScale>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowPos>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowIconify>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowMaximize>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowFocus>(imp_module_name);
-  imp_engine->poll_event<E_GlfwWindowRefresh>(imp_module_name);
-  imp_engine->poll_event<E_GlfwMonitor>(imp_module_name);
+  event_bus->poll<E_GlfwWindowClose>(module_name_);
+  event_bus->poll<E_GlfwWindowSize>(module_name_);
+  event_bus->poll<E_GlfwFramebufferSize>(module_name_);
+  event_bus->poll<E_GlfwWindowContentScale>(module_name_);
+  event_bus->poll<E_GlfwWindowPos>(module_name_);
+  event_bus->poll<E_GlfwWindowIconify>(module_name_);
+  event_bus->poll<E_GlfwWindowMaximize>(module_name_);
+  event_bus->poll<E_GlfwWindowFocus>(module_name_);
+  event_bus->poll<E_GlfwWindowRefresh>(module_name_);
+  event_bus->poll<E_GlfwMonitor>(module_name_);
 }
 
 void Window::r_glfw_window_close_(const E_GlfwWindowClose& p) {}
