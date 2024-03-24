@@ -2,8 +2,8 @@
 #define IMPERATOR_CORE_EVENT_BUS_H
 
 #include "imperator/core/events.h"
-#include "imperator/core/module_mgr.h"
 #include "imperator/ds/prio_list.h"
+#include "imperator/module/module_mgr.h"
 #include <functional>
 #include <memory>
 #include <ranges>

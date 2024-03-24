@@ -1,11 +1,11 @@
 #ifndef IMPERATOR_IMPERATOR_H
 #define IMPERATOR_IMPERATOR_H
 
-#include "imperator/core/event_bus.h"
 #include "imperator/core/events.h"
-#include "imperator/core/type_id.h"
-
 #include "imperator/module/application.h"
+#include "imperator/module/event_bus.h"
+#include "imperator/module/module_mgr.h"
+#include "imperator/module/window.h"
 
 #include "imperator/util/averagers.h"
 #include "imperator/util/io.h"
@@ -17,5 +17,40 @@
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 #include "fmt/ranges.h"
+
+namespace imp {
+template<typename T>
+  requires std::derived_from<T, Application>
+void mainloop(WindowOpenParams params) {
+  register_glfw_error_callback();
+  if (!glfwInit())
+    std::exit(EXIT_FAILURE);
+
+  int major, minor, rev;
+  glfwGetVersion(&major, &minor, &rev);
+  IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
+
+  const auto module_mgr = std::make_shared<ModuleMgr>();
+  /* scope to destruct module refs */ {
+    const auto event_bus = module_mgr->create<EventBus>();
+    set_global_user_pointer(event_bus.get());
+
+    const auto window = module_mgr->create<Window>(params);
+    module_mgr->create<Application, T>();
+
+    while (!window->should_close()) {
+      event_bus->send_nowait<E_Update>();
+
+      glfwPollEvents();
+    }
+
+    clear_global_user_pointer();
+  }
+  module_mgr->clear();
+
+  glfwTerminate();
+  IMPERATOR_LOG_DEBUG("Terminated GLFW");
+}
+} // namespace imp
 
 #endif//IMPERATOR_IMPERATOR_H

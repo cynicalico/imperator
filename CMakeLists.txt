@@ -4,48 +4,70 @@ project(imperator
         DESCRIPTION "TBD"
         LANGUAGES C CXX)
 
-include("cmake/get_cpm.cmake")
-include("cmake/setup_ccache.cmake")
+include(cmake/get_cpm.cmake)
+include(cmake/setup_ccache.cmake)
 
 if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
-add_library(imperator
-        "include/imperator/core/event_bus.h"
-        "include/imperator/core/events.h"
-        "include/imperator/core/glfw_callbacks.h"
-        "include/imperator/core/glfw_wrap.h"
-        "include/imperator/core/module_mgr.h"
-        "include/imperator/core/type_id.h"
-        "include/imperator/ds/prio_list.h"
-        "include/imperator/ds/trie.h"
-        "include/imperator/module/application.h"
-        "include/imperator/module/window.h"
-        "include/imperator/util/averagers.h"
-        "include/imperator/util/enum_bitops.h"
-        "include/imperator/util/io.h"
-        "include/imperator/util/log.h"
-        "include/imperator/util/platform.h"
-        "include/imperator/util/rnd.h"
-        "include/imperator/util/time.h"
-        "include/imperator/imperator.h"
+set(IMPERATOR_INCLUDE_FILES
+        #[=[ [[[cog
+        import cog, glob
+        from pathlib import Path
+        patterns = ['include/**/*.h']
+        for p in patterns:
+            for f in glob.glob(p, recursive=True):
+                cog.outl(f"\t{Path(f).as_posix()}")
+        ]]] ]=]
+        include/imperator/imperator.h
+        include/imperator/core/events.h
+        include/imperator/core/glfw_callbacks.h
+        include/imperator/core/glfw_wrap.h
+        include/imperator/ds/prio_list.h
+        include/imperator/ds/trie.h
+        include/imperator/module/application.h
+        include/imperator/module/event_bus.h
+        include/imperator/module/module_mgr.h
+        include/imperator/module/window.h
+        include/imperator/util/averagers.h
+        include/imperator/util/enum_bitops.h
+        include/imperator/util/io.h
+        include/imperator/util/log.h
+        include/imperator/util/platform.h
+        include/imperator/util/rnd.h
+        include/imperator/util/time.h
+        # [[[end]]]
+)
 
-        "src/imperator/core/event_bus.cpp"
-        "src/imperator/core/glfw_callbacks.cpp"
-        "src/imperator/ds/prio_list.cpp"
-        "src/imperator/ds/trie.cpp"
-        "src/imperator/module/application.cpp"
-        "src/imperator/module/window.cpp"
-        "src/imperator/util/averagers.cpp"
-        "src/imperator/util/io.cpp"
-        "src/imperator/util/log.cpp"
-        "src/imperator/util/platform.cpp"
-        "src/imperator/util/rnd.cpp"
-        "src/imperator/util/time.cpp"
-        "src/imperator/imperator.cpp")
+set(IMPERATOR_SRC_FILES
+        #[=[ [[[cog
+        import cog, glob
+        from pathlib import Path
+        patterns = ['src/**/*.cpp']
+        for p in patterns:
+            for f in glob.glob(p, recursive=True):
+                cog.outl(f"\t{Path(f).as_posix()}")
+        ]]] ]=]
+        src/imperator/imperator.cpp
+        src/imperator/core/glfw_callbacks.cpp
+        src/imperator/ds/prio_list.cpp
+        src/imperator/ds/trie.cpp
+        src/imperator/module/application.cpp
+        src/imperator/module/event_bus.cpp
+        src/imperator/module/window.cpp
+        src/imperator/util/averagers.cpp
+        src/imperator/util/io.cpp
+        src/imperator/util/log.cpp
+        src/imperator/util/platform.cpp
+        src/imperator/util/rnd.cpp
+        src/imperator/util/time.cpp
+        # [[[end]]]
+)
 
-target_include_directories(imperator PUBLIC "include")
+add_library(imperator ${IMPERATOR_INCLUDE_FILES} ${IMPERATOR_SRC_FILES})
+
+target_include_directories(imperator PUBLIC include)
 
 target_compile_features(imperator PUBLIC cxx_std_23)
 if (MSVC)

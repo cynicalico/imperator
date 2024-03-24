@@ -1,7 +1,7 @@
 #ifndef IMPERATOR_MODULE_APPLICATION_H
 #define IMPERATOR_MODULE_APPLICATION_H
 
-#include "imperator/core/module_mgr.h"
+#include "imperator/module/module_mgr.h"
 #include "imperator/module/window.h"
 
 namespace imp {

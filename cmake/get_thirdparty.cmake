@@ -45,16 +45,16 @@ CPMAddPackage(
 )
 
 add_library(imperator_thirdparty INTERFACE
-        "thirdparty/stb/stb_image.h"
-        "thirdparty/stb/stb_image_write.h"
+        thirdparty/stb/stb_image.h
+        thirdparty/stb/stb_image_write.h
 
-        "thirdparty/pcg/pcg_extras.hpp"
-        "thirdparty/pcg/pcg_random.hpp"
-        "thirdparty/pcg/pcg_uint128.hpp")
+        thirdparty/pcg/pcg_extras.hpp
+        thirdparty/pcg/pcg_random.hpp
+        thirdparty/pcg/pcg_uint128.hpp)
 
 target_include_directories(imperator PUBLIC
-        "thirdparty/stb"
-        "thirdparty/pcg")
+        thirdparty/stb
+        thirdparty/pcg)
 
 if (MSVC)
     target_compile_definitions(imperator_thirdparty INTERFACE WIN32_LEAN_AND_MEAN NOMINMAX)

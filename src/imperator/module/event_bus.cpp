@@ -1,4 +1,4 @@
-#include "imperator/core/event_bus.h"
+#include "imperator/module/event_bus.h"
 
 namespace imp {
 EventBus::EventBus(std::weak_ptr<ModuleMgr> module_mgr)

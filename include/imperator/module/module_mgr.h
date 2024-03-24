@@ -1,8 +1,7 @@
 #ifndef IMPERATOR_CORE_MODULE_MGR_H
 #define IMPERATOR_CORE_MODULE_MGR_H
 
-#include "imperator/core/type_id.h"
-#include "imperator/util/log.h"
+#include "../util/log.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,17 +36,13 @@ public:
   std::shared_ptr<T> get() const;
 
 private:
-  std::vector<std::shared_ptr<ModuleI>> modules_{};
+  std::unordered_map<std::string, std::shared_ptr<ModuleI>> modules_{};
 };
 
 template<class T, class TR, typename... Args>
   requires std::derived_from<T, ModuleI> && std::derived_from<TR, T>
 std::shared_ptr<T> ModuleMgr::create(Args&&... args) {
-  auto idx = type_id<T>();
-  while (modules_.size() <= idx)
-    modules_.emplace_back();
-
-  modules_[idx] = std::make_shared<TR>(shared_from_this(), std::forward<Args>(args)...);
+  modules_.emplace(ModuleInfo<T>::name, std::make_shared<TR>(shared_from_this(), std::forward<Args>(args)...));
   return get<T>();
 }
 
@@ -60,8 +55,7 @@ std::shared_ptr<T> ModuleMgr::create(Args&&... args) {
 template<typename T>
   requires std::derived_from<T, ModuleI>
 std::shared_ptr<T> ModuleMgr::get() const {
-  auto idx = type_id<T>();
-  return std::static_pointer_cast<T>(modules_[idx]);
+  return std::static_pointer_cast<T>(modules_.at(ModuleInfo<T>::name));
 }
 
 class ModuleI {
