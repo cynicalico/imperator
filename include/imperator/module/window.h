@@ -11,7 +11,7 @@ class Window : public Module<Window> {
 public:
   std::shared_ptr<EventBus> event_bus{nullptr};
 
-  Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params);
+  Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version);
   ~Window() override;
 
   GLFWwindow* handle() const { return glfw_window_.get(); }
@@ -35,11 +35,13 @@ private:
 
   static GLFWmonitor* get_monitor_(int monitor_num);
 
-  void open_(WindowOpenParams open_params);
+  void open_(WindowOpenParams open_params, glm::ivec2 backend_version);
   void open_fullscreen_(WindowOpenParams open_params);
   void open_windowed_(WindowOpenParams open_params);
 
   void r_update_(const E_Update& p);
+
+  void r_end_frame_(const E_EndFrame &p);
 
   void r_glfw_window_close_(const E_GlfwWindowClose& p);
   void r_glfw_window_size_(const E_GlfwWindowSize& p);

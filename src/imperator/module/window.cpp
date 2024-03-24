@@ -4,11 +4,13 @@
 #include "imperator/util/platform.h"
 
 namespace imp {
-Window::Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params)
-  : Module(std::move(module_mgr), ModuleInfo<Window>::name) {
+Window::Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version)
+  : Module(std::move(module_mgr)) {
   event_bus = module_mgr_.lock()->get<EventBus>();
 
   event_bus->sub<E_Update>(module_name_, [&](const auto& p) { r_update_(p); });
+
+  event_bus->sub<E_EndFrame>(module_name_, [&](const auto& p) { r_end_frame_(p); });
 
   event_bus->sub<E_GlfwWindowClose>(module_name_, [&](const auto& p) { r_glfw_window_close_(p); });
   event_bus->sub<E_GlfwWindowSize>(module_name_, [&](const auto& p) { r_glfw_window_size_(p); });
@@ -21,7 +23,7 @@ Window::Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params
   event_bus->sub<E_GlfwWindowRefresh>(module_name_, [&](const auto& p) { r_glfw_window_refresh_(p); });
   event_bus->sub<E_GlfwMonitor>(module_name_, [&](const auto& p) { r_glfw_monitor_(p); });
 
-  open_(open_params);
+  open_(open_params, backend_version);
 }
 
 Window::~Window() {
@@ -51,9 +53,9 @@ GLFWmonitor* Window::get_monitor_(int monitor_num) {
   return monitors[monitor_num];
 }
 
-void Window::open_(WindowOpenParams open_params) {
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, open_params.backend_version.x);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, open_params.backend_version.y);
+void Window::open_(WindowOpenParams open_params, glm::ivec2 backend_version) {
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, backend_version.x);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, backend_version.y);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #if !defined(NDEBUG)
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
@@ -216,6 +218,10 @@ void Window::r_update_(const E_Update& p) {
   event_bus->poll<E_GlfwWindowFocus>(module_name_);
   event_bus->poll<E_GlfwWindowRefresh>(module_name_);
   event_bus->poll<E_GlfwMonitor>(module_name_);
+}
+
+void Window::r_end_frame_(const E_EndFrame& p) {
+  glfwSwapBuffers(handle());
 }
 
 void Window::r_glfw_window_close_(const E_GlfwWindowClose& p) {}

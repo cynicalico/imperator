@@ -30,6 +30,7 @@ set(IMPERATOR_INCLUDE_FILES
         include/imperator/module/event_bus.h
         include/imperator/module/module_mgr.h
         include/imperator/module/window.h
+        include/imperator/module/gfx/gfx_context.h
         include/imperator/util/averagers.h
         include/imperator/util/enum_bitops.h
         include/imperator/util/io.h
@@ -56,6 +57,7 @@ set(IMPERATOR_SRC_FILES
         src/imperator/module/application.cpp
         src/imperator/module/event_bus.cpp
         src/imperator/module/window.cpp
+        src/imperator/module/gfx/gfx_context.cpp
         src/imperator/util/averagers.cpp
         src/imperator/util/io.cpp
         src/imperator/util/log.cpp

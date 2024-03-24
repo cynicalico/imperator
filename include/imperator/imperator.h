@@ -2,6 +2,7 @@
 #define IMPERATOR_IMPERATOR_H
 
 #include "imperator/core/events.h"
+#include "imperator/module/gfx/gfx_context.h"
 #include "imperator/module/application.h"
 #include "imperator/module/event_bus.h"
 #include "imperator/module/module_mgr.h"
@@ -19,9 +20,14 @@
 #include "fmt/ranges.h"
 
 namespace imp {
+struct ApplicationParams {
+  WindowOpenParams window;
+  GfxParams gfx;
+};
+
 template<typename T>
   requires std::derived_from<T, Application>
-void mainloop(WindowOpenParams params) {
+void mainloop(ApplicationParams params) {
   register_glfw_error_callback();
   if (!glfwInit())
     std::exit(EXIT_FAILURE);
@@ -35,11 +41,18 @@ void mainloop(WindowOpenParams params) {
     const auto event_bus = module_mgr->create<EventBus>();
     set_global_user_pointer(event_bus.get());
 
-    const auto window = module_mgr->create<Window>(params);
+    const auto window = module_mgr->create<Window>(
+      params.window, params.gfx.backend_version);
+    module_mgr->create<GfxContext>(params.gfx);
+
     module_mgr->create<Application, T>();
 
     while (!window->should_close()) {
-      event_bus->send_nowait<E_Update>();
+      event_bus->send_nowait<E_Update>(0.0);
+
+      event_bus->send_nowait<E_StartFrame>();
+      event_bus->send_nowait<E_Draw>();
+      event_bus->send_nowait<E_EndFrame>();
 
       glfwPollEvents();
     }

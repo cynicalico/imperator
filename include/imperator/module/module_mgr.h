@@ -73,7 +73,6 @@ protected:
 template<typename T>
 class Module : public ModuleI {
 public:
-  explicit Module(std::weak_ptr<ModuleMgr> module_mgr, std::string name);
   explicit Module(std::weak_ptr<ModuleMgr> module_mgr);
 
   ~Module() override;
@@ -81,11 +80,7 @@ public:
 
 template<typename T>
 Module<T>::Module(std::weak_ptr<ModuleMgr> module_mgr)
-  : Module(std::move(module_mgr), ModuleInfo<T>::name) {}
-
-template<typename T>
-Module<T>::Module(std::weak_ptr<ModuleMgr> module_mgr, std::string name)
-  : ModuleI(std::move(module_mgr), std::move(name)) {
+  : ModuleI(std::move(module_mgr), ModuleInfo<T>::name) {
   IMPERATOR_LOG_DEBUG("Module created: {}", module_name_);
 }
 

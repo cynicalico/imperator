@@ -35,8 +35,6 @@ struct WindowOpenParams {
 
   WindowMode mode{WindowMode::windowed};
   WindowFlags flags{WindowFlags::none};
-
-  glm::ivec2 backend_version{4, 3};
 };
 
 struct GLFWwindowDeleter {

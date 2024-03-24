@@ -7,7 +7,15 @@
 namespace imp {
 struct E_FreeEngine {};
 
-struct E_Update {};
+struct E_Update {
+  double dt;
+};
+
+struct E_StartFrame {};
+
+struct E_Draw {};
+
+struct E_EndFrame {};
 
 struct E_GlfwWindowClose {
   GLFWwindow* window;
