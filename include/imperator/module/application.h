@@ -12,7 +12,7 @@ public:
   std::shared_ptr<GfxContext> ctx{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  explicit Application(std::weak_ptr<ModuleMgr> module_mgr);
+  explicit Application(ModuleMgr& module_mgr);
 
 protected:
   virtual void update(double dt);

@@ -2,8 +2,8 @@
 
 class Indev final : public imp::Application {
 public:
-  explicit Indev(std::weak_ptr<imp::ModuleMgr> module_mgr)
-    : Application(std::move(module_mgr)) {}
+  explicit Indev(imp::ModuleMgr& module_mgr)
+    : Application(module_mgr) {}
 
   void update(double dt) override {}
 
@@ -14,16 +14,18 @@ public:
 };
 
 int main(int, char*[]) {
-  imp::mainloop<Indev>(imp::ApplicationParams{
-    .window = {
-      .title = "Indev",
-      .size = {1280, 720},
-      .mode = imp::WindowMode::windowed,
-      .flags = imp::WindowFlags::centered
-    },
-    .gfx = {
-      .backend_version = {3, 3},
-      .vsync = false
+  imp::mainloop<Indev>(
+    imp::ApplicationParams{
+      .window = {
+        .title = "Indev",
+        .size = {1280, 720},
+        .mode = imp::WindowMode::windowed,
+        .flags = imp::WindowFlags::centered
+      },
+      .gfx = {
+        .backend_version = {3, 3},
+        .vsync = false
+      }
     }
-  });
+  );
 }

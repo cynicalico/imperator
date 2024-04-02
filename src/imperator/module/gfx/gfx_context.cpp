@@ -1,10 +1,10 @@
 #include "imperator/module/gfx/gfx_context.h"
 
 namespace imp {
-GfxContext::GfxContext(std::weak_ptr<ModuleMgr> module_mgr, GfxParams params)
-  : Module(std::move(module_mgr)),
+GfxContext::GfxContext(ModuleMgr& module_mgr, GfxParams params)
+  : Module(module_mgr),
     gl(GladGLContext()) {
-  window = module_mgr_.lock()->get<Window>();
+  window = module_mgr_.get<Window>();
 
   glfwMakeContextCurrent(window->handle());
 

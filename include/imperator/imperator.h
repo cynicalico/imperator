@@ -36,18 +36,18 @@ void mainloop(ApplicationParams params) {
   glfwGetVersion(&major, &minor, &rev);
   IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
 
-  const auto module_mgr = std::make_shared<ModuleMgr>();
+  auto module_mgr = ModuleMgr();
   { /* scope to destruct module refs */
-    const auto event_bus = module_mgr->create<EventBus>();
+    const auto event_bus = module_mgr.create<EventBus>();
     set_global_user_pointer(event_bus.get());
 
-    const auto window = module_mgr->create<Window>(
+    const auto window = module_mgr.create<Window>(
       params.window,
       params.gfx.backend_version
     );
-    module_mgr->create<GfxContext>(params.gfx);
+    module_mgr.create<GfxContext>(params.gfx);
 
-    module_mgr->create<Application, T>();
+    module_mgr.create<Application, T>();
 
     while (!window->should_close()) {
       event_bus->send_nowait<E_Update>(0.0);
@@ -61,7 +61,7 @@ void mainloop(ApplicationParams params) {
 
     clear_global_user_pointer();
   }
-  module_mgr->clear();
+  module_mgr.clear();
 
   glfwTerminate();
   IMPERATOR_LOG_DEBUG("Terminated GLFW");

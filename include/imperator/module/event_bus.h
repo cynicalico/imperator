@@ -14,7 +14,7 @@
 namespace imp {
 class EventBus final : public Module<EventBus> {
 public:
-  explicit EventBus(std::weak_ptr<ModuleMgr> module_mgr);
+  explicit EventBus(ModuleMgr& module_mgr);
 
   template <typename T>
   using Receiver = std::function<void(const T&)>;

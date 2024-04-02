@@ -16,7 +16,7 @@ public:
   GladGLContext gl;
   std::shared_ptr<Window> window{nullptr};
 
-  explicit GfxContext(std::weak_ptr<ModuleMgr> module_mgr, GfxParams params);
+  explicit GfxContext(ModuleMgr& module_mgr, GfxParams params);
 
 private:
   static void GLAPIENTRY gl_message_callback_(

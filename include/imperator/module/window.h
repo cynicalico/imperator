@@ -11,7 +11,7 @@ class Window : public Module<Window> {
 public:
   std::shared_ptr<EventBus> event_bus{nullptr};
 
-  Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version);
+  Window(ModuleMgr& module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version);
   ~Window() override;
 
   GLFWwindow* handle() const { return glfw_window_.get(); }

@@ -52,8 +52,6 @@ set(IMPERATOR_SRC_FILES
         ]]] ]=]
         src/imperator/imperator.cpp
         src/imperator/core/glfw_callbacks.cpp
-        src/imperator/ds/prio_list.cpp
-        src/imperator/ds/trie.cpp
         src/imperator/module/application.cpp
         src/imperator/module/event_bus.cpp
         src/imperator/module/window.cpp

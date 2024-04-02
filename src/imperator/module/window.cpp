@@ -4,9 +4,9 @@
 #include "imperator/util/platform.h"
 
 namespace imp {
-Window::Window(std::weak_ptr<ModuleMgr> module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version)
-  : Module(std::move(module_mgr)) {
-  event_bus = module_mgr_.lock()->get<EventBus>();
+Window::Window(ModuleMgr& module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version)
+  : Module(module_mgr) {
+  event_bus = module_mgr_.get<EventBus>();
 
   event_bus->sub<E_Update>(module_name_, [&](const auto& p) { r_update_(p); });
 

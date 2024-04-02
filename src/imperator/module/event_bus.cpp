@@ -1,6 +1,6 @@
 #include "imperator/module/event_bus.h"
 
 namespace imp {
-EventBus::EventBus(std::weak_ptr<ModuleMgr> module_mgr)
-  : Module(std::move(module_mgr)) {}
+EventBus::EventBus(ModuleMgr& module_mgr)
+  : Module(module_mgr) {}
 } // namespace imp
