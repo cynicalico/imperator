@@ -3,7 +3,6 @@
 #include "imperator/util/log.h"
 
 namespace imp {
-
 void log_platform() {
 #define STRINGIFY(x) #x
   IMPERATOR_LOG_DEBUG("Platform(s) detected");
@@ -39,5 +38,4 @@ void log_platform() {
 #endif
 #undef STRINGIFY
 }
-
 } // namespace imp

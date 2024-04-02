@@ -32,9 +32,7 @@
 #endif
 
 namespace imp {
-
 void log_platform();
-
 } // namespace imp
 
 #endif//IMPERATOR_UTIL_PLATFORM_HPP

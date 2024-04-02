@@ -25,7 +25,7 @@ struct ApplicationParams {
   GfxParams gfx;
 };
 
-template<typename T>
+template <typename T>
   requires std::derived_from<T, Application>
 void mainloop(ApplicationParams params) {
   register_glfw_error_callback();
@@ -37,12 +37,14 @@ void mainloop(ApplicationParams params) {
   IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
 
   const auto module_mgr = std::make_shared<ModuleMgr>();
-  /* scope to destruct module refs */ {
+  { /* scope to destruct module refs */
     const auto event_bus = module_mgr->create<EventBus>();
     set_global_user_pointer(event_bus.get());
 
     const auto window = module_mgr->create<Window>(
-      params.window, params.gfx.backend_version);
+      params.window,
+      params.gfx.backend_version
+    );
     module_mgr->create<GfxContext>(params.gfx);
 
     module_mgr->create<Application, T>();

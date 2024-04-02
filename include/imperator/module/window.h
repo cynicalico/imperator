@@ -41,7 +41,7 @@ private:
 
   void r_update_(const E_Update& p);
 
-  void r_end_frame_(const E_EndFrame &p);
+  void r_end_frame_(const E_EndFrame& p);
 
   void r_glfw_window_close_(const E_GlfwWindowClose& p);
   void r_glfw_window_size_(const E_GlfwWindowSize& p);

@@ -18,11 +18,11 @@ enum class WindowMode {
 };
 
 enum class WindowFlags {
-  none = 1 << 0,
-  resizable = 1 << 1,
-  hidden = 1 << 2,
+  none        = 1 << 0,
+  resizable   = 1 << 1,
+  hidden      = 1 << 2,
   undecorated = 1 << 3,
-  centered = 1 << 4
+  centered    = 1 << 4
 };
 
 struct WindowOpenParams {

@@ -33,7 +33,8 @@ double Stopwatch::elapsed_sec() const {
   return (end_ - start_) / 1e9;
 }
 
-Ticker::Ticker(double interval) : interval_(static_cast<std::uint64_t>(interval * 1e9)) {
+Ticker::Ticker(double interval)
+  : interval_(static_cast<std::uint64_t>(interval * 1e9)) {
   start_ = time_nsec();
   last_ = start_;
 }

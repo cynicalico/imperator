@@ -78,8 +78,7 @@ void Window::open_(WindowOpenParams open_params, glm::ivec2 backend_version) {
   // the window size is changed
   if (open_params.mode == WindowMode::windowed) {
     event_bus->send_nowait<E_GlfwWindowSize>(handle(), open_params.size.x, open_params.size.y);
-  }
-  else {
+  } else {
     GLFWmonitor* monitor = get_monitor_(open_params.monitor_num);
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     event_bus->send_nowait<E_GlfwWindowSize>(handle(), mode->width, mode->height);
@@ -109,8 +108,7 @@ void Window::open_fullscreen_(WindowOpenParams open_params) {
     // This seems to cause flickering
     glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
     h = glfwCreateWindow(mode->width, mode->height, open_params.title.c_str(), nullptr, nullptr);
-  }
-  else
+  } else
     h = glfwCreateWindow(mode->width, mode->height, open_params.title.c_str(), monitor, nullptr);
 
   if (!h) {
@@ -171,15 +169,26 @@ void Window::open_windowed_(WindowOpenParams open_params) {
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-  glfwWindowHint(GLFW_RESIZABLE, is_flag_set(open_params.flags, WindowFlags::resizable)
-                                   ? GLFW_TRUE
-                                   : GLFW_FALSE);
-  glfwWindowHint(GLFW_DECORATED, is_flag_set(open_params.flags, WindowFlags::undecorated)
-                                   ? GLFW_FALSE
-                                   : GLFW_TRUE);
+  glfwWindowHint(
+    GLFW_RESIZABLE,
+    is_flag_set(open_params.flags, WindowFlags::resizable)
+      ? GLFW_TRUE
+      : GLFW_FALSE
+  );
+  glfwWindowHint(
+    GLFW_DECORATED,
+    is_flag_set(open_params.flags, WindowFlags::undecorated)
+      ? GLFW_FALSE
+      : GLFW_TRUE
+  );
 
-  auto h = glfwCreateWindow(open_params.size.x, open_params.size.y,
-                            open_params.title.c_str(), nullptr, nullptr);
+  auto h = glfwCreateWindow(
+    open_params.size.x,
+    open_params.size.y,
+    open_params.title.c_str(),
+    nullptr,
+    nullptr
+  );
   if (!h) {
     const char* description;
     int code = glfwGetError(&description);

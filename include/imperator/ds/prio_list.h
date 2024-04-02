@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace imp {
-template<typename T>
+template <typename T>
 class PrioList {
   struct PendingItem_ {
     int id;
@@ -18,7 +18,10 @@ class PrioList {
     std::size_t remaining_unmet_deps;
 
     PendingItem_(int id, T&& v, const std::vector<int>& unmet_deps)
-      : id(id), v(std::forward<T>(v)), unmet_deps(unmet_deps), remaining_unmet_deps(unmet_deps.size()) {}
+      : id(id),
+        v(std::forward<T>(v)),
+        unmet_deps(unmet_deps),
+        remaining_unmet_deps(unmet_deps.size()) {}
 
     PendingItem_(const PendingItem_&) = delete;
     PendingItem_& operator=(const PendingItem_&) = delete;
@@ -78,17 +81,17 @@ private:
   void resolve_pending_(int id);
 };
 
-template<typename T>
+template <typename T>
 T& PrioList<T>::operator [](const std::string& name) {
   return ts_[idx_[s_to_id_[name]]];
 }
 
-template<typename T>
+template <typename T>
 const T& PrioList<T>::operator [](const std::string& name) const {
   return ts_.at(idx_.at(s_to_id_.at(name)));
 }
 
-template<typename T>
+template <typename T>
 bool PrioList<T>::add(const std::string& name, std::vector<std::string>&& deps, T&& v) {
   int id;
   std::vector<int> dep_ids;
@@ -111,19 +114,21 @@ bool PrioList<T>::add(const std::string& name, std::vector<std::string>&& deps, 
 
   // Store this entry to check later
   pending_.emplace(id, PendingItem_(id, std::forward<T>(v), dep_ids));
-  for (const auto& dep: dep_ids) {
+  for (const auto& dep : dep_ids) {
     if (auto it = pending_dep_lookup_.find(dep); it == pending_dep_lookup_.end()) {
       pending_dep_lookup_[dep] = {id};
-    }
-    else {
+    } else {
       it->second.emplace_back(id);
     }
   }
 
   // Emit a warning if this item has a circular dependency
-  if (std::ranges::all_of(dep_ids, [&](const auto& d) {
-    return std::ranges::contains(pending_dep_lookup_[id], d);
-  })) {
+  if (std::ranges::all_of(
+    dep_ids,
+    [&](const auto& d) {
+      return std::ranges::contains(pending_dep_lookup_[id], d);
+    }
+  )) {
     // TODO: Log circular warning
     return false;
   }
@@ -131,22 +136,22 @@ bool PrioList<T>::add(const std::string& name, std::vector<std::string>&& deps, 
   return true;
 }
 
-template<typename T>
+template <typename T>
 std::string PrioList<T>::name_from_id(std::size_t id) {
   return id_to_s_[id];
 }
 
-template<typename T>
+template <typename T>
 bool PrioList<T>::has_pending() const {
   return !pending_.empty();
 }
 
-template<typename T>
+template <typename T>
 std::vector<typename PrioList<T>::PendingItemInfo> PrioList<T>::get_pending() const {
   std::vector<PendingItemInfo> pending_info{};
-  for (const auto& [id, i]: pending_) {
+  for (const auto& [id, i] : pending_) {
     pending_info.emplace_back(id_to_s_[id]);
-    for (const auto& id2: i.unmet_deps) {
+    for (const auto& id2 : i.unmet_deps) {
       pending_info.back().deps.emplace_back(id_to_s_[id2]);
     }
   }
@@ -154,7 +159,7 @@ std::vector<typename PrioList<T>::PendingItemInfo> PrioList<T>::get_pending() co
   return pending_info;
 }
 
-template<typename T>
+template <typename T>
 int PrioList<T>::resolve_id_(const std::string& s) {
   if (const auto it = s_to_id_.find(s); it != s_to_id_.end()) {
     return it->second;
@@ -167,11 +172,11 @@ int PrioList<T>::resolve_id_(const std::string& s) {
   return static_cast<int>(id_to_s_.size()) - 1;
 }
 
-template<typename T>
+template <typename T>
 void PrioList<T>::resolve_ids_(const std::string& name, std::vector<std::string>&& deps, int& i, std::vector<int>& ds) {
   i = resolve_id_(name);
 
-  for (const auto& s: deps) {
+  for (const auto& s : deps) {
     auto id = resolve_id_(s);
     if (idx_[id] == -1) {
       ds.emplace_back(id);
@@ -179,7 +184,7 @@ void PrioList<T>::resolve_ids_(const std::string& name, std::vector<std::string>
   }
 }
 
-template<typename T>
+template <typename T>
 void PrioList<T>::resolve_pending_(int id) {
   std::vector<int> ids_to_resolve = {id};
 
@@ -187,7 +192,7 @@ void PrioList<T>::resolve_pending_(int id) {
     auto v = ids_to_resolve.back();
     ids_to_resolve.pop_back();
 
-    for (const auto& dep: pending_dep_lookup_[v]) {
+    for (const auto& dep : pending_dep_lookup_[v]) {
       // Skip this dependent if we've already added it
       if (idx_[dep] != -1) {
         continue;

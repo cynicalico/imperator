@@ -26,27 +26,27 @@ void seed(std::uint64_t seed, std::uint64_t stream = 0);
 
 void debug_show_seed();
 
-template<typename T, typename... U>
+template <typename T, typename... U>
 concept IsAnyOf = (std::same_as<T, U> || ...);
 
-template<typename T>
+template <typename T>
 using IntDist = std::uniform_int_distribution<T>;
 
-template<typename T>
+template <typename T>
 concept IntDistCompatible =
-    IsAnyOf<T, short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long>;
+  IsAnyOf<T, short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
-template<IntDistCompatible T>
+template <IntDistCompatible T>
 T get(T low, T high) {
   return IntDist<T>(low, high)(internal::generator());
 }
 
-template<IntDistCompatible T>
+template <IntDistCompatible T>
 T get(T high) {
   return IntDist<T>(T(0), high)(internal::generator());
 }
 
-template<IntDistCompatible T>
+template <IntDistCompatible T>
 T get() {
   return IntDist<T>(
     std::numeric_limits<T>::min(),
@@ -54,10 +54,10 @@ T get() {
   )(internal::generator());
 }
 
-template<typename T>
+template <typename T>
 concept IntDistCompatibleButChar = IsAnyOf<T, char, char8_t, char16_t, char32_t, wchar_t, unsigned char>;
 
-template<IntDistCompatibleButChar T>
+template <IntDistCompatibleButChar T>
 T get(T low, T high) {
   return static_cast<T>(get<int>(
     static_cast<int>(low),
@@ -65,12 +65,12 @@ T get(T low, T high) {
   ));
 }
 
-template<IntDistCompatibleButChar T>
+template <IntDistCompatibleButChar T>
 T get(T high) {
   return static_cast<T>(get<int>(static_cast<int>(high)));
 }
 
-template<IntDistCompatibleButChar T>
+template <IntDistCompatibleButChar T>
 T get() {
   return static_cast<T>(get<int>(
     static_cast<int>(std::numeric_limits<T>::min()),
@@ -78,23 +78,23 @@ T get() {
   ));
 }
 
-template<typename T>
+template <typename T>
 using RealDist = std::uniform_real_distribution<T>;
 
-template<typename T>
+template <typename T>
 concept RealDistCompatible = IsAnyOf<T, float, double, long double>;
 
-template<RealDistCompatible T>
+template <RealDistCompatible T>
 T get(T low, T high) {
   return RealDist<T>(low, high)(internal::generator());
 }
 
-template<RealDistCompatible T>
+template <RealDistCompatible T>
 T get(T high) {
   return RealDist<T>(T(0.0), high)(internal::generator());
 }
 
-template<RealDistCompatible T>
+template <RealDistCompatible T>
 T get(bool between_min_and_max = false) {
   if (between_min_and_max)
     return RealDist<T>(
@@ -106,25 +106,25 @@ T get(bool between_min_and_max = false) {
 
 using BoolDist = std::bernoulli_distribution;
 
-template<typename T>
+template <typename T>
 concept BoolDistCompatible = IsAnyOf<T, bool>;
 
-template<BoolDistCompatible T>
+template <BoolDistCompatible T>
 T get(double chance) {
   return BoolDist(chance)(internal::generator());
 }
 
-template<typename Iterable>
+template <typename Iterable>
 void shuffle(Iterable& i) {
   pcg_extras::shuffle(i.begin(), i.end(), internal::generator());
 }
 
-template<typename Iter>
+template <typename Iter>
 void shuffle(Iter& start, Iter& end) {
   pcg_extras::shuffle(start, end, internal::generator());
 }
 
-template<std::ranges::random_access_range R>
+template <std::ranges::random_access_range R>
 void partial_shuffle(R&& r, double percentage) {
   auto n = std::ranges::size(r);
   while (n > 1) {
@@ -136,7 +136,7 @@ void partial_shuffle(R&& r, double percentage) {
   }
 }
 
-template<std::ranges::random_access_range R>
+template <std::ranges::random_access_range R>
 auto choose(R&& r) {
   auto n = get(std::ranges::size(r) - 1);
   return *(std::ranges::begin(r) + n);

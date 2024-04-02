@@ -2,7 +2,8 @@
 
 namespace imp {
 GfxContext::GfxContext(std::weak_ptr<ModuleMgr> module_mgr, GfxParams params)
-  : Module(std::move(module_mgr)), gl(GladGLContext()) {
+  : Module(std::move(module_mgr)),
+    gl(GladGLContext()) {
   window = module_mgr_.lock()->get<Window>();
 
   glfwMakeContextCurrent(window->handle());
@@ -40,8 +41,9 @@ void GfxContext::gl_message_callback_(
   const void* userParam
 ) {
 #define STRINGIFY(e) case e: return #e;
-  const std::string source_str = std::invoke([source] {
-    switch (source) {
+  const std::string source_str = std::invoke(
+    [source] {
+      switch (source) {
       STRINGIFY(GL_DEBUG_SOURCE_API)
       STRINGIFY(GL_DEBUG_SOURCE_WINDOW_SYSTEM)
       STRINGIFY(GL_DEBUG_SOURCE_SHADER_COMPILER)
@@ -49,11 +51,13 @@ void GfxContext::gl_message_callback_(
       STRINGIFY(GL_DEBUG_SOURCE_APPLICATION)
       STRINGIFY(GL_DEBUG_SOURCE_OTHER)
       default: return "?";
+      }
     }
-  });
+  );
 
-  const std::string type_str = std::invoke([type] {
-    switch (type) {
+  const std::string type_str = std::invoke(
+    [type] {
+      switch (type) {
       STRINGIFY(GL_DEBUG_TYPE_ERROR)
       STRINGIFY(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
       STRINGIFY(GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)
@@ -64,28 +68,49 @@ void GfxContext::gl_message_callback_(
       STRINGIFY(GL_DEBUG_TYPE_POP_GROUP)
       STRINGIFY(GL_DEBUG_TYPE_OTHER)
       default: return "?";
+      }
     }
-  });
+  );
 
   switch (severity) {
-    case GL_DEBUG_SEVERITY_HIGH:
-      IMPERATOR_LOG_ERROR("OpenGL: source={} type={} id={} msg={}",
-                          source_str.substr(9), type_str.substr(9), id, message);
-      break;
-    case GL_DEBUG_SEVERITY_MEDIUM:
-      IMPERATOR_LOG_WARN("OpenGL: source={} type={} id={} msg={}",
-                         source_str.substr(9), type_str.substr(9), id, message);
-      break;
-    case GL_DEBUG_SEVERITY_LOW:
-      IMPERATOR_LOG_DEBUG("OpenGL: source={} type={} id={} msg={}",
-                          source_str.substr(9), type_str.substr(9), id, message);
-      break;
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
-      IMPERATOR_LOG_TRACE("OpenGL: source={} type={} id={} msg={}",
-                          source_str.substr(9), type_str.substr(9), id, message);
-      break;
-    default:
-      break; // won't happen
+  case GL_DEBUG_SEVERITY_HIGH:
+    IMPERATOR_LOG_ERROR(
+      "OpenGL: source={} type={} id={} msg={}",
+      source_str.substr(9),
+      type_str.substr(9),
+      id,
+      message
+    );
+    break;
+  case GL_DEBUG_SEVERITY_MEDIUM:
+    IMPERATOR_LOG_WARN(
+      "OpenGL: source={} type={} id={} msg={}",
+      source_str.substr(9),
+      type_str.substr(9),
+      id,
+      message
+    );
+    break;
+  case GL_DEBUG_SEVERITY_LOW:
+    IMPERATOR_LOG_DEBUG(
+      "OpenGL: source={} type={} id={} msg={}",
+      source_str.substr(9),
+      type_str.substr(9),
+      id,
+      message
+    );
+    break;
+  case GL_DEBUG_SEVERITY_NOTIFICATION:
+    IMPERATOR_LOG_TRACE(
+      "OpenGL: source={} type={} id={} msg={}",
+      source_str.substr(9),
+      type_str.substr(9),
+      id,
+      message
+    );
+    break;
+  default:
+    break; // won't happen
   }
 #undef STRINGIFY
 }
