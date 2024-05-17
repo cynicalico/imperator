@@ -39,7 +39,7 @@ void mainloop(ApplicationParams params) {
   auto module_mgr = ModuleMgr();
   { /* scope to destruct module refs */
     const auto event_bus = module_mgr.create<EventBus>();
-    set_global_user_pointer(event_bus.get());
+    set_global_callback_user_pointer(event_bus.get());
 
     const auto window = module_mgr.create<Window>(
       params.window,
@@ -59,7 +59,7 @@ void mainloop(ApplicationParams params) {
       glfwPollEvents();
     }
 
-    clear_global_user_pointer();
+    clear_global_callback_user_pointer();
   }
   module_mgr.clear();
 

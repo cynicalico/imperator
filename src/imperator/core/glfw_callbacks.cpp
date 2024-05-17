@@ -45,11 +45,11 @@ void clear_glfw_user_pointer(GLFWwindow* window) {
   glfwSetWindowUserPointer(window, nullptr);
 }
 
-void set_global_user_pointer(void* p) {
+void set_global_callback_user_pointer(void* p) {
   internal::user_pointer = p;
 }
 
-void clear_global_user_pointer() {
+void clear_global_callback_user_pointer() {
   internal::user_pointer = nullptr;
 }
 
