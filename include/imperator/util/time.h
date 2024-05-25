@@ -10,8 +10,8 @@
 #include <string>
 
 namespace imp {
-template <typename S>
-std::string timestamp(const S& format) {
+template<typename S>
+std::string timestamp(const S &format) {
   auto t = std::time(nullptr);
   auto lt = fmt::localtime(t);
   auto args = fmt::make_format_args(lt);
@@ -21,7 +21,7 @@ std::string timestamp(const S& format) {
 
 std::string timestamp();
 
-template <typename T = std::uint64_t>
+template<typename T = std::uint64_t>
 T time_nsec() {
   using namespace std::chrono;
 
@@ -30,31 +30,29 @@ T time_nsec() {
   return static_cast<T>(nsecs);
 }
 
-template <typename T = double>
-T time_usec() {
-  return static_cast<T>(time_nsec<double>() / 1e3);
-}
+template<typename T = double>
+T time_usec() { return static_cast<T>(time_nsec<double>() / 1e3); }
 
-template <typename T = double>
-T time_msec() {
-  return static_cast<T>(time_nsec<double>() / 1e6);
-}
+template<typename T = double>
+T time_msec() { return static_cast<T>(time_nsec<double>() / 1e6); }
 
-template <typename T = double>
-T time_sec() {
-  return static_cast<T>(time_nsec<double>() / 1e9);
-}
+template<typename T = double>
+T time_sec() { return static_cast<T>(time_nsec<double>() / 1e9); }
 
 class Stopwatch {
 public:
   Stopwatch();
 
   void start();
+
   void stop();
 
   std::uint64_t elapsed_nsec() const;
+
   double elapsed_usec() const;
+
   double elapsed_msec() const;
+
   double elapsed_sec() const;
 
 private:
@@ -71,13 +69,19 @@ public:
   std::uint64_t tick();
 
   double dt_nsec();
+
   double dt_usec();
+
   double dt_msec();
+
   double dt_sec();
 
   std::uint64_t elapsed_nsec() const;
+
   double elapsed_usec() const;
+
   double elapsed_msec() const;
+
   double elapsed_sec() const;
 
 private:
@@ -97,7 +101,9 @@ public:
   std::uint64_t update();
 
   double fps() const;
+
   std::uint64_t ts() const;
+
   double dt() const;
 
 private:

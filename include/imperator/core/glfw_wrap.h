@@ -2,6 +2,7 @@
 #define IMPERATOR_CORE_GLFW_WRAP_H
 
 #define GLFW_INCLUDE_NONE
+
 #include "imperator/util/enum_bitops.h"
 #include "GLFW/glfw3.h"
 #include "glm/vec2.hpp"
@@ -18,11 +19,11 @@ enum class WindowMode {
 };
 
 enum class WindowFlags {
-  none        = 1 << 0,
-  resizable   = 1 << 1,
-  hidden      = 1 << 2,
+  none = 1 << 0,
+  resizable = 1 << 1,
+  hidden = 1 << 2,
   undecorated = 1 << 3,
-  centered    = 1 << 4
+  centered = 1 << 4
 };
 
 struct WindowOpenParams {
@@ -38,7 +39,7 @@ struct WindowOpenParams {
 };
 
 struct GLFWwindowDeleter {
-  void operator()(GLFWwindow* ptr) const {
+  void operator()(GLFWwindow *ptr) const {
     glfwDestroyWindow(ptr);
     IMPERATOR_LOG_DEBUG("Window destroyed");
   }

@@ -12,15 +12,17 @@ public:
   std::shared_ptr<GfxContext> ctx{nullptr};
   std::shared_ptr<Window> window{nullptr};
 
-  explicit Application(ModuleMgr& module_mgr);
+  explicit Application(ModuleMgr &module_mgr);
 
 protected:
   virtual void update(double dt);
+
   virtual void draw();
 
 private:
-  void r_update_(const E_Update& p);
-  void r_draw_(const E_Draw& p);
+  void r_update_(const E_Update &p);
+
+  void r_draw_(const E_Draw &p);
 };
 } // namespace imp
 

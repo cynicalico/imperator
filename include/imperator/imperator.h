@@ -25,21 +25,20 @@ struct ApplicationParams {
   GfxParams gfx;
 };
 
-template <typename T>
+template<typename T>
   requires std::derived_from<T, Application>
 void mainloop(ApplicationParams params) {
   register_glfw_error_callback();
-  if (!glfwInit())
-    std::exit(EXIT_FAILURE);
+  if (!glfwInit()) std::exit(EXIT_FAILURE);
 
   int major, minor, rev;
   glfwGetVersion(&major, &minor, &rev);
   IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
 
-  auto module_mgr = ModuleMgr();
-  { /* scope to destruct module refs */
+  auto module_mgr = ModuleMgr(); {
+    /* scope to destruct module refs */
     const auto event_bus = module_mgr.create<EventBus>();
-    set_global_callback_user_pointer(event_bus.get());
+    internal::set_global_callback_user_pointer(event_bus.get());
 
     const auto window = module_mgr.create<Window>(
       params.window,
@@ -49,17 +48,19 @@ void mainloop(ApplicationParams params) {
 
     module_mgr.create<Application, T>();
 
+    auto t = Ticker();
     while (!window->should_close()) {
-      event_bus->send_nowait<E_Update>(0.0);
+      event_bus->send_nowait<E_Update>(t.dt_sec());
 
       event_bus->send_nowait<E_StartFrame>();
       event_bus->send_nowait<E_Draw>();
       event_bus->send_nowait<E_EndFrame>();
 
       glfwPollEvents();
+      t.tick();
     }
 
-    clear_global_callback_user_pointer();
+    internal::clear_global_callback_user_pointer();
   }
   module_mgr.clear();
 

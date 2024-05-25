@@ -1,5 +1,7 @@
 .idea/
 .build/
+build/
 .cache/
+cache/
 
 **/data/log

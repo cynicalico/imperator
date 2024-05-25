@@ -11,13 +11,14 @@
 #include <vector>
 
 namespace imp {
-template <typename T = void>
+template<typename T = void>
 class Trie {
 public:
   Trie();
 
-  void insert(const std::string& s, std::optional<T> user_data);
-  bool contains(const std::string& s);
+  void insert(const std::string &s, std::optional<T> user_data);
+
+  bool contains(const std::string &s);
 
   /* Search the tree for words that start with a given prefix.
    * Set n to anything except 0 and at most n words will be returned.
@@ -31,7 +32,7 @@ public:
    * and in general the length of returned words will increase down the list.
    */
   std::vector<std::pair<std::string, std::optional<T>>>
-  fuzzy_match_n(const std::string& pre, std::size_t n = 0) const;
+  fuzzy_match_n(const std::string &pre, std::size_t n = 0) const;
 
 private:
   struct TrieNode {
@@ -47,24 +48,24 @@ private:
     std::string s;
     std::optional<T> user_data;
 
-    auto operator<=>(const FuzzyData& other) const;
+    auto operator<=>(const FuzzyData &other) const;
   };
 
-  static std::size_t levenshtein_distance(const std::string& s1, const std::string& s2);
+  static std::size_t levenshtein_distance(const std::string &s1, const std::string &s2);
 };
 
-template <typename T>
+template<typename T>
 Trie<T>::Trie() {
   root = std::make_unique<TrieNode>();
 }
 
-template <typename T>
-void Trie<T>::insert(const std::string& s, std::optional<T> user_data) {
-  TrieNode* curr = root.get();
-  for (const auto& c : s) {
+template<typename T>
+void Trie<T>::insert(const std::string &s, std::optional<T> user_data) {
+  TrieNode *curr = root.get();
+  for (const auto &c: s) {
     if (auto it = curr->children.find(c); it == curr->children.end()) {
       auto tmp = std::make_unique<TrieNode>();
-      TrieNode* old_curr = curr;
+      TrieNode *old_curr = curr;
       curr = tmp.get();
       old_curr->children[c] = std::move(tmp);
     } else {
@@ -75,10 +76,10 @@ void Trie<T>::insert(const std::string& s, std::optional<T> user_data) {
   curr->user_data = user_data;
 }
 
-template <typename T>
-bool Trie<T>::contains(const std::string& s) {
-  TrieNode* curr = root.get();
-  for (const auto& c : s) {
+template<typename T>
+bool Trie<T>::contains(const std::string &s) {
+  TrieNode *curr = root.get();
+  for (const auto &c: s) {
     if (auto it = curr->children.find(c); it == curr->children.end()) {
       return false;
     } else {
@@ -88,20 +89,20 @@ bool Trie<T>::contains(const std::string& s) {
   return curr->value != std::nullopt;
 }
 
-template <typename T>
+template<typename T>
 std::vector<std::pair<std::string, std::optional<T>>>
-Trie<T>::fuzzy_match_n(const std::string& pre, std::size_t n) const {
+Trie<T>::fuzzy_match_n(const std::string &pre, std::size_t n) const {
   std::vector<std::pair<std::string, std::optional<T>>> matches{};
   if (pre.empty()) {
     return matches;
   }
 
-  std::stack<TrieNode*> s{};
+  std::stack<TrieNode *> s{};
   std::priority_queue<FuzzyData, std::vector<FuzzyData>, std::greater<>> pq{};
 
   // Iterate through the prefix until we either can't find the next character or run out
-  TrieNode* curr = root.get();
-  for (const auto& c : pre) {
+  TrieNode *curr = root.get();
+  for (const auto &c: pre) {
     s.push(curr); // We will save all the intermediate steps on the stack
     if (auto it = curr->children.find(c); it == curr->children.end())
       break;
@@ -111,7 +112,7 @@ Trie<T>::fuzzy_match_n(const std::string& pre, std::size_t n) const {
   s.push(curr);
 
   // DFS from our last position
-  std::set<TrieNode*> visited{};
+  std::set<TrieNode *> visited{};
   while (!s.empty()) {
     curr = s.top();
     s.pop();
@@ -130,7 +131,7 @@ Trie<T>::fuzzy_match_n(const std::string& pre, std::size_t n) const {
 
     if (!is_visited && !curr->children.empty()) {
       s.push(curr);
-      for (const auto& c : curr->children) {
+      for (const auto &c: curr->children) {
         s.push(c.second.get());
       }
     }
@@ -144,13 +145,13 @@ Trie<T>::fuzzy_match_n(const std::string& pre, std::size_t n) const {
   return matches;
 }
 
-template <typename T>
-auto Trie<T>::FuzzyData::operator<=>(const FuzzyData& other) const {
+template<typename T>
+auto Trie<T>::FuzzyData::operator<=>(const FuzzyData &other) const {
   return distance <=> other.distance;
 }
 
-template <typename T>
-std::size_t Trie<T>::levenshtein_distance(const std::string& s1, const std::string& s2) {
+template<typename T>
+std::size_t Trie<T>::levenshtein_distance(const std::string &s1, const std::string &s2) {
   std::vector<std::size_t> v0(s2.size() + 1, 0);
   std::vector<std::size_t> v1(s2.size() + 1, 0);
 

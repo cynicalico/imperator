@@ -12,13 +12,13 @@ void register_glfw_callbacks(GLFWwindow* window);
 void set_glfw_user_pointer(GLFWwindow* window, void* p);
 void clear_glfw_user_pointer(GLFWwindow* window);
 
+namespace internal {
 // HACK: Joystick and Monitor don't get a window, but engine is not static
 //       This sets a static pointer defined in glfw_callbacks.cpp that is
 //       not to be accessed anywhere else
 void set_global_callback_user_pointer(void* p);
 void clear_global_callback_user_pointer();
 
-namespace internal {
 void error_callback(int code, const char* description);
 
 void window_close_callback(GLFWwindow* window);

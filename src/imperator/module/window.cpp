@@ -4,41 +4,35 @@
 #include "imperator/util/platform.h"
 
 namespace imp {
-Window::Window(ModuleMgr& module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version)
+Window::Window(ModuleMgr &module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version)
   : Module(module_mgr) {
   event_bus = module_mgr_.get<EventBus>();
 
-  event_bus->sub<E_Update>(module_name_, [&](const auto& p) { r_update_(p); });
+  event_bus->sub<E_Update>(module_name_, [&](const auto &p) { r_update_(p); });
 
-  event_bus->sub<E_EndFrame>(module_name_, [&](const auto& p) { r_end_frame_(p); });
+  event_bus->sub<E_EndFrame>(module_name_, [&](const auto &p) { r_end_frame_(p); });
 
-  event_bus->sub<E_GlfwWindowClose>(module_name_, [&](const auto& p) { r_glfw_window_close_(p); });
-  event_bus->sub<E_GlfwWindowSize>(module_name_, [&](const auto& p) { r_glfw_window_size_(p); });
-  event_bus->sub<E_GlfwFramebufferSize>(module_name_, [&](const auto& p) { r_glfw_framebuffer_size_(p); });
-  event_bus->sub<E_GlfwWindowContentScale>(module_name_, [&](const auto& p) { r_glfw_window_content_scale_(p); });
-  event_bus->sub<E_GlfwWindowPos>(module_name_, [&](const auto& p) { r_glfw_window_pos_(p); });
-  event_bus->sub<E_GlfwWindowIconify>(module_name_, [&](const auto& p) { r_glfw_window_iconify_(p); });
-  event_bus->sub<E_GlfwWindowMaximize>(module_name_, [&](const auto& p) { r_glfw_window_maximize_(p); });
-  event_bus->sub<E_GlfwWindowFocus>(module_name_, [&](const auto& p) { r_glfw_window_focus_(p); });
-  event_bus->sub<E_GlfwWindowRefresh>(module_name_, [&](const auto& p) { r_glfw_window_refresh_(p); });
-  event_bus->sub<E_GlfwMonitor>(module_name_, [&](const auto& p) { r_glfw_monitor_(p); });
+  event_bus->sub<E_GlfwWindowClose>(module_name_, [&](const auto &p) { r_glfw_window_close_(p); });
+  event_bus->sub<E_GlfwWindowSize>(module_name_, [&](const auto &p) { r_glfw_window_size_(p); });
+  event_bus->sub<E_GlfwFramebufferSize>(module_name_, [&](const auto &p) { r_glfw_framebuffer_size_(p); });
+  event_bus->sub<E_GlfwWindowContentScale>(module_name_, [&](const auto &p) { r_glfw_window_content_scale_(p); });
+  event_bus->sub<E_GlfwWindowPos>(module_name_, [&](const auto &p) { r_glfw_window_pos_(p); });
+  event_bus->sub<E_GlfwWindowIconify>(module_name_, [&](const auto &p) { r_glfw_window_iconify_(p); });
+  event_bus->sub<E_GlfwWindowMaximize>(module_name_, [&](const auto &p) { r_glfw_window_maximize_(p); });
+  event_bus->sub<E_GlfwWindowFocus>(module_name_, [&](const auto &p) { r_glfw_window_focus_(p); });
+  event_bus->sub<E_GlfwWindowRefresh>(module_name_, [&](const auto &p) { r_glfw_window_refresh_(p); });
+  event_bus->sub<E_GlfwMonitor>(module_name_, [&](const auto &p) { r_glfw_monitor_(p); });
 
   open_(open_params, backend_version);
 }
 
-Window::~Window() {
-  clear_glfw_user_pointer(handle());
-}
+Window::~Window() { clear_glfw_user_pointer(handle()); }
 
-bool Window::should_close() const {
-  return glfwWindowShouldClose(handle()) == GLFW_TRUE;
-}
+bool Window::should_close() const { return glfwWindowShouldClose(handle()) == GLFW_TRUE; }
 
-void Window::set_should_close(bool v) {
-  glfwSetWindowShouldClose(handle(), v ? GLFW_TRUE : GLFW_FALSE);
-}
+void Window::set_should_close(bool v) { glfwSetWindowShouldClose(handle(), v ? GLFW_TRUE : GLFW_FALSE); }
 
-GLFWmonitor* Window::get_monitor_(int monitor_num) {
+GLFWmonitor *Window::get_monitor_(int monitor_num) {
   int monitor_count = 0;
   const auto monitors = glfwGetMonitors(&monitor_count);
 
@@ -62,10 +56,10 @@ void Window::open_(WindowOpenParams open_params, glm::ivec2 backend_version) {
 #endif
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  if (open_params.mode == WindowMode::fullscreen || open_params.mode == WindowMode::borderless)
-    open_fullscreen_(open_params);
-  else
-    open_windowed_(open_params);
+  if (open_params.mode == WindowMode::fullscreen || open_params.mode == WindowMode::borderless) open_fullscreen_(
+    open_params
+  );
+  else open_windowed_(open_params);
 
   set_glfw_user_pointer(handle(), event_bus.get());
   register_glfw_callbacks(handle());
@@ -78,14 +72,16 @@ void Window::open_(WindowOpenParams open_params, glm::ivec2 backend_version) {
   // the window size is changed
   if (open_params.mode == WindowMode::windowed) {
     event_bus->send_nowait<E_GlfwWindowSize>(handle(), open_params.size.x, open_params.size.y);
-  } else {
-    GLFWmonitor* monitor = get_monitor_(open_params.monitor_num);
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  }
+  else {
+    GLFWmonitor *monitor = get_monitor_(open_params.monitor_num);
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
     event_bus->send_nowait<E_GlfwWindowSize>(handle(), mode->width, mode->height);
   }
 
-  if (open_params.mode == WindowMode::windowed && !is_flag_set(open_params.flags, WindowFlags::hidden))
-    glfwShowWindow(handle());
+  if (open_params.mode == WindowMode::windowed && !is_flag_set(open_params.flags, WindowFlags::hidden)) glfwShowWindow(
+    handle()
+  );
 }
 
 void Window::open_fullscreen_(WindowOpenParams open_params) {
@@ -135,8 +131,8 @@ void Window::open_fullscreen_(WindowOpenParams open_params) {
    * way to tell ahead of time.
    */
 
-  GLFWmonitor* monitor = get_monitor_(open_params.monitor_num);
-  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  GLFWmonitor *monitor = get_monitor_(open_params.monitor_num);
+  const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Why is this necessary?
   glfwWindowHint(GLFW_RED_BITS, mode->redBits);
@@ -152,7 +148,7 @@ void Window::open_fullscreen_(WindowOpenParams open_params) {
 
   auto h = glfwCreateWindow(mode->width, mode->height, open_params.title.c_str(), monitor, nullptr);
   if (!h) {
-    const char* description;
+    const char *description;
     int code = glfwGetError(&description);
     IMPERATOR_LOG_CRITICAL("Failed to create GLFW window:\n* ({}) {}", code, description);
     glfwTerminate();
@@ -165,8 +161,8 @@ void Window::open_fullscreen_(WindowOpenParams open_params) {
 }
 
 void Window::open_windowed_(WindowOpenParams open_params) {
-  GLFWmonitor* monitor = get_monitor_(open_params.monitor_num);
-  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  GLFWmonitor *monitor = get_monitor_(open_params.monitor_num);
+  const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   glfwWindowHint(
@@ -190,7 +186,7 @@ void Window::open_windowed_(WindowOpenParams open_params) {
     nullptr
   );
   if (!h) {
-    const char* description;
+    const char *description;
     int code = glfwGetError(&description);
     IMPERATOR_LOG_CRITICAL("Failed to create GLFW window:\n* ({}) {}", code, description);
     glfwTerminate();
@@ -216,7 +212,7 @@ void Window::open_windowed_(WindowOpenParams open_params) {
     );
 }
 
-void Window::r_update_(const E_Update& p) {
+void Window::r_update_(const E_Update &p) {
   event_bus->poll<E_GlfwWindowClose>(module_name_);
   event_bus->poll<E_GlfwWindowSize>(module_name_);
   event_bus->poll<E_GlfwFramebufferSize>(module_name_);
@@ -229,33 +225,31 @@ void Window::r_update_(const E_Update& p) {
   event_bus->poll<E_GlfwMonitor>(module_name_);
 }
 
-void Window::r_end_frame_(const E_EndFrame& p) {
-  glfwSwapBuffers(handle());
-}
+void Window::r_end_frame_(const E_EndFrame &p) { glfwSwapBuffers(handle()); }
 
-void Window::r_glfw_window_close_(const E_GlfwWindowClose& p) {}
+void Window::r_glfw_window_close_(const E_GlfwWindowClose &p) {}
 
-void Window::r_glfw_window_size_(const E_GlfwWindowSize& p) {
+void Window::r_glfw_window_size_(const E_GlfwWindowSize &p) {
   size_.x = p.width;
   size_.y = p.height;
 }
 
-void Window::r_glfw_framebuffer_size_(const E_GlfwFramebufferSize& p) {}
+void Window::r_glfw_framebuffer_size_(const E_GlfwFramebufferSize &p) {}
 
-void Window::r_glfw_window_content_scale_(const E_GlfwWindowContentScale& p) {}
+void Window::r_glfw_window_content_scale_(const E_GlfwWindowContentScale &p) {}
 
-void Window::r_glfw_window_pos_(const E_GlfwWindowPos& p) {
+void Window::r_glfw_window_pos_(const E_GlfwWindowPos &p) {
   pos_.x = p.xpos;
   pos_.y = p.ypos;
 }
 
-void Window::r_glfw_window_iconify_(const E_GlfwWindowIconify& p) {}
+void Window::r_glfw_window_iconify_(const E_GlfwWindowIconify &p) {}
 
-void Window::r_glfw_window_maximize_(const E_GlfwWindowMaximize& p) {}
+void Window::r_glfw_window_maximize_(const E_GlfwWindowMaximize &p) {}
 
-void Window::r_glfw_window_focus_(const E_GlfwWindowFocus& p) {}
+void Window::r_glfw_window_focus_(const E_GlfwWindowFocus &p) {}
 
-void Window::r_glfw_window_refresh_(const E_GlfwWindowRefresh& p) {}
+void Window::r_glfw_window_refresh_(const E_GlfwWindowRefresh &p) {}
 
-void Window::r_glfw_monitor_(const E_GlfwMonitor& p) {}
+void Window::r_glfw_monitor_(const E_GlfwMonitor &p) {}
 } // namespace imp

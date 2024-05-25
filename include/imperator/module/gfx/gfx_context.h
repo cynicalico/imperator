@@ -3,6 +3,7 @@
 
 #include "imperator/module/module_mgr.h"
 #include "imperator/module/window.h"
+#include "imperator/util/platform.h"
 #include "glad/gl.h"
 
 namespace imp {
@@ -16,17 +17,29 @@ public:
   GladGLContext gl;
   std::shared_ptr<Window> window{nullptr};
 
-  explicit GfxContext(ModuleMgr& module_mgr, GfxParams params);
+  explicit GfxContext(ModuleMgr &module_mgr, GfxParams params);
+
+  bool is_vsync() const;
+
+  void set_vsync(bool v);
 
 private:
+  bool use_platform_extensions_{false};
+
+  void initialize_platform_extensions_();
+
+  bool platform_is_vsync_() const;
+
+  void platform_set_vsync_(bool v);
+
   static void GLAPIENTRY gl_message_callback_(
     GLenum source,
     GLenum type,
     GLuint id,
     GLenum severity,
     GLsizei length,
-    const GLchar* message,
-    const void* userParam
+    const GLchar *message,
+    const void *userParam
   );
 };
 } // namespace imp

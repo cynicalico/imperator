@@ -7,20 +7,20 @@ CPMAddPackage(
 CPMAddPackage(
         NAME glad2
         GITHUB_REPOSITORY Dav1dde/glad
-        VERSION 2.0.5
+        VERSION 2.0.6
         DOWNLOAD_ONLY YES
 )
 add_subdirectory(${glad2_SOURCE_DIR}/cmake ${glad2_BINARY_DIR})
 if (WIN32)
     glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 wgl=1.0)
 else ()
-    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4)
+    glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4 egl=1.5)
 endif ()
 
 CPMAddPackage(
         NAME glfw
         GITHUB_REPOSITORY glfw/glfw
-        GIT_TAG 3.3.9
+        GIT_TAG 3.4
         OPTIONS "GLFW_BUILD_TESTS OFF" "GLFW_BUILD_EXAMPLES OFF" "GLFW_BULID_DOCS OFF"
 )
 
@@ -32,9 +32,16 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+        NAME re2
+        GITHUB_REPOSITORY google/re2
+        GIT_TAG 2024-05-01
+        OPTIONS "RE2_BUILD_TESTING OFF"
+)
+
+CPMAddPackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
-        VERSION 1.13.0
+        VERSION 1.14.1
         OPTIONS "SPDLOG_FMT_EXTERNAL ON"
 )
 
@@ -58,6 +65,8 @@ target_include_directories(imperator PUBLIC
 
 if (MSVC)
     target_compile_definitions(imperator_thirdparty INTERFACE WIN32_LEAN_AND_MEAN NOMINMAX)
+elseif (UNIX)
+    find_package(X11 REQUIRED)
 endif ()
 
 target_link_libraries(imperator_thirdparty INTERFACE
@@ -65,5 +74,7 @@ target_link_libraries(imperator_thirdparty INTERFACE
         glad_gl_core_mx_33
         glfw
         glm::glm
+        re2::re2
         spdlog::spdlog
-        stduuid)
+        stduuid
+        ${X11_LIBRARIES})

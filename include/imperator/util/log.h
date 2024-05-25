@@ -17,6 +17,7 @@
 
 namespace imp {
 std::shared_ptr<spdlog::sinks::dist_sink_mt> sinks();
+
 std::shared_ptr<spdlog::logger> logger();
 } // namespace imp
 

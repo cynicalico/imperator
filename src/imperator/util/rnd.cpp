@@ -12,7 +12,7 @@ void gen_seed_vals() {
 }
 
 namespace internal {
-pcg32& generator() {
+pcg32 &generator() {
   thread_local pcg32 g = std::invoke(
     [] {
       gen_seed_vals();
@@ -24,7 +24,7 @@ pcg32& generator() {
 }
 } // namespace internal
 
-seed_data& seed_info() {
+seed_data &seed_info() {
   thread_local seed_data s{};
   return s;
 }
@@ -54,9 +54,7 @@ std::string base58(std::size_t length) {
   std::generate_n(
     id.begin(),
     length,
-    [] {
-      return B58_ALPHABET[get<unsigned char>(0x00, 0xff) % 58];
-    }
+    [] { return B58_ALPHABET[get<unsigned char>(0x00, 0xff) % 58]; }
   );
 
   return id;
