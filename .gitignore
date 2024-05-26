@@ -7,6 +7,9 @@ build/
 .cache/
 cache/
 
+.venv/
+venv/
+
 data/log/
 
 scratch/

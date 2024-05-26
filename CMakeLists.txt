@@ -5,9 +5,9 @@ project(imp VERSION 0.1
 
 # We need Jinja2 for Glad 2 to work
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-execute_process(COMMAND python -m pip show Jinja2 RESULT_VARIABLE EXIT_CODE OUTPUT_QUIET)
+execute_process(COMMAND ${Python3_EXECUTABLE} -m pip show Jinja2 RESULT_VARIABLE EXIT_CODE OUTPUT_QUIET)
 if(NOT ${EXIT_CODE} EQUAL 0)
-    message(FATAL_ERROR "The Jinja2 Python package is not installed. Please install it using the following command: \"python -m pip install jinja2\".")
+    message(FATAL_ERROR "The Jinja2 Python package is not installed. Please install it using the following command: \"${Python3_EXECUTABLE} -m pip install jinja2\".")
 endif()
 
 # This is kind of a workaround to handle the OpenAL DLL... not sure what the real solution is
