@@ -4,6 +4,12 @@ CPMAddPackage(
         GIT_TAG 10.2.1
 )
 
+# We need Jinja2 for Glad 2 to work
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+execute_process(COMMAND ${Python3_EXECUTABLE} -m pip show Jinja2 RESULT_VARIABLE EXIT_CODE OUTPUT_QUIET)
+if(NOT ${EXIT_CODE} EQUAL 0)
+    message(FATAL_ERROR "The Jinja2 Python package is not installed. Please install it using the following command: \"${Python3_EXECUTABLE} -m pip install jinja2\".")
+endif()
 CPMAddPackage(
         NAME glad2
         GITHUB_REPOSITORY Dav1dde/glad

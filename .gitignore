@@ -1,7 +1,12 @@
 .idea/
+
 .build/
 build/
+
 .cache/
 cache/
+
+.venv/
+venv/
 
 **/data/log
