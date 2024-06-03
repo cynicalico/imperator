@@ -21,51 +21,53 @@
 
 namespace imp {
 struct ApplicationParams {
-  WindowOpenParams window;
-  GfxParams gfx;
+    WindowOpenParams window;
+    GfxParams gfx;
 };
 
 template<typename T>
-  requires std::derived_from<T, Application>
+requires std::derived_from<T, Application>
 void mainloop(ApplicationParams params) {
-  register_glfw_error_callback();
-  if (!glfwInit()) std::exit(EXIT_FAILURE);
+    register_glfw_error_callback();
+    if (!glfwInit()) std::exit(EXIT_FAILURE);
 
-  int major, minor, rev;
-  glfwGetVersion(&major, &minor, &rev);
-  IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
+    int major, minor, rev;
+    glfwGetVersion(&major, &minor, &rev);
+    IMPERATOR_LOG_DEBUG("Initialized GLFW v{}.{}.{}", major, minor, rev);
 
-  auto module_mgr = ModuleMgr(); {
-    /* scope to destruct module refs */
-    const auto event_bus = module_mgr.create<EventBus>();
-    internal::set_global_callback_user_pointer(event_bus.get());
+    auto module_mgr = ModuleMgr();
+    {
+        /* scope to destruct module refs */
 
-    const auto window = module_mgr.create<Window>(
-      params.window,
-      params.gfx.backend_version
-    );
-    module_mgr.create<GfxContext>(params.gfx);
+        const auto event_bus = module_mgr.create<EventBus>();
+        internal::set_global_callback_user_pointer(event_bus.get());
 
-    module_mgr.create<Application, T>();
+        const auto window = module_mgr.create<Window>(
+                params.window,
+                params.gfx.backend_version
+        );
+        module_mgr.create<GfxContext>(params.gfx);
 
-    auto t = Ticker();
-    while (!window->should_close()) {
-      event_bus->send_nowait<E_Update>(t.dt_sec());
+        module_mgr.create<Application, T>();
 
-      event_bus->send_nowait<E_StartFrame>();
-      event_bus->send_nowait<E_Draw>();
-      event_bus->send_nowait<E_EndFrame>();
+        auto t = Ticker();
+        while (!window->should_close()) {
+            event_bus->send_nowait<E_Update>(t.dt_sec());
 
-      glfwPollEvents();
-      t.tick();
+            event_bus->send_nowait<E_StartFrame>();
+            event_bus->send_nowait<E_Draw>();
+            event_bus->send_nowait<E_EndFrame>();
+
+            glfwPollEvents();
+            t.tick();
+        }
+
+        internal::clear_global_callback_user_pointer();
     }
+    module_mgr.clear();
 
-    internal::clear_global_callback_user_pointer();
-  }
-  module_mgr.clear();
-
-  glfwTerminate();
-  IMPERATOR_LOG_DEBUG("Terminated GLFW");
+    glfwTerminate();
+    IMPERATOR_LOG_DEBUG("Terminated GLFW");
 }
 } // namespace imp
 

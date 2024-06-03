@@ -11,44 +11,44 @@
 namespace imp {
 class ImageData {
 public:
-  explicit ImageData(const std::filesystem::path &path, int desired_channels = 0);
+    explicit ImageData(const std::filesystem::path &path, int desired_channels = 0);
 
-  ImageData(std::size_t w, std::size_t h, std::size_t channels = 4);
+    ImageData(std::size_t w, std::size_t h, std::size_t channels = 4);
 
-  ~ImageData();
+    ~ImageData();
 
-  ImageData(const ImageData &) = delete;
+    ImageData(const ImageData &) = delete;
 
-  ImageData &operator=(const ImageData &) = delete;
+    ImageData &operator=(const ImageData &) = delete;
 
-  ImageData(ImageData &&other) noexcept;
+    ImageData(ImageData &&other) noexcept;
 
-  ImageData &operator=(ImageData &&other) noexcept;
+    ImageData &operator=(ImageData &&other) noexcept;
 
-  stbi_uc &operator[](std::size_t index);
+    stbi_uc &operator[](std::size_t index);
 
-  const stbi_uc &operator[](std::size_t index) const;
+    const stbi_uc &operator[](std::size_t index) const;
 
-  stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component);
+    stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component);
 
-  const stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component) const;
+    const stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component) const;
 
-  stbi_uc *bytes();
+    stbi_uc *bytes();
 
-  int w() const;
+    int w() const;
 
-  int h() const;
+    int h() const;
 
-  int comp() const;
+    int comp() const;
 
-  GLFWimage glfw_image();
+    GLFWimage glfw_image();
 
 private:
-  std::vector<stbi_uc> bytes_{};
+    std::vector<stbi_uc> bytes_{};
 
-  int w_{0};
-  int h_{0};
-  int comp_{0};
+    int w_{0};
+    int h_{0};
+    int comp_{0};
 };
 
 // TODO: Make this configurable

@@ -1,11 +1,6 @@
 #ifndef IMPERATOR_CORE_COLOR_H
 #define IMPERATOR_CORE_COLOR_H
 
-// // FIXME: This is somehow getting a macro from wingdi.h? I think it's
-// //   coming from spdlog, but I'm not certain...should see if there's
-// //   a better way to deal with this
-// #undef RGB
-
 #include "glm/glm.hpp"
 #include "fmt/core.h"
 #include <cstdint>
@@ -14,13 +9,15 @@
 namespace imp {
 class Color {
 public:
-  virtual ~Color() = default;
+    virtual ~Color() = default;
 
-  virtual glm::vec4 gl_color() const = 0;
+    virtual glm::vec4 gl_color() const = 0;
 };
 
 class RGB;
+
 class HSL;
+
 class HSV;
 // class XYZ;
 // class CIELab;
@@ -48,42 +45,42 @@ RGB rgba_f(float r, float g, float b, float a);
 
 class RGB : public Color {
 public:
-  int r{0}, g{0}, b{0}, a{255};
+    int r{0}, g{0}, b{0}, a{255};
 
-  RGB() = default;
+    RGB() = default;
 
-  glm::vec4 gl_color() const override;
+    glm::vec4 gl_color() const override;
 
-  friend RGB rgb(int r, int g, int b);
+    friend RGB rgb(int r, int g, int b);
 
-  friend RGB rgb(std::uint32_t hex);
+    friend RGB rgb(std::uint32_t hex);
 
-  friend RGB rgb(const std::string &css_color);
+    friend RGB rgb(const std::string &css_color);
 
-  friend RGB rgb_f(float r, float g, float b);
+    friend RGB rgb_f(float r, float g, float b);
 
-  friend RGB rgba(int r, int g, int b, int a);
+    friend RGB rgba(int r, int g, int b, int a);
 
-  friend RGB rgba(std::uint64_t hex, bool argb);
+    friend RGB rgba(std::uint64_t hex, bool argb);
 
-  friend RGB rgba(const std::string &css_color, int a);
+    friend RGB rgba(const std::string &css_color, int a);
 
-  friend RGB rgba_f(float r, float g, float b, float a);
+    friend RGB rgba_f(float r, float g, float b, float a);
 
-  RGB get_inverse() const;
+    RGB get_inverse() const;
 
-  void invert();
+    void invert();
 
-  HSL to_hsl() const;
+    HSL to_hsl() const;
 
-  HSV to_hsv() const;
+    HSV to_hsv() const;
 
-  // XYZ to_xyz() const;
-  // CIELab to_lab() const;
-  // CIELCh to_lch() const;
+    // XYZ to_xyz() const;
+    // CIELab to_lab() const;
+    // CIELCh to_lch() const;
 
 private:
-  RGB(int r, int g, int b, int a = 255);
+    RGB(int r, int g, int b, int a = 255);
 };
 
 /*******
@@ -100,35 +97,35 @@ HSV hsva(const std::string &css_color, int a);
 
 class HSV : public Color {
 public:
-  double h{0.0}, s{0.0}, v{0.0};
-  int a{255};
+    double h{0.0}, s{0.0}, v{0.0};
+    int a{255};
 
-  HSV() = default;
+    HSV() = default;
 
-  glm::vec4 gl_color() const override;
+    glm::vec4 gl_color() const override;
 
-  friend HSV hsv(double h, double s, double v);
+    friend HSV hsv(double h, double s, double v);
 
-  friend HSV hsv(const std::string &css_color);
+    friend HSV hsv(const std::string &css_color);
 
-  friend HSV hsva(double h, double s, double v, int a);
+    friend HSV hsva(double h, double s, double v, int a);
 
-  friend HSV hsva(const std::string &css_color, int a);
+    friend HSV hsva(const std::string &css_color, int a);
 
-  HSV get_inverse() const;
+    HSV get_inverse() const;
 
-  void invert();
+    void invert();
 
-  RGB to_rgb() const;
+    RGB to_rgb() const;
 
-  HSL to_hsl() const;
+    HSL to_hsl() const;
 
-  // XYZ to_xyz() const;
-  // CIELab to_lab() const;
-  // CIELCh to_lch() const;
+    // XYZ to_xyz() const;
+    // CIELab to_lab() const;
+    // CIELCh to_lch() const;
 
 private:
-  HSV(double h, double s, double v, int a);
+    HSV(double h, double s, double v, int a);
 };
 
 /*******
@@ -145,35 +142,35 @@ HSL hsla(const std::string &css_color, int a);
 
 class HSL : public Color {
 public:
-  double h{0.0}, s{0.0}, l{0.0};
-  int a{255};
+    double h{0.0}, s{0.0}, l{0.0};
+    int a{255};
 
-  HSL() = default;
+    HSL() = default;
 
-  glm::vec4 gl_color() const override;
+    glm::vec4 gl_color() const override;
 
-  friend HSL hsl(double h, double s, double l);
+    friend HSL hsl(double h, double s, double l);
 
-  friend HSL hsl(const std::string &css_color);
+    friend HSL hsl(const std::string &css_color);
 
-  friend HSL hsla(double h, double s, double l, int a);
+    friend HSL hsla(double h, double s, double l, int a);
 
-  friend HSL hsla(const std::string &css_color, int a);
+    friend HSL hsla(const std::string &css_color, int a);
 
-  HSL get_inverse() const;
+    HSL get_inverse() const;
 
-  void invert();
+    void invert();
 
-  RGB to_rgb() const;
+    RGB to_rgb() const;
 
-  HSV to_hsv() const;
+    HSV to_hsv() const;
 
-  // XYZ to_xyz() const;
-  // CIELab to_lab() const;
-  // CIELCh to_lch() const;
+    // XYZ to_xyz() const;
+    // CIELab to_lab() const;
+    // CIELCh to_lch() const;
 
 private:
-  HSL(double h, double s, double l, int a);
+    HSL(double h, double s, double l, int a);
 };
 
 // /*******
@@ -304,29 +301,29 @@ private:
 
 template<>
 struct fmt::formatter<imp::RGB> {
-  constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
+    constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
 
-  auto format(const imp::RGB &c, format_context &ctx) const -> format_context::iterator {
-    return fmt::format_to(ctx.out(), "RGB({},{},{},{})", c.r, c.g, c.b, c.a);
-  }
+    auto format(const imp::RGB &c, format_context &ctx) const -> format_context::iterator {
+        return fmt::format_to(ctx.out(), "RGB({},{},{},{})", c.r, c.g, c.b, c.a);
+    }
 };
 
 template<>
 struct fmt::formatter<imp::HSV> : formatter<string_view> {
-  constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
+    constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
 
-  auto format(const imp::HSV &c, format_context &ctx) const -> format_context::iterator {
-    return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.v, c.a);
-  }
+    auto format(const imp::HSV &c, format_context &ctx) const -> format_context::iterator {
+        return fmt::format_to(ctx.out(), "HSV({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.v, c.a);
+    }
 };
 
 template<>
 struct fmt::formatter<imp::HSL> : formatter<string_view> {
-  constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
+    constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
 
-  auto format(const imp::HSL &c, format_context &ctx) const -> format_context::iterator {
-    return fmt::format_to(ctx.out(), "HSL({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.l, c.a);
-  }
+    auto format(const imp::HSL &c, format_context &ctx) const -> format_context::iterator {
+        return fmt::format_to(ctx.out(), "HSL({:.2f},{:.2f},{:.2f},{})", c.h, c.s, c.l, c.a);
+    }
 };
 
 #endif//IMPERATOR_CORE_COLOR_H

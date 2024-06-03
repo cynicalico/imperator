@@ -12,22 +12,22 @@
 namespace imp {
 template<typename S>
 std::string timestamp(const S &format) {
-  auto t = std::time(nullptr);
-  auto lt = fmt::localtime(t);
-  auto args = fmt::make_format_args(lt);
+    auto t = std::time(nullptr);
+    auto lt = fmt::localtime(t);
+    auto args = fmt::make_format_args(lt);
 
-  return fmt::vformat(format, args);
+    return fmt::vformat(format, args);
 }
 
 std::string timestamp();
 
 template<typename T = std::uint64_t>
 T time_nsec() {
-  using namespace std::chrono;
+    using namespace std::chrono;
 
-  auto now = steady_clock::now();
-  auto nsecs = duration_cast<nanoseconds>(now.time_since_epoch()).count();
-  return static_cast<T>(nsecs);
+    auto now = steady_clock::now();
+    auto nsecs = duration_cast<nanoseconds>(now.time_since_epoch()).count();
+    return static_cast<T>(nsecs);
 }
 
 template<typename T = double>
@@ -41,78 +41,78 @@ T time_sec() { return static_cast<T>(time_nsec<double>() / 1e9); }
 
 class Stopwatch {
 public:
-  Stopwatch();
+    Stopwatch();
 
-  void start();
+    void start();
 
-  void stop();
+    void stop();
 
-  std::uint64_t elapsed_nsec() const;
+    std::uint64_t elapsed_nsec() const;
 
-  double elapsed_usec() const;
+    double elapsed_usec() const;
 
-  double elapsed_msec() const;
+    double elapsed_msec() const;
 
-  double elapsed_sec() const;
+    double elapsed_sec() const;
 
 private:
-  std::uint64_t start_{0}, end_{0};
+    std::uint64_t start_{0}, end_{0};
 };
 
 
 class Ticker {
 public:
-  explicit Ticker(double interval = 0.0);
+    explicit Ticker(double interval = 0.0);
 
-  void reset();
+    void reset();
 
-  std::uint64_t tick();
+    std::uint64_t tick();
 
-  double dt_nsec();
+    double dt_nsec();
 
-  double dt_usec();
+    double dt_usec();
 
-  double dt_msec();
+    double dt_msec();
 
-  double dt_sec();
+    double dt_sec();
 
-  std::uint64_t elapsed_nsec() const;
+    std::uint64_t elapsed_nsec() const;
 
-  double elapsed_usec() const;
+    double elapsed_usec() const;
 
-  double elapsed_msec() const;
+    double elapsed_msec() const;
 
-  double elapsed_sec() const;
+    double elapsed_sec() const;
 
 private:
-  std::uint64_t start_{0};
-  std::uint64_t last_{0};
-  std::uint64_t dt_{0};
-  std::uint64_t interval_{0};
-  std::uint64_t acc_{0};
+    std::uint64_t start_{0};
+    std::uint64_t last_{0};
+    std::uint64_t dt_{0};
+    std::uint64_t interval_{0};
+    std::uint64_t acc_{0};
 };
 
 class FrameCounter {
 public:
-  explicit FrameCounter(double interval = 0.0);
+    explicit FrameCounter(double interval = 0.0);
 
-  void reset();
+    void reset();
 
-  std::uint64_t update();
+    std::uint64_t update();
 
-  double fps() const;
+    double fps() const;
 
-  std::uint64_t ts() const;
+    std::uint64_t ts() const;
 
-  double dt() const;
+    double dt() const;
 
 private:
-  std::uint64_t start_time_{0};
-  std::deque<std::uint64_t> timestamps_{};
+    std::uint64_t start_time_{0};
+    std::deque<std::uint64_t> timestamps_{};
 
-  Ticker user_ticker_;
-  Ticker ticker_{0.5};
-  EMA averager_{1.0};
+    Ticker user_ticker_;
+    Ticker ticker_{0.5};
+    EMA averager_{1.0};
 };
 } // namespace imp
 

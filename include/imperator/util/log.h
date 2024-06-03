@@ -16,9 +16,9 @@
 #include <memory>
 
 namespace imp {
-std::shared_ptr<spdlog::sinks::dist_sink_mt> sinks();
+std::shared_ptr <spdlog::sinks::dist_sink_mt> sinks();
 
-std::shared_ptr<spdlog::logger> logger();
+std::shared_ptr <spdlog::logger> logger();
 } // namespace imp
 
 #define IMPERATOR_LOG_TRACE(...)    SPDLOG_LOGGER_TRACE(imp::logger(), __VA_ARGS__)

@@ -9,11 +9,11 @@
 namespace imp {
 class G2D : public Module<G2D> {
 public:
-  std::shared_ptr<GfxContext> ctx;
+    std::shared_ptr<GfxContext> ctx;
 
-  G2D(ModuleMgr &module_mgr);
+    G2D(ModuleMgr &module_mgr);
 
-  void clear(const Color &c, const ClearBit &bits = ClearBit::color | ClearBit::depth);
+    void clear(const Color &c, const ClearBit &bits = ClearBit::color | ClearBit::depth);
 };
 } // namespace imp
 
