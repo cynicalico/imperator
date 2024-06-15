@@ -37,6 +37,14 @@ CPMAddPackage(
         OPTIONS "GLM_ENABLE_CXX_20 ON"
 )
 
+# For re2, we don't actually link it
+CPMAddPackage(
+        NAME abseil-cpp
+        GITHUB_REPOSITORY abseil/abseil-cpp
+        GIT_TAG 20240116.2
+        OPTIONS "ABSL_PROPAGATE_CXX_STD ON" "ABSL_ENABLE_INSTALL ON"
+)
+
 CPMAddPackage(
         NAME re2
         GITHUB_REPOSITORY google/re2
@@ -73,6 +81,7 @@ if (MSVC)
     target_compile_definitions(imperator_thirdparty INTERFACE WIN32_LEAN_AND_MEAN NOMINMAX)
 elseif (UNIX)
     find_package(X11 REQUIRED)
+    target_link_libraries(imperator_thirdparty INTERFACE ${X11_LIBRARIES})
 endif ()
 
 target_link_libraries(imperator_thirdparty INTERFACE
@@ -82,5 +91,4 @@ target_link_libraries(imperator_thirdparty INTERFACE
         glm::glm
         re2::re2
         spdlog::spdlog
-        stduuid
-        ${X11_LIBRARIES})
+        stduuid)

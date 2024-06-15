@@ -5,6 +5,9 @@
 #include "imperator/util/time.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+#include "windows.h"
+#endif
 
 namespace imp {
 // class MsgSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex> {

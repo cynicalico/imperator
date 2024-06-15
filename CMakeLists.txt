@@ -21,28 +21,32 @@ set(IMPERATOR_INCLUDE_FILES
                 cog.outl(f"\t{Path(f).as_posix()}")
         ]]] ]=]
         include/imperator/imperator.h
-        include/imperator/core/glfw_callbacks.h
         include/imperator/core/color.h
-        include/imperator/core/glfw_wrap.h
         include/imperator/core/events.h
-        include/imperator/gl/enum_types.h
-        include/imperator/gl/shader.h
-        include/imperator/module/window.h
-        include/imperator/module/event_bus.h
-        include/imperator/module/application.h
-        include/imperator/module/module_mgr.h
-        include/imperator/module/gfx/gfx_context.h
-        include/imperator/module/gfx/2d/g2d.h
-        include/imperator/util/io.h
-        include/imperator/util/sops.h
-        include/imperator/util/platform.h
-        include/imperator/util/averagers.h
-        include/imperator/util/enum_bitops.h
-        include/imperator/util/time.h
-        include/imperator/util/log.h
-        include/imperator/util/rnd.h
+        include/imperator/core/glfw_callbacks.h
+        include/imperator/core/glfw_wrap.h
         include/imperator/ds/prio_list.h
         include/imperator/ds/trie.h
+        include/imperator/gl/buffer.h
+        include/imperator/gl/enum_types.h
+        include/imperator/gl/gl_texture.h
+        include/imperator/gl/shader.h
+        include/imperator/gl/vecbuf.h
+        include/imperator/gl/vertex_array.h
+        include/imperator/module/application.h
+        include/imperator/module/event_bus.h
+        include/imperator/module/module_mgr.h
+        include/imperator/module/window.h
+        include/imperator/module/gfx/gfx_context.h
+        include/imperator/module/gfx/2d/g2d.h
+        include/imperator/util/averagers.h
+        include/imperator/util/enum_bitops.h
+        include/imperator/util/io.h
+        include/imperator/util/log.h
+        include/imperator/util/platform.h
+        include/imperator/util/rnd.h
+        include/imperator/util/sops.h
+        include/imperator/util/time.h
         # [[[end]]]
 )
 
@@ -58,19 +62,22 @@ set(IMPERATOR_SRC_FILES
         src/imperator/imperator.cpp
         src/imperator/core/color.cpp
         src/imperator/core/glfw_callbacks.cpp
+        src/imperator/gl/buffer.cpp
+        src/imperator/gl/gl_texture.cpp
         src/imperator/gl/shader.cpp
+        src/imperator/gl/vertex_array.cpp
         src/imperator/module/application.cpp
-        src/imperator/module/window.cpp
         src/imperator/module/event_bus.cpp
+        src/imperator/module/window.cpp
         src/imperator/module/gfx/gfx_context.cpp
         src/imperator/module/gfx/2d/g2d.cpp
-        src/imperator/util/platform.cpp
-        src/imperator/util/log.cpp
-        src/imperator/util/io.cpp
-        src/imperator/util/rnd.cpp
-        src/imperator/util/time.cpp
         src/imperator/util/averagers.cpp
+        src/imperator/util/io.cpp
+        src/imperator/util/log.cpp
+        src/imperator/util/platform.cpp
+        src/imperator/util/rnd.cpp
         src/imperator/util/sops.cpp
+        src/imperator/util/time.cpp
         # [[[end]]]
 )
 
@@ -80,7 +87,7 @@ target_include_directories(imperator PUBLIC include)
 
 target_compile_features(imperator PUBLIC cxx_std_23)
 if (MSVC)
-    target_compile_definitions(imperator PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(imperator PRIVATE STRICT WIN32_LEAN_AND_MEAN NOMINMAX)
     target_compile_options(imperator PUBLIC /utf-8 /W4)
 endif ()
 

@@ -4,7 +4,6 @@
 class Indev final : public imp::Application {
 public:
     std::shared_ptr<imp::G2D> g2d;
-    imp::HSV clear_color{imp::hsv(0.0f, 1.0f, 0.5f)};
 
     explicit Indev(imp::ModuleMgr &module_mgr) : Application(module_mgr) {
         g2d = module_mgr_.create<imp::G2D>();
@@ -12,12 +11,10 @@ public:
 
     void update(double dt) override {
         if (dt == 0) return;
-
-        clear_color.h = std::fmod(clear_color.h + (90.0f * dt), 360.0f);
     }
 
     void draw() override {
-        g2d->clear(clear_color);
+        g2d->clear(imp::rgb(0x000000));
     }
 };
 
