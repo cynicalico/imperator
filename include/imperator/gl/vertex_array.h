@@ -11,7 +11,7 @@ enum class DrawMode : unsigned int {
     points = GL_POINTS,
     //  line_strip = GL_LINE_STRIP,
     line_loop = GL_LINE_LOOP,
-    lines = GL_LINES,
+    lines     = GL_LINES,
     //  triangle_strip = GL_TRIANGLE_STRIP,
     //  triangle_fan = GL_TRIANGLE_FAN,
     triangles = GL_TRIANGLES,

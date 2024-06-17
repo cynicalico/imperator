@@ -29,13 +29,16 @@ set(IMPERATOR_INCLUDE_FILES
         include/imperator/ds/trie.h
         include/imperator/gl/buffer.h
         include/imperator/gl/enum_types.h
+        include/imperator/gl/framebuffer.h
         include/imperator/gl/gl_texture.h
+        include/imperator/gl/renderbuffer.h
         include/imperator/gl/shader.h
         include/imperator/gl/vecbuf.h
         include/imperator/gl/vertex_array.h
         include/imperator/module/application.h
         include/imperator/module/event_bus.h
         include/imperator/module/module_mgr.h
+        include/imperator/module/timer_mgr.h
         include/imperator/module/window.h
         include/imperator/module/gfx/gfx_context.h
         include/imperator/module/gfx/2d/g2d.h
@@ -63,11 +66,14 @@ set(IMPERATOR_SRC_FILES
         src/imperator/core/color.cpp
         src/imperator/core/glfw_callbacks.cpp
         src/imperator/gl/buffer.cpp
+        src/imperator/gl/framebuffer.cpp
         src/imperator/gl/gl_texture.cpp
+        src/imperator/gl/renderbuffer.cpp
         src/imperator/gl/shader.cpp
         src/imperator/gl/vertex_array.cpp
         src/imperator/module/application.cpp
         src/imperator/module/event_bus.cpp
+        src/imperator/module/timer_mgr.cpp
         src/imperator/module/window.cpp
         src/imperator/module/gfx/gfx_context.cpp
         src/imperator/module/gfx/2d/g2d.cpp

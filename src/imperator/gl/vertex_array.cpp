@@ -16,26 +16,26 @@ void VertexArray::unbind() {
 
 void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const std::string &desc) {
     const static RE2 attrib_pat(
-            R"((\w+):(\d+)(i|f|u|s)(?::(n))?(?::s(\d+)(i|f|u|s)?)?(?::o(\d+)(i|f|u|s)?)?(?::i(\d+))?)");
+        R"((\w+):(\d+)(i|f|u|s)(?::(n))?(?::s(\d+)(i|f|u|s)?)?(?::o(\d+)(i|f|u|s)?)?(?::i(\d+))?)");
     assert(attrib_pat.ok());
 
     const static RE2 spaces_pat{IMPERATOR_SPLIT_RE(R"((\s+))")};
     assert(spaces_pat.ok());
 
     static std::unordered_map<std::string, GLenum> type_map = {
-            {"none", GL_NONE},
-            {"i",    GL_INT},
-            {"f",    GL_FLOAT},
-            {"u",    GL_UNSIGNED_INT},
-            {"s",    GL_SHORT}
+        {"none", GL_NONE},
+        {"i", GL_INT},
+        {"f", GL_FLOAT},
+        {"u", GL_UNSIGNED_INT},
+        {"s", GL_SHORT}
     };
 
     static std::unordered_map<GLenum, std::size_t> size_map = {
-            {GL_NONE,         1},
-            {GL_INT,          sizeof(int)},
-            {GL_FLOAT,        sizeof(float)},
-            {GL_UNSIGNED_INT, sizeof(unsigned int)},
-            {GL_SHORT,        sizeof(std::int16_t)},
+        {GL_NONE, 1},
+        {GL_INT, sizeof(int)},
+        {GL_FLOAT, sizeof(float)},
+        {GL_UNSIGNED_INT, sizeof(unsigned int)},
+        {GL_SHORT, sizeof(std::int16_t)},
     };
 
     auto attrib_strs = split_re(desc, spaces_pat);
@@ -63,7 +63,8 @@ void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const st
                 &stride_type,
                 &offset,
                 &offset_type,
-                &divisor)) {
+                &divisor)
+        ) {
             auto loc = shader.get_attrib_loc(name);
             if (loc == -1) {
                 continue;
@@ -77,13 +78,13 @@ void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const st
             auto offset_t = offset_type.empty() ? "none" : offset_type;
 
             vertex_attribs.emplace_back(
-                    loc,
-                    size_i,
-                    type_e,
-                    normalized.empty() ? GL_FALSE : GL_TRUE,
-                    stride.empty() ? 0 : size_map[type_map[stride_t]] * std::stoi(stride),
-                    offset.empty() ? stride_acc : size_map[type_map[offset_t]] * std::stoi(offset),
-                    divisor.empty() ? 0 : std::stoi(divisor)
+                loc,
+                size_i,
+                type_e,
+                normalized.empty() ? GL_FALSE : GL_TRUE,
+                stride.empty() ? 0 : size_map[type_map[stride_t]] * std::stoi(stride),
+                offset.empty() ? stride_acc : size_map[type_map[offset_t]] * std::stoi(offset),
+                divisor.empty() ? 0 : std::stoi(divisor)
             );
 
             stride_acc += static_cast<GLsizei>(type_s) * size_i;

@@ -10,7 +10,7 @@ public:
     }
 
     void update(double dt) override {
-        if (dt == 0) return;
+        if (dt == 0) { return; }
     }
 
     void draw() override {
@@ -20,14 +20,14 @@ public:
 
 int main(int, char *[]) {
     auto window_open_params = imp::WindowOpenParams{
-            .title = "Indev",
-            .size = {1280, 720},
-            .mode = imp::WindowMode::windowed,
-            .flags = imp::WindowFlags::centered | imp::WindowFlags::resizable
+        .title = "Indev",
+        .size = {1280, 720},
+        .mode = imp::WindowMode::windowed,
+        .flags = imp::WindowFlags::centered | imp::WindowFlags::resizable
     };
     auto gfx_params = imp::GfxParams{
-            .backend_version = {3, 3},
-            .vsync = false
+        .backend_version = {3, 3},
+        .vsync = false
     };
     imp::mainloop<Indev>({window_open_params, gfx_params});
 }

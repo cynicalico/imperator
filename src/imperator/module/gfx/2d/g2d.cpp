@@ -2,7 +2,7 @@
 
 namespace imp {
 G2D::G2D(ModuleMgr &module_mgr)
-        : Module(module_mgr) { ctx = module_mgr_.get<GfxContext>(); }
+    : Module(module_mgr) { ctx = module_mgr_.get<GfxContext>(); }
 
 void G2D::clear(const Color &c, const ClearBit &bits) {
     auto gl_color = c.gl_color();

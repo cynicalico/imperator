@@ -9,7 +9,8 @@ Buffer::~Buffer() {
     del_id_();
 }
 
-Buffer::Buffer(Buffer &&other) noexcept: gl(other.gl), id(other.id) {
+Buffer::Buffer(Buffer &&other) noexcept: gl(other.gl),
+                                         id(other.id) {
     other.id = 0;
 }
 
