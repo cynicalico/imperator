@@ -11,6 +11,11 @@ public:
 
     void update(double dt) override {
         if (dt == 0) { return; }
+        if (inputs->pressed("escape")) { window->set_should_close(true); }
+
+        if (inputs->pressed("mb_left")) {
+            IMPERATOR_LOG_INFO("mouse pressed {} {}", inputs->mouse_x(), inputs->mouse_y());
+        }
     }
 
     void draw() override {
@@ -19,15 +24,18 @@ public:
 };
 
 int main(int, char *[]) {
-    auto window_open_params = imp::WindowOpenParams{
-        .title = "Indev",
-        .size = {1280, 720},
-        .mode = imp::WindowMode::windowed,
-        .flags = imp::WindowFlags::centered | imp::WindowFlags::resizable
-    };
-    auto gfx_params = imp::GfxParams{
-        .backend_version = {3, 3},
-        .vsync = false
-    };
-    imp::mainloop<Indev>({window_open_params, gfx_params});
+    imp::mainloop<Indev>(
+        {
+            imp::WindowOpenParams{
+                .title = "Indev",
+                .size = {1280, 720},
+                .mode = imp::WindowMode::windowed,
+                .flags = imp::WindowFlags::centered | imp::WindowFlags::resizable
+            },
+            imp::GfxParams{
+                .backend_version = {3, 3},
+                .vsync = false
+            }
+        }
+    );
 }

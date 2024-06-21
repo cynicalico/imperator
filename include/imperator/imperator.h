@@ -5,6 +5,7 @@
 #include "imperator/module/gfx/gfx_context.h"
 #include "imperator/module/application.h"
 #include "imperator/module/event_bus.h"
+#include "imperator/module/input_mgr.h"
 #include "imperator/module/module_mgr.h"
 #include "imperator/module/window.h"
 
@@ -47,6 +48,8 @@ void mainloop(ApplicationParams params) {
                 params.gfx.backend_version
         );
         module_mgr.create<GfxContext>(params.gfx);
+
+        module_mgr.create<InputMgr>();
 
         module_mgr.create<Application, T>();
 
