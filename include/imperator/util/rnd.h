@@ -34,7 +34,7 @@ using IntDist = std::uniform_int_distribution<T>;
 
 template<typename T>
 concept IntDistCompatible =
-IsAnyOf<T, short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long>;
+        IsAnyOf<T, short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template<IntDistCompatible T>
 T get(T low, T high) { return IntDist<T>(low, high)(internal::generator()); }
@@ -45,8 +45,8 @@ T get(T high) { return IntDist<T>(T(0), high)(internal::generator()); }
 template<IntDistCompatible T>
 T get() {
     return IntDist<T>(
-            std::numeric_limits<T>::min(),
-            std::numeric_limits<T>::max()
+        std::numeric_limits<T>::min(),
+        std::numeric_limits<T>::max()
     )(internal::generator());
 }
 
@@ -56,8 +56,8 @@ concept IntDistCompatibleButChar = IsAnyOf<T, char, char8_t, char16_t, char32_t,
 template<IntDistCompatibleButChar T>
 T get(T low, T high) {
     return static_cast<T>(get<int>(
-            static_cast<int>(low),
-            static_cast<int>(high)
+        static_cast<int>(low),
+        static_cast<int>(high)
     ));
 }
 
@@ -67,8 +67,8 @@ T get(T high) { return static_cast<T>(get<int>(static_cast<int>(high))); }
 template<IntDistCompatibleButChar T>
 T get() {
     return static_cast<T>(get<int>(
-            static_cast<int>(std::numeric_limits<T>::min()),
-            static_cast<int>(std::numeric_limits<T>::max())
+        static_cast<int>(std::numeric_limits<T>::min()),
+        static_cast<int>(std::numeric_limits<T>::max())
     ));
 }
 
@@ -88,8 +88,8 @@ template<RealDistCompatible T>
 T get(bool between_min_and_max = false) {
     if (between_min_and_max)
         return RealDist<T>(
-                std::numeric_limits<T>::min(),
-                std::numeric_limits<T>::max()
+            std::numeric_limits<T>::min(),
+            std::numeric_limits<T>::max()
         )(internal::generator());
     return RealDist<T>(T(0.0), T(1.0))(internal::generator());
 }

@@ -17,17 +17,7 @@ else ()
     glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4 egl=1.5)
 endif ()
 
-add_library(imperator_thirdparty INTERFACE
-        thirdparty/stb/stb_image.h
-        thirdparty/stb/stb_image_write.h
-
-        thirdparty/pcg/pcg_extras.hpp
-        thirdparty/pcg/pcg_random.hpp
-        thirdparty/pcg/pcg_uint128.hpp)
-
-target_include_directories(imperator PUBLIC
-        thirdparty/stb
-        thirdparty/pcg)
+add_library(imperator_thirdparty INTERFACE)
 
 if (MSVC)
     target_compile_definitions(imperator_thirdparty INTERFACE WIN32_LEAN_AND_MEAN NOMINMAX)
@@ -36,14 +26,19 @@ elseif (UNIX)
     target_link_libraries(imperator_thirdparty INTERFACE ${X11_LIBRARIES})
 endif ()
 
+find_package(argparse CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(re2 CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 find_package(stduuid CONFIG REQUIRED)
 
+target_include_directories(imperator_thirdparty INTERFACE ${Stb_INCLUDE_DIR})
+
 target_link_libraries(imperator_thirdparty INTERFACE
+        argparse::argparse
         fmt::fmt
         glad_gl_core_mx_33
         glfw
