@@ -1,0 +1,84 @@
+{
+  "name" : "imperator",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "c4467cb686f92671f0172aa8299a77d908175b4e",
+  "dependencies" : [ {
+    "name" : "abseil",
+    "version>=" : "20240116.2#1"
+  }, {
+    "name" : "argparse",
+    "version>=" : "3.0"
+  }, {
+    "name" : "fmt",
+    "version>=" : "10.2.1#2"
+  }, {
+    "name" : "glfw3",
+    "version>=" : "3.4"
+  }, {
+    "name" : "glm",
+    "version>=" : "1.0.1#3"
+  }, {
+    "name" : "libflac",
+    "version>=" : "1.4.3#2"
+  }, {
+    "name" : "libogg",
+    "version>=" : "1.3.5#1"
+  }, {
+    "name" : "libsndfile",
+    "version>=" : "1.2.2"
+  }, {
+    "name" : "libvorbis",
+    "version>=" : "1.3.7#3"
+  }, {
+    "name" : "mp3lame",
+    "version>=" : "3.100#14"
+  }, {
+    "name" : "mpg123",
+    "version>=" : "1.31.3#4"
+  }, {
+    "name" : "openal-soft",
+    "version>=" : "1.23.1"
+  }, {
+    "name" : "opus",
+    "version>=" : "1.5.1"
+  }, {
+    "name" : "pcg",
+    "version>=" : "2021-04-06#2"
+  }, {
+    "name" : "pkgconf",
+    "version>=" : "2.2.0"
+  }, {
+    "name" : "re2",
+    "version>=" : "2024-06-01"
+  }, {
+    "name" : "spdlog",
+    "version>=" : "1.14.1"
+  }, {
+    "name" : "stb",
+    "version>=" : "2023-04-11#1"
+  }, {
+    "name" : "stduuid",
+    "version>=" : "1.2.3"
+  }, {
+    "name" : "vcpkg-cmake-config",
+    "version>=" : "2024-05-23"
+  }, {
+    "name" : "vcpkg-cmake-get-vars",
+    "version>=" : "2023-12-31"
+  }, {
+    "name" : "vcpkg-cmake",
+    "version>=" : "2024-04-23"
+  }, {
+    "name" : "vcpkg-msbuild",
+    "version>=" : "2023-08-08"
+  }, {
+    "name" : "vcpkg-pkgconfig-get-modules",
+    "version>=" : "2024-04-03"
+  }, {
+    "name" : "vcpkg-tool-meson",
+    "version>=" : "1.3.2#7"
+  }, {
+    "name" : "yasm",
+    "version>=" : "1.3.0#5"
+  } ]
+}
