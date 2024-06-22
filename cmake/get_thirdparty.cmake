@@ -1,9 +1,3 @@
-CPMAddPackage(
-        NAME fmt
-        GITHUB_REPOSITORY fmtlib/fmt
-        GIT_TAG 10.2.1
-)
-
 # We need Jinja2 for Glad 2 to work
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 execute_process(COMMAND ${Python3_EXECUTABLE} -m pip show Jinja2 RESULT_VARIABLE EXIT_CODE OUTPUT_QUIET)
@@ -23,48 +17,6 @@ else ()
     glad_add_library(glad_gl_core_mx_33 REPRODUCIBLE MX API gl:core=3.3 glx=1.4 egl=1.5)
 endif ()
 
-CPMAddPackage(
-        NAME glfw
-        GITHUB_REPOSITORY glfw/glfw
-        GIT_TAG 3.4
-        OPTIONS "GLFW_BUILD_TESTS OFF" "GLFW_BUILD_EXAMPLES OFF" "GLFW_BULID_DOCS OFF"
-)
-
-CPMAddPackage(
-        NAME glm
-        GITHUB_REPOSITORY g-truc/glm
-        GIT_TAG 1.0.1
-        OPTIONS "GLM_ENABLE_CXX_20 ON"
-)
-
-# For re2, we don't actually link it
-CPMAddPackage(
-        NAME abseil-cpp
-        GITHUB_REPOSITORY abseil/abseil-cpp
-        GIT_TAG 20240116.2
-        OPTIONS "ABSL_PROPAGATE_CXX_STD ON" "ABSL_ENABLE_INSTALL ON"
-)
-
-CPMAddPackage(
-        NAME re2
-        GITHUB_REPOSITORY google/re2
-        GIT_TAG 2024-05-01
-        OPTIONS "RE2_BUILD_TESTING OFF"
-)
-
-CPMAddPackage(
-        NAME spdlog
-        GITHUB_REPOSITORY gabime/spdlog
-        VERSION 1.14.1
-        OPTIONS "SPDLOG_FMT_EXTERNAL ON"
-)
-
-CPMAddPackage(
-        NAME stduuid
-        GITHUB_REPOSITORY mariusbancila/stduuid
-        VERSION 1.2.3
-)
-
 add_library(imperator_thirdparty INTERFACE
         thirdparty/stb/stb_image.h
         thirdparty/stb/stb_image_write.h
@@ -83,6 +35,13 @@ elseif (UNIX)
     find_package(X11 REQUIRED)
     target_link_libraries(imperator_thirdparty INTERFACE ${X11_LIBRARIES})
 endif ()
+
+find_package(fmt CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(re2 CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(stduuid CONFIG REQUIRED)
 
 target_link_libraries(imperator_thirdparty INTERFACE
         fmt::fmt

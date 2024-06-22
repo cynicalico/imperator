@@ -9,4 +9,6 @@ cache/
 .venv/
 venv/
 
+.vcpkg/
+
 **/data/log

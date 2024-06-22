@@ -372,8 +372,8 @@ RGB HSV::to_rgb() const {
 
 HSL HSV::to_hsl() const {
     double l = v * (1 - (s / 2.0));
-    double s = (l == 0.0 || l == 1.0) ? 0.0 : (v - l) / std::min(l, 1 - l);
-    return hsla(h, s, l, a);
+    double hsl_s = (l == 0.0 || l == 1.0) ? 0.0 : (v - l) / std::min(l, 1 - l);
+    return hsla(h, hsl_s, l, a);
 }
 
 // XYZ HSV::to_xyz() const { return to_rgb().to_xyz(); }
@@ -432,8 +432,8 @@ RGB HSL::to_rgb() const {
 
 HSV HSL::to_hsv() const {
     double v = l + s * std::min(l, 1 - l);
-    double s = (v == 0.0) ? 0.0 : 2 * (1.0 - (l / v));
-    return hsva(h, s, v, a);
+    double hsv_s = (v == 0.0) ? 0.0 : 2 * (1.0 - (l / v));
+    return hsva(h, hsv_s, v, a);
 }
 
 // XYZ HSL::to_xyz() const { return to_rgb().to_xyz(); }

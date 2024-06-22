@@ -62,7 +62,7 @@ std::vector<std::string> split(const std::string &s, const std::string &delim) {
 std::vector<std::string> split_re(const std::string &s, const RE2 &regexp) {
     std::vector<std::string> res;
 
-    std::string_view sp(s);
+    absl::string_view sp(s);
     std::size_t pos = 0;
 
     std::string text_to_keep, match;

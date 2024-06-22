@@ -43,7 +43,7 @@ std::shared_ptr<spdlog::sinks::dist_sink_mt> sinks() {
 
 std::shared_ptr<spdlog::logger> logger() {
     static auto logger = std::invoke(
-            [] {
+            [&] {
                 auto s = sinks();
 
                 auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
