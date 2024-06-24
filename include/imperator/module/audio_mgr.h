@@ -6,12 +6,18 @@
 #include "AL/alext.h"
 #include "imperator/module/event_bus.h"
 #include "imperator/module/module_mgr.h"
+#include "sndfile.h"
 
+#include <filesystem>
 #include <unordered_map>
 
 namespace imp {
 struct Sound {
-    ALuint buffer; // 0 if failed to load
+    ALuint buffer{0}; // 0 if empty
+
+    std::filesystem::path path{};
+    ALenum format{AL_NONE};
+    SF_INFO sfinfo{};
 };
 
 struct PlayOptions {
@@ -43,7 +49,7 @@ private:
 
     void r_update_(const E_Update &p);
 
-    static ALuint load_sound_(const std::filesystem::path &path);
+    static Sound load_sound_(const std::filesystem::path &path);
 
     static bool check_al_errors_();
     static bool check_alc_errors_(ALCdevice *device);

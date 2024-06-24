@@ -3,14 +3,9 @@
 class Indev final : public imp::Application {
 public:
     std::shared_ptr<imp::G2D> g2d;
+    imp::Sound select_sound{};
 
-    imp::Sound select_sound;
-
-    explicit Indev(imp::ModuleMgr &module_mgr) : Application(module_mgr) {
-        g2d = module_mgr_.create<imp::G2D>();
-
-        select_sound = audio->load_sound("example/data/sound/select.wav");
-    }
+    explicit Indev(imp::ModuleMgr &module_mgr) : Application(module_mgr) { g2d = module_mgr_.create<imp::G2D>(); }
 
     void update(double dt) override {
         if (dt == 0) { return; }
@@ -18,7 +13,13 @@ public:
 
         if (inputs->pressed("mb_left")) { audio->play_sound(select_sound); }
 
-        if (inputs->pressed("mb_right")) { audio->unload_sound(select_sound); }
+        if (inputs->pressed("mb_right")) {
+            if (select_sound.buffer != 0) {
+                audio->unload_sound(select_sound);
+            } else {
+                select_sound = audio->load_sound("example/data/sound/select.wav");
+            }
+        }
     }
 
     void draw() override { g2d->clear(imp::rgb(0x000000)); }

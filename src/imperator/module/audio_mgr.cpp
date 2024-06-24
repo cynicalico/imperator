@@ -1,10 +1,61 @@
 #include "imperator/module/audio_mgr.h"
-#include "sndfile.h"
-
-#include <cinttypes>
-#include <filesystem>
 
 namespace imp {
+enum FormatType { Int16, Float, IMA4, MSADPCM };
+
+const char *FormatName(ALenum format) {
+    switch (format) {
+    case AL_FORMAT_MONO8:                return "Mono, U8";
+    case AL_FORMAT_MONO16:               return "Mono, S16";
+    case AL_FORMAT_MONO_FLOAT32:         return "Mono, Float32";
+    case AL_FORMAT_MONO_MULAW:           return "Mono, muLaw";
+    case AL_FORMAT_MONO_ALAW_EXT:        return "Mono, aLaw";
+    case AL_FORMAT_MONO_IMA4:            return "Mono, IMA4 ADPCM";
+    case AL_FORMAT_MONO_MSADPCM_SOFT:    return "Mono, MS ADPCM";
+    case AL_FORMAT_STEREO8:              return "Stereo, U8";
+    case AL_FORMAT_STEREO16:             return "Stereo, S16";
+    case AL_FORMAT_STEREO_FLOAT32:       return "Stereo, Float32";
+    case AL_FORMAT_STEREO_MULAW:         return "Stereo, muLaw";
+    case AL_FORMAT_STEREO_ALAW_EXT:      return "Stereo, aLaw";
+    case AL_FORMAT_STEREO_IMA4:          return "Stereo, IMA4 ADPCM";
+    case AL_FORMAT_STEREO_MSADPCM_SOFT:  return "Stereo, MS ADPCM";
+    case AL_FORMAT_QUAD8:                return "Quadraphonic, U8";
+    case AL_FORMAT_QUAD16:               return "Quadraphonic, S16";
+    case AL_FORMAT_QUAD32:               return "Quadraphonic, Float32";
+    case AL_FORMAT_QUAD_MULAW:           return "Quadraphonic, muLaw";
+    case AL_FORMAT_51CHN8:               return "5.1 Surround, U8";
+    case AL_FORMAT_51CHN16:              return "5.1 Surround, S16";
+    case AL_FORMAT_51CHN32:              return "5.1 Surround, Float32";
+    case AL_FORMAT_51CHN_MULAW:          return "5.1 Surround, muLaw";
+    case AL_FORMAT_61CHN8:               return "6.1 Surround, U8";
+    case AL_FORMAT_61CHN16:              return "6.1 Surround, S16";
+    case AL_FORMAT_61CHN32:              return "6.1 Surround, Float32";
+    case AL_FORMAT_61CHN_MULAW:          return "6.1 Surround, muLaw";
+    case AL_FORMAT_71CHN8:               return "7.1 Surround, U8";
+    case AL_FORMAT_71CHN16:              return "7.1 Surround, S16";
+    case AL_FORMAT_71CHN32:              return "7.1 Surround, Float32";
+    case AL_FORMAT_71CHN_MULAW:          return "7.1 Surround, muLaw";
+    case AL_FORMAT_BFORMAT2D_8:          return "B-Format 2D, U8";
+    case AL_FORMAT_BFORMAT2D_16:         return "B-Format 2D, S16";
+    case AL_FORMAT_BFORMAT2D_FLOAT32:    return "B-Format 2D, Float32";
+    case AL_FORMAT_BFORMAT2D_MULAW:      return "B-Format 2D, muLaw";
+    case AL_FORMAT_BFORMAT3D_8:          return "B-Format 3D, U8";
+    case AL_FORMAT_BFORMAT3D_16:         return "B-Format 3D, S16";
+    case AL_FORMAT_BFORMAT3D_FLOAT32:    return "B-Format 3D, Float32";
+    case AL_FORMAT_BFORMAT3D_MULAW:      return "B-Format 3D, muLaw";
+    case AL_FORMAT_UHJ2CHN8_SOFT:        return "UHJ 2-channel, U8";
+    case AL_FORMAT_UHJ2CHN16_SOFT:       return "UHJ 2-channel, S16";
+    case AL_FORMAT_UHJ2CHN_FLOAT32_SOFT: return "UHJ 2-channel, Float32";
+    case AL_FORMAT_UHJ3CHN8_SOFT:        return "UHJ 3-channel, U8";
+    case AL_FORMAT_UHJ3CHN16_SOFT:       return "UHJ 3-channel, S16";
+    case AL_FORMAT_UHJ3CHN_FLOAT32_SOFT: return "UHJ 3-channel, Float32";
+    case AL_FORMAT_UHJ4CHN8_SOFT:        return "UHJ 4-channel, U8";
+    case AL_FORMAT_UHJ4CHN16_SOFT:       return "UHJ 4-channel, S16";
+    case AL_FORMAT_UHJ4CHN_FLOAT32_SOFT: return "UHJ 4-channel, Float32";
+    default:                             return "Unknown Format";
+    }
+}
+
 AudioMgr::AudioMgr(ModuleMgr &module_mgr) : Module(module_mgr) {
     event_bus = module_mgr_.get<EventBus>();
 
@@ -71,9 +122,17 @@ AudioMgr::~AudioMgr() {
 }
 
 Sound AudioMgr::load_sound(const std::filesystem::path &path) {
-    auto id = load_sound_(path);
-    if (id != 0) { sources_[id] = {}; }
-    return {id};
+    auto sound = load_sound_(path);
+    if (sound.buffer != 0) {
+        sources_[sound.buffer] = {};
+        IMPERATOR_LOG_DEBUG(
+                "Loaded: {} ({}, {}hz)",
+                sound.path.string(),
+                FormatName(sound.format),
+                sound.sfinfo.samplerate
+        );
+    }
+    return sound;
 }
 
 void AudioMgr::unload_sound(Sound &sound) {
@@ -94,7 +153,13 @@ void AudioMgr::unload_sound(Sound &sound) {
         check_al_errors_();
 
         sources_.erase(it);
+
+        IMPERATOR_LOG_DEBUG("Unloaded: {}", sound.path.string());
+        // Reset object so the user doesn't try to play a non-existent sound
         sound.buffer = 0;
+        sound.path.clear();
+        sound.format = AL_NONE;
+        sound.sfinfo = {};
     }
 }
 
@@ -133,61 +198,6 @@ std::vector<std::string> AudioMgr::available_devices() {
     return devices_v;
 }
 
-enum FormatType { Int16, Float, IMA4, MSADPCM };
-
-const char *FormatName(ALenum format) {
-    switch (format) {
-    case AL_FORMAT_MONO8:                return "Mono, U8";
-    case AL_FORMAT_MONO16:               return "Mono, S16";
-    case AL_FORMAT_MONO_FLOAT32:         return "Mono, Float32";
-    case AL_FORMAT_MONO_MULAW:           return "Mono, muLaw";
-    case AL_FORMAT_MONO_ALAW_EXT:        return "Mono, aLaw";
-    case AL_FORMAT_MONO_IMA4:            return "Mono, IMA4 ADPCM";
-    case AL_FORMAT_MONO_MSADPCM_SOFT:    return "Mono, MS ADPCM";
-    case AL_FORMAT_STEREO8:              return "Stereo, U8";
-    case AL_FORMAT_STEREO16:             return "Stereo, S16";
-    case AL_FORMAT_STEREO_FLOAT32:       return "Stereo, Float32";
-    case AL_FORMAT_STEREO_MULAW:         return "Stereo, muLaw";
-    case AL_FORMAT_STEREO_ALAW_EXT:      return "Stereo, aLaw";
-    case AL_FORMAT_STEREO_IMA4:          return "Stereo, IMA4 ADPCM";
-    case AL_FORMAT_STEREO_MSADPCM_SOFT:  return "Stereo, MS ADPCM";
-    case AL_FORMAT_QUAD8:                return "Quadraphonic, U8";
-    case AL_FORMAT_QUAD16:               return "Quadraphonic, S16";
-    case AL_FORMAT_QUAD32:               return "Quadraphonic, Float32";
-    case AL_FORMAT_QUAD_MULAW:           return "Quadraphonic, muLaw";
-    case AL_FORMAT_51CHN8:               return "5.1 Surround, U8";
-    case AL_FORMAT_51CHN16:              return "5.1 Surround, S16";
-    case AL_FORMAT_51CHN32:              return "5.1 Surround, Float32";
-    case AL_FORMAT_51CHN_MULAW:          return "5.1 Surround, muLaw";
-    case AL_FORMAT_61CHN8:               return "6.1 Surround, U8";
-    case AL_FORMAT_61CHN16:              return "6.1 Surround, S16";
-    case AL_FORMAT_61CHN32:              return "6.1 Surround, Float32";
-    case AL_FORMAT_61CHN_MULAW:          return "6.1 Surround, muLaw";
-    case AL_FORMAT_71CHN8:               return "7.1 Surround, U8";
-    case AL_FORMAT_71CHN16:              return "7.1 Surround, S16";
-    case AL_FORMAT_71CHN32:              return "7.1 Surround, Float32";
-    case AL_FORMAT_71CHN_MULAW:          return "7.1 Surround, muLaw";
-    case AL_FORMAT_BFORMAT2D_8:          return "B-Format 2D, U8";
-    case AL_FORMAT_BFORMAT2D_16:         return "B-Format 2D, S16";
-    case AL_FORMAT_BFORMAT2D_FLOAT32:    return "B-Format 2D, Float32";
-    case AL_FORMAT_BFORMAT2D_MULAW:      return "B-Format 2D, muLaw";
-    case AL_FORMAT_BFORMAT3D_8:          return "B-Format 3D, U8";
-    case AL_FORMAT_BFORMAT3D_16:         return "B-Format 3D, S16";
-    case AL_FORMAT_BFORMAT3D_FLOAT32:    return "B-Format 3D, Float32";
-    case AL_FORMAT_BFORMAT3D_MULAW:      return "B-Format 3D, muLaw";
-    case AL_FORMAT_UHJ2CHN8_SOFT:        return "UHJ 2-channel, U8";
-    case AL_FORMAT_UHJ2CHN16_SOFT:       return "UHJ 2-channel, S16";
-    case AL_FORMAT_UHJ2CHN_FLOAT32_SOFT: return "UHJ 2-channel, Float32";
-    case AL_FORMAT_UHJ3CHN8_SOFT:        return "UHJ 3-channel, U8";
-    case AL_FORMAT_UHJ3CHN16_SOFT:       return "UHJ 3-channel, S16";
-    case AL_FORMAT_UHJ3CHN_FLOAT32_SOFT: return "UHJ 3-channel, Float32";
-    case AL_FORMAT_UHJ4CHN8_SOFT:        return "UHJ 4-channel, U8";
-    case AL_FORMAT_UHJ4CHN16_SOFT:       return "UHJ 4-channel, S16";
-    case AL_FORMAT_UHJ4CHN_FLOAT32_SOFT: return "UHJ 4-channel, Float32";
-    default:                             return "Unknown Format";
-    }
-}
-
 void AudioMgr::r_update_(const E_Update &p) {
     for (auto s_it = sources_.begin(); s_it != sources_.end();) {
         auto &l = s_it->second;
@@ -210,7 +220,7 @@ void AudioMgr::r_update_(const E_Update &p) {
     }
 }
 
-ALuint AudioMgr::load_sound_(const std::filesystem::path &path) {
+Sound AudioMgr::load_sound_(const std::filesystem::path &path) {
     FormatType sample_format = Int16;
     ALint byteblockalign = 0;
     ALint splblockalign = 0;
@@ -220,12 +230,12 @@ ALuint AudioMgr::load_sound_(const std::filesystem::path &path) {
     SNDFILE *sndfile = sf_open(path.string().c_str(), SFM_READ, &sfinfo);
     if (!sndfile) {
         IMPERATOR_LOG_ERROR("Could not open audio in {}: {}", path.string(), sf_strerror(sndfile));
-        return 0;
+        return {};
     }
     if (sfinfo.frames < 1) {
         IMPERATOR_LOG_ERROR("Bad sample count in {} ({})", path.string(), sfinfo.frames);
         sf_close(sndfile);
-        return 0;
+        return {};
     }
 
     /* Detect a suitable format to load. Formats like Vorbis and Opus use float
@@ -348,13 +358,13 @@ ALuint AudioMgr::load_sound_(const std::filesystem::path &path) {
     if (!format) {
         IMPERATOR_LOG_ERROR("Unsupported channel count: {}", sfinfo.channels);
         sf_close(sndfile);
-        return 0;
+        return {};
     }
 
     if (sfinfo.frames / splblockalign > static_cast<sf_count_t>(INT_MAX / byteblockalign)) {
         IMPERATOR_LOG_ERROR("Too many samples in {} ({})", path.string(), sfinfo.frames);
         sf_close(sndfile);
-        return 0;
+        return {};
     }
 
     /* Decode the whole audio file to a buffer. */
@@ -374,11 +384,9 @@ ALuint AudioMgr::load_sound_(const std::filesystem::path &path) {
         free(membuf);
         sf_close(sndfile);
         IMPERATOR_LOG_ERROR("Failed to read samples in {} ({})", path.string(), num_frames);
-        return 0;
+        return {};
     }
     const auto num_bytes = static_cast<ALsizei>(num_frames / splblockalign * byteblockalign);
-
-    IMPERATOR_LOG_DEBUG("Loading: {} ({}, {}hz)", path.string(), FormatName(format), sfinfo.samplerate);
 
     /* Buffer the audio data into a new buffer object, then free the data and
      * close the file.
@@ -394,10 +402,10 @@ ALuint AudioMgr::load_sound_(const std::filesystem::path &path) {
     /* Check if an error occurred, and clean up if so. */
     if (!check_al_errors_()) {
         if (buffer && alIsBuffer(buffer)) { alDeleteBuffers(1, &buffer); }
-        return 0;
+        return {};
     }
 
-    return buffer;
+    return {buffer, path, format, sfinfo};
 }
 
 bool AudioMgr::check_al_errors_() {
