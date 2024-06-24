@@ -52,7 +52,8 @@
     "version>=" : "2024-06-01"
   }, {
     "name" : "spdlog",
-    "version>=" : "1.14.1"
+    "version>=" : "1.14.1",
+    "features": ["wchar"]
   }, {
     "name" : "stb",
     "version>=" : "2023-04-11#1"

@@ -1,4 +1,8 @@
 #include "imperator/module/audio_mgr.h"
+#include "imperator/util/log.h"
+#include "imperator/util/platform.h"
+
+#include <windows.h>
 
 namespace imp {
 enum FormatType { Int16, Float, IMA4, MSADPCM };
@@ -125,11 +129,21 @@ Sound AudioMgr::load_sound(const std::filesystem::path &path) {
     auto sound = load_sound_(path);
     if (sound.buffer != 0) {
         sources_[sound.buffer] = {};
+
+        sf_count_t frames = sound.sfinfo.frames;
+        sf_count_t h = frames / (3600 * sound.sfinfo.samplerate);
+        frames -= h * (3600 * sound.sfinfo.samplerate);
+        sf_count_t m = frames / (60 * sound.sfinfo.samplerate);
+        frames -= m * (60 * sound.sfinfo.samplerate);
+        sf_count_t s = frames / sound.sfinfo.samplerate;
+        frames -= s * sound.sfinfo.samplerate;
+
         IMPERATOR_LOG_DEBUG(
-                "Loaded: {} ({}, {}hz)",
-                sound.path.string(),
+                "Loaded: {} ({}, {}hz, {})",
+                sound.path,
                 FormatName(sound.format),
-                sound.sfinfo.samplerate
+                sound.sfinfo.samplerate,
+                fmt::format("{:02}:{:02}:{:02}.{}", h, m, s, frames)
         );
     }
     return sound;
@@ -154,7 +168,7 @@ void AudioMgr::unload_sound(Sound &sound) {
 
         sources_.erase(it);
 
-        IMPERATOR_LOG_DEBUG("Unloaded: {}", sound.path.string());
+        IMPERATOR_LOG_DEBUG("Unloaded: {}", sound.path);
         // Reset object so the user doesn't try to play a non-existent sound
         sound.buffer = 0;
         sound.path.clear();
@@ -227,13 +241,18 @@ Sound AudioMgr::load_sound_(const std::filesystem::path &path) {
     SF_INFO sfinfo;
 
     /* Open the audio file and check that it's usable. */
-    SNDFILE *sndfile = sf_open(path.string().c_str(), SFM_READ, &sfinfo);
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+    SNDFILE *sndfile = sf_wchar_open(path.c_str(), SFM_READ, &sfinfo);
+#else
+    SNDFILE *sndfile = sf_open(path.c_str(), SFM_READ, &sfinfo);
+#endif
     if (!sndfile) {
-        IMPERATOR_LOG_ERROR("Could not open audio in {}: {}", path.string(), sf_strerror(sndfile));
+        IMPERATOR_LOG_ERROR("Could not open audio file '{}'", path);
+        IMPERATOR_LOG_ERROR("{}", sf_strerror(sndfile));
         return {};
     }
     if (sfinfo.frames < 1) {
-        IMPERATOR_LOG_ERROR("Bad sample count in {} ({})", path.string(), sfinfo.frames);
+        IMPERATOR_LOG_ERROR("Bad sample count in {} ({})", path, sfinfo.frames);
         sf_close(sndfile);
         return {};
     }
@@ -362,7 +381,7 @@ Sound AudioMgr::load_sound_(const std::filesystem::path &path) {
     }
 
     if (sfinfo.frames / splblockalign > static_cast<sf_count_t>(INT_MAX / byteblockalign)) {
-        IMPERATOR_LOG_ERROR("Too many samples in {} ({})", path.string(), sfinfo.frames);
+        IMPERATOR_LOG_ERROR("Too many samples in {} ({})", path, sfinfo.frames);
         sf_close(sndfile);
         return {};
     }
@@ -383,7 +402,7 @@ Sound AudioMgr::load_sound_(const std::filesystem::path &path) {
     if (num_frames < 1) {
         free(membuf);
         sf_close(sndfile);
-        IMPERATOR_LOG_ERROR("Failed to read samples in {} ({})", path.string(), num_frames);
+        IMPERATOR_LOG_ERROR("Failed to read samples in {} ({})", path, num_frames);
         return {};
     }
     const auto num_bytes = static_cast<ALsizei>(num_frames / splblockalign * byteblockalign);

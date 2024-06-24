@@ -11,6 +11,8 @@
 
 #include "fmt/chrono.h" // Allow logging chrono types
 #include "fmt/ranges.h" // Allow logging ranges (vector, etc.)
+#include "fmt/std.h"    // Allow formatting STL types
+#include "fmt/xchar.h"  // Allow logging wchar
 #include "spdlog/sinks/dist_sink.h"
 #include "spdlog/spdlog.h"
 

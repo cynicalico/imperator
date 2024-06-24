@@ -4,6 +4,7 @@
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 #include "fmt/ranges.h"
+#include "fmt/xchar.h"
 #include "imperator/core/events.h"
 #include "imperator/module/application.h"
 #include "imperator/module/audio_mgr.h"

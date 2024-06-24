@@ -5,13 +5,19 @@ public:
     std::shared_ptr<imp::G2D> g2d;
     imp::Sound select_sound{};
 
-    explicit Indev(imp::ModuleMgr &module_mgr) : Application(module_mgr) { g2d = module_mgr_.create<imp::G2D>(); }
+    explicit Indev(imp::ModuleMgr &module_mgr) : Application(module_mgr) {
+        g2d = module_mgr_.create<imp::G2D>();
+
+        select_sound = audio->load_sound(L"example/data/sound/【Yokune Ruko♂】God-ish【UTAU cover】.mp3");
+    }
 
     void update(double dt) override {
         if (dt == 0) { return; }
         if (inputs->pressed("escape")) { window->set_should_close(true); }
 
-        if (inputs->pressed("mb_left")) { audio->play_sound(select_sound); }
+        if (inputs->pressed("mb_left")) {
+            audio->play_sound(select_sound);
+        }
 
         if (inputs->pressed("mb_right")) {
             if (select_sound.buffer != 0) {
