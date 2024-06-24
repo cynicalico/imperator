@@ -18,10 +18,7 @@ class PrioList {
         std::size_t remaining_unmet_deps;
 
         PendingItem_(int id, T &&v, const std::vector<int> &unmet_deps)
-                : id(id),
-                  v(std::forward<T>(v)),
-                  unmet_deps(unmet_deps),
-                  remaining_unmet_deps(unmet_deps.size()) {}
+            : id(id), v(std::forward<T>(v)), unmet_deps(unmet_deps), remaining_unmet_deps(unmet_deps.size()) {}
 
         PendingItem_(const PendingItem_ &) = delete;
 
@@ -132,12 +129,9 @@ bool PrioList<T>::add(const std::string &name, std::vector<std::string> &&deps, 
     }
 
     // Emit a warning if this item has a circular dependency
-    if (std::ranges::all_of(
-            dep_ids,
-            [&](const auto &d) {
-                return std::ranges::contains(pending_dep_lookup_[id], d);
-            }
-    )) {
+    if (std::ranges::all_of(dep_ids, [&](const auto &d) {
+            return std::ranges::contains(pending_dep_lookup_[id], d);
+        })) {
         // TODO: Log circular warning
         return false;
     }
@@ -160,9 +154,7 @@ std::vector<typename PrioList<T>::PendingItemInfo> PrioList<T>::get_pending() co
     std::vector<PendingItemInfo> pending_info{};
     for (const auto &[id, i]: pending_) {
         pending_info.emplace_back(id_to_s_[id]);
-        for (const auto &id2: i.unmet_deps) {
-            pending_info.back().deps.emplace_back(id_to_s_[id2]);
-        }
+        for (const auto &id2: i.unmet_deps) { pending_info.back().deps.emplace_back(id_to_s_[id2]); }
     }
 
     return pending_info;
@@ -170,9 +162,7 @@ std::vector<typename PrioList<T>::PendingItemInfo> PrioList<T>::get_pending() co
 
 template<typename T>
 int PrioList<T>::resolve_id_(const std::string &s) {
-    if (const auto it = s_to_id_.find(s); it != s_to_id_.end()) {
-        return it->second;
-    }
+    if (const auto it = s_to_id_.find(s); it != s_to_id_.end()) { return it->second; }
 
     s_to_id_[s] = static_cast<int>(id_to_s_.size());
     id_to_s_.emplace_back(s);
@@ -187,9 +177,7 @@ void PrioList<T>::resolve_ids_(const std::string &name, std::vector<std::string>
 
     for (const auto &s: deps) {
         auto id = resolve_id_(s);
-        if (idx_[id] == -1) {
-            ds.emplace_back(id);
-        }
+        if (idx_[id] == -1) { ds.emplace_back(id); }
     }
 }
 
@@ -203,9 +191,7 @@ void PrioList<T>::resolve_pending_(int id) {
 
         for (const auto &dep: pending_dep_lookup_[v]) {
             // Skip this dependent if we've already added it
-            if (idx_[dep] != -1) {
-                continue;
-            }
+            if (idx_[dep] != -1) { continue; }
 
             auto dep_it = pending_.find(dep);
 
@@ -228,4 +214,4 @@ void PrioList<T>::resolve_pending_(int id) {
 }
 } // namespace imp
 
-#endif//IMPERATOR_DS_PRIO_LIST_H
+#endif //IMPERATOR_DS_PRIO_LIST_H

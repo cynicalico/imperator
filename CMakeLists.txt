@@ -8,7 +8,7 @@ include(cmake/get_cpm.cmake)
 include(cmake/setup_ccache.cmake)
 
 if (MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif ()
 
 set(IMPERATOR_INCLUDE_FILES
@@ -36,6 +36,7 @@ set(IMPERATOR_INCLUDE_FILES
         include/imperator/gl/vecbuf.h
         include/imperator/gl/vertex_array.h
         include/imperator/module/application.h
+        include/imperator/module/audio_mgr.h
         include/imperator/module/event_bus.h
         include/imperator/module/input_mgr.h
         include/imperator/module/module_mgr.h
@@ -73,6 +74,7 @@ set(IMPERATOR_SRC_FILES
         src/imperator/gl/shader.cpp
         src/imperator/gl/vertex_array.cpp
         src/imperator/module/application.cpp
+        src/imperator/module/audio_mgr.cpp
         src/imperator/module/event_bus.cpp
         src/imperator/module/input_mgr.cpp
         src/imperator/module/timer_mgr.cpp

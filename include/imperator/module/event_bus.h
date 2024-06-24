@@ -4,6 +4,7 @@
 #include "imperator/core/events.h"
 #include "imperator/ds/prio_list.h"
 #include "imperator/module/module_mgr.h"
+
 #include <functional>
 #include <memory>
 #include <ranges>
@@ -29,13 +30,13 @@ public:
     void sub(const std::string &name, Receiver<T> &&recv);
 
     template<typename T, typename... Args>
-    void send(Args &&... args);
+    void send(Args &&...args);
 
     template<typename T, typename... Args>
-    void send_nowait(Args &&... args);
+    void send_nowait(Args &&...args);
 
     template<typename T, typename... Args>
-    void send_nowait_rev(Args &&... args);
+    void send_nowait_rev(Args &&...args);
 
     template<typename T>
     void poll(const std::string &name);
@@ -51,42 +52,46 @@ public:
 
 private:
     template<typename T>
-    PrioList<Receiver<T> > &receivers_();
+    PrioList<Receiver<T>> &receivers_();
 
     template<typename T>
-    std::unordered_map<std::string, std::vector<T> > &buffers_();
+    std::unordered_map<std::string, std::vector<T>> &buffers_();
 
     template<typename T>
     void check_create_buffer_(const std::string &name);
 };
 
 template<typename T>
-void EventBus::presub_cache(const std::string &name) { check_create_buffer_<T>(name); }
-
-template<typename T>
-void EventBus::sub(const std::string &name, std::vector<std::string> &&deps, Receiver<T> &&recv) {
-    auto &receivers = receivers_<T>();
-    receivers.add(name, std::forward<std::vector<std::string> >(deps), std::forward<Receiver<T> >(recv));
+void EventBus::presub_cache(const std::string &name) {
     check_create_buffer_<T>(name);
 }
 
 template<typename T>
-void EventBus::sub(const std::string &name, Receiver<T> &&recv) { sub(name, {}, std::forward<Receiver<T> >(recv)); }
+void EventBus::sub(const std::string &name, std::vector<std::string> &&deps, Receiver<T> &&recv) {
+    auto &receivers = receivers_<T>();
+    receivers.add(name, std::forward<std::vector<std::string>>(deps), std::forward<Receiver<T>>(recv));
+    check_create_buffer_<T>(name);
+}
+
+template<typename T>
+void EventBus::sub(const std::string &name, Receiver<T> &&recv) {
+    sub(name, {}, std::forward<Receiver<T>>(recv));
+}
 
 template<typename T, typename... Args>
-void EventBus::send(Args &&... args) {
+void EventBus::send(Args &&...args) {
     auto payload = T{std::forward<Args>(args)...};
     for (auto &buffers = buffers_<T>(); auto &p: buffers) { p.second.emplace_back(payload); }
 }
 
 template<typename T, typename... Args>
-void EventBus::send_nowait(Args &&... args) {
+void EventBus::send_nowait(Args &&...args) {
     auto payload = T{std::forward<Args>(args)...};
     for (auto &receivers = receivers_<T>(); const auto &r: receivers) { r(payload); }
 }
 
 template<typename T, typename... Args>
-void EventBus::send_nowait_rev(Args &&... args) {
+void EventBus::send_nowait_rev(Args &&...args) {
     auto payload = T{std::forward<Args>(args)...};
     for (auto &receivers = receivers_<T>(); const auto &r: receivers | std::views::reverse) { r(payload); }
 }
@@ -103,25 +108,31 @@ void EventBus::poll(const std::string &name) {
 template<typename T>
 std::vector<std::string> EventBus::get_prio() {
     auto ret = std::vector<std::string>{};
-    for (auto &receivers = receivers_<T>(); const auto &p: receivers) ret.emplace_back(receivers.name_from_id(p.id));
+    for (auto &receivers = receivers_<T>(); const auto &p: receivers) {
+        ret.emplace_back(receivers.name_from_id(p.id));
+    }
     return ret;
 }
 
 template<typename T>
-bool EventBus::has_pending() { return receivers_<T>().has_pending(); }
+bool EventBus::has_pending() {
+    return receivers_<T>().has_pending();
+}
 
 template<typename T>
-std::vector<typename PrioList<T>::PendingItemInfo> EventBus::get_pending() { return receivers_<T>().get_pending(); }
+std::vector<typename PrioList<T>::PendingItemInfo> EventBus::get_pending() {
+    return receivers_<T>().get_pending();
+}
 
 template<typename T>
-PrioList<EventBus::Receiver<T> > &EventBus::receivers_() {
-    static PrioList<Receiver<T> > r{};
+PrioList<EventBus::Receiver<T>> &EventBus::receivers_() {
+    static PrioList<Receiver<T>> r{};
     return r;
 }
 
 template<typename T>
-std::unordered_map<std::string, std::vector<T> > &EventBus::buffers_() {
-    static std::unordered_map<std::string, std::vector<T> > b{};
+std::unordered_map<std::string, std::vector<T>> &EventBus::buffers_() {
+    static std::unordered_map<std::string, std::vector<T>> b{};
     return b;
 }
 
@@ -133,4 +144,4 @@ void EventBus::check_create_buffer_(const std::string &name) {
 
 IMPERATOR_DECLARE_MODULE(imp::EventBus);
 
-#endif//IMPERATOR_CORE_EVENT_BUS_H
+#endif //IMPERATOR_CORE_EVENT_BUS_H

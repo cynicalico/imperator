@@ -32,7 +32,7 @@ public:
      * and in general the length of returned words will increase down the list.
      */
     std::vector<std::pair<std::string, std::optional<T>>>
-    fuzzy_match_n(const std::string &pre, std::size_t n = 0) const;
+            fuzzy_match_n(const std::string &pre, std::size_t n = 0) const;
 
 private:
     struct TrieNode {
@@ -91,11 +91,9 @@ bool Trie<T>::contains(const std::string &s) {
 
 template<typename T>
 std::vector<std::pair<std::string, std::optional<T>>>
-Trie<T>::fuzzy_match_n(const std::string &pre, std::size_t n) const {
+        Trie<T>::fuzzy_match_n(const std::string &pre, std::size_t n) const {
     std::vector<std::pair<std::string, std::optional<T>>> matches{};
-    if (pre.empty()) {
-        return matches;
-    }
+    if (pre.empty()) { return matches; }
 
     std::stack<TrieNode *> s{};
     std::priority_queue<FuzzyData, std::vector<FuzzyData>, std::greater<>> pq{};
@@ -104,10 +102,11 @@ Trie<T>::fuzzy_match_n(const std::string &pre, std::size_t n) const {
     TrieNode *curr = root.get();
     for (const auto &c: pre) {
         s.push(curr); // We will save all the intermediate steps on the stack
-        if (auto it = curr->children.find(c); it == curr->children.end())
+        if (auto it = curr->children.find(c); it == curr->children.end()) {
             break;
-        else
+        } else {
             curr = it->second.get();
+        }
     }
     s.push(curr);
 
@@ -124,16 +123,12 @@ Trie<T>::fuzzy_match_n(const std::string &pre, std::size_t n) const {
             auto v = *curr->value;
             auto distance = v.starts_with(pre) ? 0 : levenshtein_distance(pre, *curr->value);
             pq.emplace(distance, v, curr->user_data);
-            if (n != 0 && matches.size() == n) {
-                break;
-            }
+            if (n != 0 && matches.size() == n) { break; }
         }
 
         if (!is_visited && !curr->children.empty()) {
             s.push(curr);
-            for (const auto &c: curr->children) {
-                s.push(c.second.get());
-            }
+            for (const auto &c: curr->children) { s.push(c.second.get()); }
         }
     }
 
@@ -155,9 +150,7 @@ std::size_t Trie<T>::levenshtein_distance(const std::string &s1, const std::stri
     std::vector<std::size_t> v0(s2.size() + 1, 0);
     std::vector<std::size_t> v1(s2.size() + 1, 0);
 
-    for (std::size_t i = 0; i <= s2.size(); ++i) {
-        v0[i] = i;
-    }
+    for (std::size_t i = 0; i <= s2.size(); ++i) { v0[i] = i; }
 
     for (std::size_t i = 0; i <= s1.size() - 1; ++i) {
         v1[0] = i + 1;
@@ -175,4 +168,4 @@ std::size_t Trie<T>::levenshtein_distance(const std::string &s1, const std::stri
 }
 } // namespace imp
 
-#endif//IMPERATOR_DS_TRIE_H
+#endif //IMPERATOR_DS_TRIE_H

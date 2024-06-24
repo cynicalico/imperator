@@ -1,8 +1,9 @@
 #ifndef IMPERATOR_CORE_COLOR_H
 #define IMPERATOR_CORE_COLOR_H
 
-#include "glm/glm.hpp"
 #include "fmt/core.h"
+#include "glm/glm.hpp"
+
 #include <cstdint>
 #include <string>
 
@@ -298,7 +299,6 @@ private:
 // };
 } // namespace imp
 
-
 template<>
 struct fmt::formatter<imp::RGB> {
     constexpr auto parse(format_parse_context &ctx) -> format_parse_context::iterator { return ctx.begin(); }
@@ -326,4 +326,4 @@ struct fmt::formatter<imp::HSL> : formatter<string_view> {
     }
 };
 
-#endif//IMPERATOR_CORE_COLOR_H
+#endif //IMPERATOR_CORE_COLOR_H

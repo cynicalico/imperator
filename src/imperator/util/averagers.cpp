@@ -17,8 +17,9 @@ void SMA::update(double v) {
     samples_.push(v);
     // Do CMA if we are still filling the buffer
     // Otherwise, do actual SMA by dropping the oldest value
-    if (samples_.size() <= sample_count) value_ += ((v - value_) / samples_.size());
-    else {
+    if (samples_.size() <= sample_count) {
+        value_ += ((v - value_) / samples_.size());
+    } else {
         value_ += (1.0 / sample_count) * (v - samples_.front());
         samples_.pop();
     }

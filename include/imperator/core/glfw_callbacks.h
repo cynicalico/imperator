@@ -62,4 +62,4 @@ void monitor_callback(GLFWmonitor *monitor, int event);
 } // namespace internal
 } // namespace imp
 
-#endif//IMPERATOR_CORE_GLFW_CALLBACKS_H
+#endif //IMPERATOR_CORE_GLFW_CALLBACKS_H

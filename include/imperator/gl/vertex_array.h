@@ -1,9 +1,10 @@
 #ifndef IMPERATOR_GL_VERTEX_ARRAY_H
 #define IMPERATOR_GL_VERTEX_ARRAY_H
 
-#include "imperator/module/gfx/gfx_context.h"
 #include "imperator/gl/buffer.h"
 #include "imperator/gl/shader.h"
+#include "imperator/module/gfx/gfx_context.h"
+
 #include <string>
 
 namespace imp {
@@ -11,7 +12,7 @@ enum class DrawMode : unsigned int {
     points = GL_POINTS,
     //  line_strip = GL_LINE_STRIP,
     line_loop = GL_LINE_LOOP,
-    lines     = GL_LINES,
+    lines = GL_LINES,
     //  triangle_strip = GL_TRIANGLE_STRIP,
     //  triangle_fan = GL_TRIANGLE_FAN,
     triangles = GL_TRIANGLES,
@@ -43,7 +44,6 @@ public:
      *   pos:3f:i1       --- 3 floats, instanced with a divisor of 1
      */
     void attrib(Shader &shader, BufTarget target, Buffer &buf, const std::string &desc);
-
     void attrib(Shader &shader, Buffer &buf, const std::string &desc);
 
     void element_array(Buffer &buf);
@@ -69,4 +69,4 @@ private:
 };
 } // namespace imp
 
-#endif//IMPERATOR_GL_VERTEX_ARRAY_H
+#endif //IMPERATOR_GL_VERTEX_ARRAY_H

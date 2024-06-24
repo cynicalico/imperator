@@ -51,4 +51,4 @@ private:
 };
 } // namespace imp
 
-#endif//IMPERATOR_UTIL_AVERAGERS_H
+#endif //IMPERATOR_UTIL_AVERAGERS_H

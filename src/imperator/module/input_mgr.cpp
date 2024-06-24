@@ -1,12 +1,12 @@
 #include "imperator/module/input_mgr.h"
-
 #include "imperator/util/time.h"
+
 #include <ranges>
 
 namespace imp {
 std::once_flag InputMgr::initialize_glfw_action_maps_;
 
-// @formatter:off
+// clang-format off
 std::vector<int> InputMgr::all_glfw_keys_{
       GLFW_KEY_UNKNOWN,GLFW_KEY_SPACE,GLFW_KEY_APOSTROPHE,GLFW_KEY_COMMA,GLFW_KEY_MINUS,GLFW_KEY_PERIOD,GLFW_KEY_SLASH,
       GLFW_KEY_0,GLFW_KEY_1,GLFW_KEY_2,GLFW_KEY_3,GLFW_KEY_4,GLFW_KEY_5,GLFW_KEY_6,GLFW_KEY_7,GLFW_KEY_8,GLFW_KEY_9,
@@ -48,30 +48,24 @@ std::vector<std::string> InputMgr::all_str_buttons_{
 };
 std::unordered_map<int, std::string> InputMgr::glfw_button_to_str_{};
 std::unordered_map<std::string, int> InputMgr::str_to_glfw_button_{};
-// @formatter:on
+// clang-format on
 
-InputMgr::InputMgr(ModuleMgr &module_mgr): Module(module_mgr) {
+InputMgr::InputMgr(ModuleMgr &module_mgr) : Module(module_mgr) {
     event_bus = module_mgr_.get<EventBus>();
 
-    std::call_once(
-        initialize_glfw_action_maps_,
-        [&] {
-            for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
-                glfw_key_to_str_[all_glfw_keys_[i]] = all_str_keys_[i];
-                str_to_glfw_key_[all_str_keys_[i]] = all_glfw_keys_[i];
-            }
-            for (std::size_t i = 0; i < all_glfw_buttons_.size(); ++i) {
-                glfw_button_to_str_[all_glfw_buttons_[i]] = all_str_buttons_[i];
-                str_to_glfw_button_[all_str_buttons_[i]] = all_glfw_buttons_[i];
-            }
-        });
+    std::call_once(initialize_glfw_action_maps_, [&] {
+        for (std::size_t i = 0; i < all_glfw_keys_.size(); ++i) {
+            glfw_key_to_str_[all_glfw_keys_[i]] = all_str_keys_[i];
+            str_to_glfw_key_[all_str_keys_[i]] = all_glfw_keys_[i];
+        }
+        for (std::size_t i = 0; i < all_glfw_buttons_.size(); ++i) {
+            glfw_button_to_str_[all_glfw_buttons_[i]] = all_str_buttons_[i];
+            str_to_glfw_button_[all_str_buttons_[i]] = all_glfw_buttons_[i];
+        }
+    });
 
-    for (const auto &a: all_str_keys_) {
-        bind(a, a);
-    }
-    for (const auto &a: all_str_buttons_) {
-        bind(a, a);
-    }
+    for (const auto &a: all_str_keys_) { bind(a, a); }
+    for (const auto &a: all_str_buttons_) { bind(a, a); }
 
     event_bus->sub<E_Update>(module_name_, [&](const auto &p) { r_update_(p); });
     event_bus->sub<E_GlfwKey>(module_name_, [&](const auto &p) { r_glfw_key_(p); });
@@ -83,8 +77,7 @@ InputMgr::InputMgr(ModuleMgr &module_mgr): Module(module_mgr) {
 }
 
 void InputMgr::bind(const std::string &name, const std::string &action) {
-    if (auto it = bindings_.find(name); it == bindings_.end())
-        bindings_[name] = {};
+    if (auto it = bindings_.find(name); it == bindings_.end()) { bindings_[name] = {}; }
     bindings_[name].emplace_back(action);
 }
 
@@ -92,9 +85,7 @@ std::vector<int> InputMgr::get_glfw_actions(const std::string &name) {
     std::vector<int> glfw_actions{};
     for (const auto &s: bindings_[name]) {
         int action = str_to_glfw_key_[s];
-        if (action == 0) {
-            action = str_to_glfw_button_[s];
-        }
+        if (action == 0) { action = str_to_glfw_button_[s]; }
         glfw_actions.emplace_back(action);
     }
     return glfw_actions;
@@ -102,20 +93,16 @@ std::vector<int> InputMgr::get_glfw_actions(const std::string &name) {
 
 bool InputMgr::pressed(const std::string &name, const Mods &mods) {
     int mods_check = unwrap(mods);
-    return std::ranges::any_of(
-        bindings_[name],
-        [&](const auto &b) {
-            return state_[b].pressed && !state_[b].last_pressed && (state_[b].mods & mods_check) == mods_check;
-        });
+    return std::ranges::any_of(bindings_[name], [&](const auto &b) {
+        return state_[b].pressed && !state_[b].last_pressed && (state_[b].mods & mods_check) == mods_check;
+    });
 }
 
 bool InputMgr::released(const std::string &name, const Mods &mods) {
     int mods_check = unwrap(mods);
-    return std::ranges::any_of(
-        bindings_[name],
-        [&](const auto &b) {
-            return !state_[b].pressed && state_[b].last_pressed && (state_[b].mods & mods_check) == mods_check;
-        });
+    return std::ranges::any_of(bindings_[name], [&](const auto &b) {
+        return !state_[b].pressed && state_[b].last_pressed && (state_[b].mods & mods_check) == mods_check;
+    });
 }
 
 // TODO: If the desired mods are released, but the keys aren't, this will keep returning true
@@ -123,25 +110,17 @@ bool InputMgr::down(const std::string &name, const Mods &mods, double interval, 
     int mods_check = unwrap(mods);
 
     if (interval <= 0.0 && delay <= 0.0) {
-        return std::ranges::any_of(
-            bindings_[name],
-            [&](const auto &b) {
-                return state_[b].pressed && (state_[b].mods & mods_check) == mods_check;
-            });
+        return std::ranges::any_of(bindings_[name], [&](const auto &b) {
+            return state_[b].pressed && (state_[b].mods & mods_check) == mods_check;
+        });
     }
 
-    if (auto it = repeat_.find(name); it != repeat_.end()) {
-        return it->second.pressed;
-    }
+    if (auto it = repeat_.find(name); it != repeat_.end()) { return it->second.pressed; }
 
     for (const auto &action: bindings_[name]) {
         if (state_[action].pressed && (state_[action].mods & mods_check) == mods_check) {
-            repeat_[name] = RepeatState{
-                .action = action,
-                .interval = interval,
-                .delay = delay,
-                .delay_stage = delay > 0.0
-            };
+            repeat_[name] =
+                    RepeatState{.action = action, .interval = interval, .delay = delay, .delay_stage = delay > 0.0};
 
             return delay <= 0.0;
         }
@@ -154,58 +133,32 @@ bool InputMgr::down(const std::string &name, double interval, double delay) {
     return down(name, Mods::none, interval, delay);
 }
 
-double InputMgr::mouse_x() const {
-    return mouse_state_.x;
-}
+double InputMgr::mouse_x() const { return mouse_state_.x; }
 
-double InputMgr::mouse_y() const {
-    return mouse_state_.y;
-}
+double InputMgr::mouse_y() const { return mouse_state_.y; }
 
-double InputMgr::mouse_px() const {
-    return mouse_state_.px;
-}
+double InputMgr::mouse_px() const { return mouse_state_.px; }
 
-double InputMgr::mouse_py() const {
-    return mouse_state_.py;
-}
+double InputMgr::mouse_py() const { return mouse_state_.py; }
 
-double InputMgr::mouse_dx() const {
-    return mouse_state_.dx;
-}
+double InputMgr::mouse_dx() const { return mouse_state_.dx; }
 
-double InputMgr::mouse_dy() const {
-    return mouse_state_.dy;
-}
+double InputMgr::mouse_dy() const { return mouse_state_.dy; }
 
-bool InputMgr::mouse_moved() const {
-    return mouse_state_.moved;
-}
+bool InputMgr::mouse_moved() const { return mouse_state_.moved; }
 
-bool InputMgr::mouse_got_first_event() const {
-    return mouse_state_.got_first_event;
-}
+bool InputMgr::mouse_got_first_event() const { return mouse_state_.got_first_event; }
 
-double InputMgr::mouse_sx() const {
-    return mouse_state_.sx;
-}
+double InputMgr::mouse_sx() const { return mouse_state_.sx; }
 
-double InputMgr::mouse_sy() const {
-    return mouse_state_.sy;
-}
+double InputMgr::mouse_sy() const { return mouse_state_.sy; }
 
-bool InputMgr::mouse_entered() const {
-    return mouse_state_.entered == 1;
-}
+bool InputMgr::mouse_entered() const { return mouse_state_.entered == 1; }
 
-bool InputMgr::mouse_left() const {
-    return mouse_state_.entered == -1;
-}
+bool InputMgr::mouse_left() const { return mouse_state_.entered == -1; }
 
 void InputMgr::r_update_(const E_Update &p) {
-    for (auto &s: state_ | std::views::values) {
-        s.last_pressed = s.pressed;
-    }
+    for (auto &s: state_ | std::views::values) { s.last_pressed = s.pressed; }
 
     mouse_state_.px = mouse_state_.x;
     mouse_state_.py = mouse_state_.y;
@@ -288,9 +241,7 @@ void InputMgr::r_glfw_cursor_pos_(const E_GlfwCursorPos &p) {
     }
 }
 
-void InputMgr::r_glfw_cursor_enter_(const E_GlfwCursorEnter &p) {
-    mouse_state_.entered = p.entered ? 1 : -1;
-}
+void InputMgr::r_glfw_cursor_enter_(const E_GlfwCursorEnter &p) { mouse_state_.entered = p.entered ? 1 : -1; }
 
 void InputMgr::r_glfw_mouse_button_(const E_GlfwMouseButton &p) {
     auto action = glfw_button_to_str_[p.button];

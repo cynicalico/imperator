@@ -2,40 +2,35 @@
 #include "imperator/util/sops.h"
 
 namespace imp {
-VertexArray::VertexArray(GfxContext &gfx) : gl(gfx.gl) {
-    gen_id_();
-}
+VertexArray::VertexArray(GfxContext &gfx) : gl(gfx.gl) { gen_id_(); }
 
-void VertexArray::bind() {
-    gl.BindVertexArray(id);
-}
+void VertexArray::bind() { gl.BindVertexArray(id); }
 
-void VertexArray::unbind() {
-    gl.BindVertexArray(0);
-}
+void VertexArray::unbind() { gl.BindVertexArray(0); }
 
 void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const std::string &desc) {
     const static RE2 attrib_pat(
-        R"((\w+):(\d+)(i|f|u|s)(?::(n))?(?::s(\d+)(i|f|u|s)?)?(?::o(\d+)(i|f|u|s)?)?(?::i(\d+))?)");
+            R"((\w+):(\d+)(i|f|u|s)(?::(n))?(?::s(\d+)(i|f|u|s)?)?(?::o(\d+)(i|f|u|s)?)?(?::i(\d+))?)"
+    );
     assert(attrib_pat.ok());
 
     const static RE2 spaces_pat{IMPERATOR_SPLIT_RE(R"((\s+))")};
     assert(spaces_pat.ok());
 
     static std::unordered_map<std::string, GLenum> type_map = {
-        {"none", GL_NONE},
-        {"i", GL_INT},
-        {"f", GL_FLOAT},
-        {"u", GL_UNSIGNED_INT},
-        {"s", GL_SHORT}
+        {"none",         GL_NONE},
+        {   "i",          GL_INT},
+        {   "f",        GL_FLOAT},
+        {   "u", GL_UNSIGNED_INT},
+        {   "s",        GL_SHORT}
     };
 
     static std::unordered_map<GLenum, std::size_t> size_map = {
-        {GL_NONE, 1},
-        {GL_INT, sizeof(int)},
-        {GL_FLOAT, sizeof(float)},
+        {        GL_NONE,                    1},
+        {         GL_INT,          sizeof(int)},
+        {       GL_FLOAT,        sizeof(float)},
         {GL_UNSIGNED_INT, sizeof(unsigned int)},
-        {GL_SHORT, sizeof(std::int16_t)},
+        {       GL_SHORT, sizeof(std::int16_t)},
     };
 
     auto attrib_strs = split_re(desc, spaces_pat);
@@ -53,22 +48,20 @@ void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const st
         std::string offset_type;
         std::string divisor;
         if (RE2::FullMatch(
-                s,
-                attrib_pat,
-                &name,
-                &size,
-                &type,
-                &normalized,
-                &stride,
-                &stride_type,
-                &offset,
-                &offset_type,
-                &divisor)
-        ) {
+                    s,
+                    attrib_pat,
+                    &name,
+                    &size,
+                    &type,
+                    &normalized,
+                    &stride,
+                    &stride_type,
+                    &offset,
+                    &offset_type,
+                    &divisor
+            )) {
             auto loc = shader.get_attrib_loc(name);
-            if (loc == -1) {
-                continue;
-            }
+            if (loc == -1) { continue; }
 
             auto size_i = std::stoi(size);
             auto type_e = type_map[type];
@@ -78,13 +71,13 @@ void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const st
             auto offset_t = offset_type.empty() ? "none" : offset_type;
 
             vertex_attribs.emplace_back(
-                loc,
-                size_i,
-                type_e,
-                normalized.empty() ? GL_FALSE : GL_TRUE,
-                stride.empty() ? 0 : size_map[type_map[stride_t]] * std::stoi(stride),
-                offset.empty() ? stride_acc : size_map[type_map[offset_t]] * std::stoi(offset),
-                divisor.empty() ? 0 : std::stoi(divisor)
+                    loc,
+                    size_i,
+                    type_e,
+                    normalized.empty() ? GL_FALSE : GL_TRUE,
+                    stride.empty() ? 0 : size_map[type_map[stride_t]] * std::stoi(stride),
+                    offset.empty() ? stride_acc : size_map[type_map[offset_t]] * std::stoi(offset),
+                    divisor.empty() ? 0 : std::stoi(divisor)
             );
 
             stride_acc += static_cast<GLsizei>(type_s) * size_i;
@@ -94,18 +87,14 @@ void VertexArray::attrib(Shader &shader, BufTarget target, Buffer &buf, const st
     // For items that didn't specify a stride, this will set it assuming it's the
     // size sum of all elements in the specification provided
     for (auto &a: vertex_attribs) {
-        if (a.stride == 0) {
-            a.stride = stride_acc;
-        }
+        if (a.stride == 0) { a.stride = stride_acc; }
     }
 
     bind();
     buf.bind(target);
     for (const auto &a: vertex_attribs) {
         gl.VertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, reinterpret_cast<void *>(a.offset));
-        if (a.divisor != 0) {
-            gl.VertexAttribDivisor(a.index, a.divisor);
-        }
+        if (a.divisor != 0) { gl.VertexAttribDivisor(a.index, a.divisor); }
         gl.EnableVertexAttribArray(a.index);
     }
     buf.unbind(target);

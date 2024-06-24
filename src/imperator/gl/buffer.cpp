@@ -1,18 +1,11 @@
 #include "imperator/gl/buffer.h"
 
 namespace imp {
-Buffer::Buffer(GfxContext &gfx) : gl(gfx.gl) {
-    gen_id_();
-}
+Buffer::Buffer(GfxContext &gfx) : gl(gfx.gl) { gen_id_(); }
 
-Buffer::~Buffer() {
-    del_id_();
-}
+Buffer::~Buffer() { del_id_(); }
 
-Buffer::Buffer(Buffer &&other) noexcept: gl(other.gl),
-                                         id(other.id) {
-    other.id = 0;
-}
+Buffer::Buffer(Buffer &&other) noexcept : gl(other.gl), id(other.id) { other.id = 0; }
 
 Buffer &Buffer::operator=(Buffer &&other) noexcept {
     if (this != &other) {
@@ -26,13 +19,9 @@ Buffer &Buffer::operator=(Buffer &&other) noexcept {
     return *this;
 }
 
-void Buffer::bind(const BufTarget &target) const {
-    gl.BindBuffer(unwrap(target), id);
-}
+void Buffer::bind(const BufTarget &target) const { gl.BindBuffer(unwrap(target), id); }
 
-void Buffer::unbind(const BufTarget &target) const {
-    gl.BindBuffer(unwrap(target), 0);
-}
+void Buffer::unbind(const BufTarget &target) const { gl.BindBuffer(unwrap(target), 0); }
 
 void Buffer::gen_id_() {
     gl.GenBuffers(1, &id);

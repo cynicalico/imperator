@@ -1,9 +1,9 @@
 # We need Jinja2 for Glad 2 to work
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 execute_process(COMMAND ${Python3_EXECUTABLE} -m pip show Jinja2 RESULT_VARIABLE EXIT_CODE OUTPUT_QUIET)
-if(NOT ${EXIT_CODE} EQUAL 0)
+if (NOT ${EXIT_CODE} EQUAL 0)
     message(FATAL_ERROR "The Jinja2 Python package is not installed. Please install it using the following command: \"${Python3_EXECUTABLE} -m pip install jinja2\".")
-endif()
+endif ()
 CPMAddPackage(
         NAME glad2
         GITHUB_REPOSITORY Dav1dde/glad
@@ -30,12 +30,14 @@ find_package(argparse CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(OpenAL CONFIG REQUIRED)
 find_package(re2 CONFIG REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(stduuid CONFIG REQUIRED)
 
-target_include_directories(imperator_thirdparty INTERFACE ${Stb_INCLUDE_DIR})
+target_include_directories(imperator_thirdparty INTERFACE ${Stb_INCLUDE_DIR} ${PCG_INCLUDE_DIRS})
 
 target_link_libraries(imperator_thirdparty INTERFACE
         argparse::argparse
@@ -43,6 +45,8 @@ target_link_libraries(imperator_thirdparty INTERFACE
         glad_gl_core_mx_33
         glfw
         glm::glm
+        OpenAL::OpenAL
         re2::re2
+        SndFile::sndfile
         spdlog::spdlog
         stduuid)

@@ -1,19 +1,16 @@
 #ifndef IMPERATOR_GL_FRAMEBUFFER_H
 #define IMPERATOR_GL_FRAMEBUFFER_H
 
-#include "imperator/gl/renderbuffer.h"
 #include "imperator/gl/gl_texture.h"
+#include "imperator/gl/renderbuffer.h"
 #include "imperator/module/gfx/gfx_context.h"
-#include <functional>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
 
 namespace imp {
-enum class FboTarget {
-    draw = GL_DRAW_FRAMEBUFFER,
-    read = GL_READ_FRAMEBUFFER
-};
+enum class FboTarget { draw = GL_DRAW_FRAMEBUFFER, read = GL_READ_FRAMEBUFFER };
 
 class Framebuffer {
     friend class FramebufferBuilder;
@@ -30,21 +27,17 @@ public:
 
     // Copy constructors don't make sense for OpenGL objects
     Framebuffer(const Framebuffer &) = delete;
-
     Framebuffer &operator=(const Framebuffer &) = delete;
 
     Framebuffer(Framebuffer &&other) noexcept;
-
     Framebuffer &operator=(Framebuffer &&other) noexcept;
 
     void bind();
-
     void bind(FboTarget target);
 
     void unbind();
 
     void copy_to_default_framebuffer(bool retro = false);
-
     void copy_to_default_framebuffer(GLint window_width, GLint window_height, bool retro = false);
 
     const TextureUnit *get_texture(const std::string &tex_name);
@@ -68,19 +61,15 @@ public:
     ~FramebufferBuilder() = default;
 
     FramebufferBuilder(const FramebufferBuilder &) = delete;
-
     FramebufferBuilder &operator=(const FramebufferBuilder &) = delete;
 
     FramebufferBuilder(FramebufferBuilder &&) noexcept = delete;
-
     FramebufferBuilder &operator=(FramebufferBuilder &&) noexcept = delete;
 
     FramebufferBuilder &texture(const std::string &tag, TexFormat internalformat, bool retro = false);
-
     FramebufferBuilder &texture(TexFormat internalformat, bool retro = false);
 
     FramebufferBuilder &renderbuffer(const std::string &tag, RBufFormat internalformat);
-
     FramebufferBuilder &renderbuffer(RBufFormat internalformat);
 
     std::unique_ptr<Framebuffer> check_complete();
@@ -100,4 +89,4 @@ private:
 };
 } // namespace imp
 
-#endif//IMPERATOR_GL_FRAMEBUFFER_H
+#endif //IMPERATOR_GL_FRAMEBUFFER_H

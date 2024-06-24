@@ -2,9 +2,9 @@
 #define IMPERATOR_MODULE_GFX_2D_G2D_H
 
 #include "imperator/core/color.h"
-#include "imperator/module/module_mgr.h"
 #include "imperator/gl/enum_types.h"
 #include "imperator/module/gfx/gfx_context.h"
+#include "imperator/module/module_mgr.h"
 
 namespace imp {
 class G2D : public Module<G2D> {
@@ -19,4 +19,4 @@ public:
 
 IMPERATOR_DECLARE_MODULE(imp::G2D);
 
-#endif//IMPERATOR_MODULE_GFX_2D_G2D_H
+#endif //IMPERATOR_MODULE_GFX_2D_G2D_H

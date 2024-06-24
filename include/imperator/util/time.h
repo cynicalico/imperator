@@ -1,9 +1,10 @@
 #ifndef IMPERATOR_UTIL_TIME_H
 #define IMPERATOR_UTIL_TIME_H
 
-#include "imperator/util/averagers.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
+#include "imperator/util/averagers.h"
+
 #include <chrono>
 #include <ctime>
 #include <deque>
@@ -31,13 +32,19 @@ T time_nsec() {
 }
 
 template<typename T = double>
-T time_usec() { return static_cast<T>(time_nsec<double>() / 1e3); }
+T time_usec() {
+    return static_cast<T>(time_nsec<double>() / 1e3);
+}
 
 template<typename T = double>
-T time_msec() { return static_cast<T>(time_nsec<double>() / 1e6); }
+T time_msec() {
+    return static_cast<T>(time_nsec<double>() / 1e6);
+}
 
 template<typename T = double>
-T time_sec() { return static_cast<T>(time_nsec<double>() / 1e9); }
+T time_sec() {
+    return static_cast<T>(time_nsec<double>() / 1e9);
+}
 
 class Stopwatch {
 public:
@@ -58,7 +65,6 @@ public:
 private:
     std::uint64_t start_{0}, end_{0};
 };
-
 
 class Ticker {
 public:
@@ -116,4 +122,4 @@ private:
 };
 } // namespace imp
 
-#endif//IMPERATOR_UTIL_TIME_H
+#endif //IMPERATOR_UTIL_TIME_H

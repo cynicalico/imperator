@@ -12,7 +12,6 @@ public:
     std::shared_ptr<EventBus> event_bus{nullptr};
 
     Window(ModuleMgr &module_mgr, WindowOpenParams open_params, glm::ivec2 backend_version);
-
     ~Window() override;
 
     GLFWwindow *handle() const { return glfw_window_.get(); }
@@ -40,37 +39,24 @@ private:
     static GLFWmonitor *get_monitor_(int monitor_num);
 
     void open_(WindowOpenParams open_params, glm::ivec2 backend_version);
-
     void open_fullscreen_(WindowOpenParams open_params);
-
     void open_windowed_(WindowOpenParams open_params);
 
     void r_update_(const E_Update &p);
-
     void r_end_frame_(const E_EndFrame &p);
-
     void r_glfw_window_close_(const E_GlfwWindowClose &p);
-
     void r_glfw_window_size_(const E_GlfwWindowSize &p);
-
     void r_glfw_framebuffer_size_(const E_GlfwFramebufferSize &p);
-
     void r_glfw_window_content_scale_(const E_GlfwWindowContentScale &p);
-
     void r_glfw_window_pos_(const E_GlfwWindowPos &p);
-
     void r_glfw_window_iconify_(const E_GlfwWindowIconify &p);
-
     void r_glfw_window_maximize_(const E_GlfwWindowMaximize &p);
-
     void r_glfw_window_focus_(const E_GlfwWindowFocus &p);
-
     void r_glfw_window_refresh_(const E_GlfwWindowRefresh &p);
-
     void r_glfw_monitor_(const E_GlfwMonitor &p);
 };
 } // namespace imp
 
 IMPERATOR_DECLARE_MODULE(imp::Window);
 
-#endif//IMPERATOR_MODULE_WINDOW_H
+#endif //IMPERATOR_MODULE_WINDOW_H

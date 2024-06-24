@@ -3,8 +3,9 @@
 
 #include "pcg_random.hpp"
 #include "uuid.h"
-#include <cstdint>
+
 #include <concepts>
+#include <cstdint>
 #include <random>
 #include <ranges>
 
@@ -37,17 +38,18 @@ concept IntDistCompatible =
         IsAnyOf<T, short, int, long, long long, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template<IntDistCompatible T>
-T get(T low, T high) { return IntDist<T>(low, high)(internal::generator()); }
+T get(T low, T high) {
+    return IntDist<T>(low, high)(internal::generator());
+}
 
 template<IntDistCompatible T>
-T get(T high) { return IntDist<T>(T(0), high)(internal::generator()); }
+T get(T high) {
+    return IntDist<T>(T(0), high)(internal::generator());
+}
 
 template<IntDistCompatible T>
 T get() {
-    return IntDist<T>(
-        std::numeric_limits<T>::min(),
-        std::numeric_limits<T>::max()
-    )(internal::generator());
+    return IntDist<T>(std::numeric_limits<T>::min(), std::numeric_limits<T>::max())(internal::generator());
 }
 
 template<typename T>
@@ -55,21 +57,19 @@ concept IntDistCompatibleButChar = IsAnyOf<T, char, char8_t, char16_t, char32_t,
 
 template<IntDistCompatibleButChar T>
 T get(T low, T high) {
-    return static_cast<T>(get<int>(
-        static_cast<int>(low),
-        static_cast<int>(high)
-    ));
+    return static_cast<T>(get<int>(static_cast<int>(low), static_cast<int>(high)));
 }
 
 template<IntDistCompatibleButChar T>
-T get(T high) { return static_cast<T>(get<int>(static_cast<int>(high))); }
+T get(T high) {
+    return static_cast<T>(get<int>(static_cast<int>(high)));
+}
 
 template<IntDistCompatibleButChar T>
 T get() {
-    return static_cast<T>(get<int>(
-        static_cast<int>(std::numeric_limits<T>::min()),
-        static_cast<int>(std::numeric_limits<T>::max())
-    ));
+    return static_cast<T>(
+            get<int>(static_cast<int>(std::numeric_limits<T>::min()), static_cast<int>(std::numeric_limits<T>::max()))
+    );
 }
 
 template<typename T>
@@ -79,18 +79,20 @@ template<typename T>
 concept RealDistCompatible = IsAnyOf<T, float, double, long double>;
 
 template<RealDistCompatible T>
-T get(T low, T high) { return RealDist<T>(low, high)(internal::generator()); }
+T get(T low, T high) {
+    return RealDist<T>(low, high)(internal::generator());
+}
 
 template<RealDistCompatible T>
-T get(T high) { return RealDist<T>(T(0.0), high)(internal::generator()); }
+T get(T high) {
+    return RealDist<T>(T(0.0), high)(internal::generator());
+}
 
 template<RealDistCompatible T>
 T get(bool between_min_and_max = false) {
-    if (between_min_and_max)
-        return RealDist<T>(
-            std::numeric_limits<T>::min(),
-            std::numeric_limits<T>::max()
-        )(internal::generator());
+    if (between_min_and_max) {
+        return RealDist<T>(std::numeric_limits<T>::min(), std::numeric_limits<T>::max())(internal::generator());
+    }
     return RealDist<T>(T(0.0), T(1.0))(internal::generator());
 }
 
@@ -100,13 +102,19 @@ template<typename T>
 concept BoolDistCompatible = IsAnyOf<T, bool>;
 
 template<BoolDistCompatible T>
-T get(double chance) { return BoolDist(chance)(internal::generator()); }
+T get(double chance) {
+    return BoolDist(chance)(internal::generator());
+}
 
 template<typename Iterable>
-void shuffle(Iterable &i) { pcg_extras::shuffle(i.begin(), i.end(), internal::generator()); }
+void shuffle(Iterable &i) {
+    pcg_extras::shuffle(i.begin(), i.end(), internal::generator());
+}
 
 template<typename Iter>
-void shuffle(Iter &start, Iter &end) { pcg_extras::shuffle(start, end, internal::generator()); }
+void shuffle(Iter &start, Iter &end) {
+    pcg_extras::shuffle(start, end, internal::generator());
+}
 
 template<std::ranges::random_access_range R>
 void partial_shuffle(R &&r, double percentage) {
@@ -131,4 +139,4 @@ std::string base58(std::size_t length);
 std::string uuidv4();
 } // namespace imp::rnd
 
-#endif//IMPERATOR_UTIL_RND_H
+#endif //IMPERATOR_UTIL_RND_H

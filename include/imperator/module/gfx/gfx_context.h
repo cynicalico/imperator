@@ -1,10 +1,10 @@
 #ifndef IMPERATOR_MODULE_GFX_GFX_CONTEXT_H
 #define IMPERATOR_MODULE_GFX_GFX_CONTEXT_H
 
+#include "glad/gl.h"
 #include "imperator/module/module_mgr.h"
 #include "imperator/module/window.h"
 #include "imperator/util/platform.h"
-#include "glad/gl.h"
 
 namespace imp {
 struct GfxParams {
@@ -33,12 +33,7 @@ private:
     void platform_set_vsync_(bool v);
 
     static void GLAPIENTRY gl_message_callback_(
-            GLenum source,
-            GLenum type,
-            GLuint id,
-            GLenum severity,
-            GLsizei length,
-            const GLchar *message,
+            GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
             const void *userParam
     );
 };
@@ -46,4 +41,4 @@ private:
 
 IMPERATOR_DECLARE_MODULE(imp::GfxContext);
 
-#endif//IMPERATOR_MODULE_GFX_GFX_CONTEXT_H
+#endif //IMPERATOR_MODULE_GFX_GFX_CONTEXT_H

@@ -2,9 +2,7 @@
 
 namespace imp {
 Renderbuffer::Renderbuffer(GfxContext &gfx, RBufFormat format, GLuint width, GLuint height)
-    : gl(gfx.gl),
-      width(width),
-      height(height) {
+    : gl(gfx.gl), width(width), height(height) {
     gen_id_();
 
     bind();
@@ -12,15 +10,10 @@ Renderbuffer::Renderbuffer(GfxContext &gfx, RBufFormat format, GLuint width, GLu
     unbind();
 }
 
-Renderbuffer::~Renderbuffer() {
-    del_id_();
-}
+Renderbuffer::~Renderbuffer() { del_id_(); }
 
 Renderbuffer::Renderbuffer(Renderbuffer &&other) noexcept
-    : gl(other.gl),
-      id(other.id),
-      width(other.width),
-      height(other.height) {
+    : gl(other.gl), id(other.id), width(other.width), height(other.height) {
     other.id = 0;
     other.width = 0;
     other.height = 0;
@@ -42,13 +35,9 @@ Renderbuffer &Renderbuffer::operator=(Renderbuffer &&other) noexcept {
     return *this;
 }
 
-void Renderbuffer::bind() {
-    gl.BindRenderbuffer(GL_RENDERBUFFER, id);
-}
+void Renderbuffer::bind() { gl.BindRenderbuffer(GL_RENDERBUFFER, id); }
 
-void Renderbuffer::unbind() {
-    gl.BindRenderbuffer(GL_RENDERBUFFER, 0);
-}
+void Renderbuffer::unbind() { gl.BindRenderbuffer(GL_RENDERBUFFER, 0); }
 
 void Renderbuffer::gen_id_() {
     gl.GenRenderbuffers(1, &id);

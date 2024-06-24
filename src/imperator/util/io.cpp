@@ -4,15 +4,16 @@
 
 #include "imperator/util/log.h"
 #include "stb_image.h"
+
 #include <fstream>
 
 namespace imp {
 ImageData::ImageData(const std::filesystem::path &path, int desired_channels) {
     int w, h, comp;
     auto data = stbi_load(path.string().c_str(), &w, &h, &comp, desired_channels);
-    if (!data)
+    if (!data) {
         IMPERATOR_LOG_ERROR("Failed to load image data '{}': {}", path.string(), stbi_failure_reason());
-    else {
+    } else {
         w_ = w;
         h_ = h;
         comp_ = comp;
@@ -21,18 +22,14 @@ ImageData::ImageData(const std::filesystem::path &path, int desired_channels) {
     }
 }
 
-ImageData::ImageData(std::size_t w, std::size_t h, std::size_t channels)
-        : w_(w),
-          h_(h),
-          comp_(channels) { bytes_ = std::vector<stbi_uc>(w * h * channels, 0); }
+ImageData::ImageData(std::size_t w, std::size_t h, std::size_t channels) : w_(w), h_(h), comp_(channels) {
+    bytes_ = std::vector<stbi_uc>(w * h * channels, 0);
+}
 
 ImageData::~ImageData() { bytes_.clear(); }
 
 ImageData::ImageData(ImageData &&other) noexcept
-        : bytes_(other.bytes_),
-          w_(other.w_),
-          h_(other.h_),
-          comp_(other.comp_) {
+    : bytes_(other.bytes_), w_(other.w_), h_(other.h_), comp_(other.comp_) {
     other.bytes_.clear();
     other.w_ = 0;
     other.h_ = 0;

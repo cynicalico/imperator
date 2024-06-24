@@ -2,6 +2,7 @@
 #define IMPERATOR_GL_VECBUF_H
 
 #include "imperator/gl/buffer.h"
+
 #include <concepts>
 #include <vector>
 
@@ -9,13 +10,7 @@ namespace imp {
 template<Numeric T = float>
 class VecBuf : public Buffer {
 public:
-    VecBuf(
-        GfxContext &gfx,
-        std::size_t initial_size,
-        bool fill_reverse,
-        BufTarget target,
-        BufUsage usage
-    );
+    VecBuf(GfxContext &gfx, std::size_t initial_size, bool fill_reverse, BufTarget target, BufUsage usage);
 
     ~VecBuf() override = default;
 
@@ -64,16 +59,8 @@ using VecBufI = VecBuf<int>;
 using VecBufU = VecBuf<unsigned int>;
 
 template<Numeric T>
-VecBuf<T>::VecBuf(
-    GfxContext &gfx,
-    std::size_t initial_size,
-    bool fill_reverse,
-    BufTarget target,
-    BufUsage usage
-) : Buffer(gfx),
-    target_(target),
-    usage_(usage),
-    fill_reverse_(fill_reverse) {
+VecBuf<T>::VecBuf(GfxContext &gfx, std::size_t initial_size, bool fill_reverse, BufTarget target, BufUsage usage)
+    : Buffer(gfx), target_(target), usage_(usage), fill_reverse_(fill_reverse) {
     data_.resize(initial_size);
     if (fill_reverse_) {
         front_ = initial_size;
@@ -176,12 +163,7 @@ template<Numeric T>
 void VecBuf<T>::sync() {
     if (gl_bufsize_ < data_.size()) {
         bind(target_);
-        gl.BufferData(
-            unwrap(target_),
-            sizeof(T) * data_.size(),
-            &data_[0],
-            unwrap(usage_)
-        );
+        gl.BufferData(unwrap(target_), sizeof(T) * data_.size(), &data_[0], unwrap(usage_));
         unbind(target_);
 
         gl_bufsize_ = data_.size();
@@ -190,10 +172,10 @@ void VecBuf<T>::sync() {
         if (fill_reverse_ && gl_bufpos_ > front_) {
             bind(target_);
             gl.BufferSubData(
-                unwrap(target_),
-                sizeof(T) * front_,
-                sizeof(T) * (gl_bufpos_ - front_),
-                &data_[0] + front_
+                    unwrap(target_),
+                    sizeof(T) * front_,
+                    sizeof(T) * (gl_bufpos_ - front_),
+                    &data_[0] + front_
             );
             unbind(target_);
 
@@ -201,10 +183,10 @@ void VecBuf<T>::sync() {
         } else if (!fill_reverse_ && gl_bufpos_ < back_) {
             bind(target_);
             gl.BufferSubData(
-                unwrap(target_),
-                sizeof(T) * gl_bufpos_,
-                sizeof(T) * (back_ - gl_bufpos_),
-                &data_[0] + gl_bufpos_
+                    unwrap(target_),
+                    sizeof(T) * gl_bufpos_,
+                    sizeof(T) * (back_ - gl_bufpos_),
+                    &data_[0] + gl_bufpos_
             );
             unbind(target_);
 
@@ -227,13 +209,11 @@ void VecBuf<T>::add_(InputIt begin, InputIt end) {
         front_ -= size;
         std::copy(begin, end, data_.begin() + front_);
     } else {
-        while (back_ + size >= data_.size()) {
-            data_.resize(data_.size() * 2);
-        }
+        while (back_ + size >= data_.size()) { data_.resize(data_.size() * 2); }
         std::copy(begin, end, data_.begin() + back_);
         back_ += size;
     }
 }
 } // namespace imp
 
-#endif//IMPERATOR_GL_VECBUF_H
+#endif //IMPERATOR_GL_VECBUF_H

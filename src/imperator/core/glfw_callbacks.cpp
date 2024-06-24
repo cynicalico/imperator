@@ -1,5 +1,4 @@
 #include "imperator/core/glfw_callbacks.h"
-
 #include "imperator/module/event_bus.h"
 #include "imperator/util/log.h"
 

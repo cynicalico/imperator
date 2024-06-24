@@ -1,6 +1,5 @@
-#include "imperator/util/platform.h"
-
 #include "imperator/util/log.h"
+#include "imperator/util/platform.h"
 
 namespace imp {
 void log_platform() {

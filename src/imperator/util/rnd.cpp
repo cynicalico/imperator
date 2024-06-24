@@ -1,5 +1,5 @@
-#include "imperator/util/rnd.h"
 #include "imperator/util/log.h"
+#include "imperator/util/rnd.h"
 
 namespace imp::rnd {
 void gen_seed_vals() {
@@ -13,12 +13,10 @@ void gen_seed_vals() {
 
 namespace internal {
 pcg32 &generator() {
-    thread_local pcg32 g = std::invoke(
-            [] {
-                gen_seed_vals();
-                return pcg32(seed_info().seed, seed_info().stream);
-            }
-    );
+    thread_local pcg32 g = std::invoke([] {
+        gen_seed_vals();
+        return pcg32(seed_info().seed, seed_info().stream);
+    });
 
     return g;
 }
@@ -51,11 +49,7 @@ std::string base58(std::size_t length) {
     static constexpr char B58_ALPHABET[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
     std::string id(length, 0);
-    std::generate_n(
-            id.begin(),
-            length,
-            [] { return B58_ALPHABET[get<unsigned char>(0x00, 0xff) % 58]; }
-    );
+    std::generate_n(id.begin(), length, [] { return B58_ALPHABET[get<unsigned char>(0x00, 0xff) % 58]; });
 
     return id;
 }

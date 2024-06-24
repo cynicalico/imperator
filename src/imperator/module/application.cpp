@@ -2,12 +2,18 @@
 
 namespace imp {
 Application::Application(ModuleMgr &module_mgr) : Module(module_mgr) {
+    audio = module_mgr_.get<AudioMgr>();
+    ctx = module_mgr_.get<GfxContext>();
     event_bus = module_mgr_.get<EventBus>();
     inputs = module_mgr_.get<InputMgr>();
-    ctx = module_mgr_.get<GfxContext>();
+    timers = module_mgr_.get<TimerMgr>();
     window = module_mgr_.get<Window>();
 
-    event_bus->sub<E_Update>(module_name_, {ModuleInfo<InputMgr>::name}, [&](const auto &p) { r_update_(p); });
+    event_bus->sub<E_Update>(
+            module_name_,
+            {ModuleInfo<AudioMgr>::name, ModuleInfo<InputMgr>::name},
+            [&](const auto &p) { r_update_(p); }
+    );
     event_bus->sub<E_Draw>(module_name_, [&](const auto &p) { r_draw_(p); });
 }
 

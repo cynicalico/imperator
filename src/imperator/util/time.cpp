@@ -17,8 +17,7 @@ double Stopwatch::elapsed_msec() const { return (end_ - start_) / 1e6; }
 
 double Stopwatch::elapsed_sec() const { return (end_ - start_) / 1e9; }
 
-Ticker::Ticker(double interval)
-        : interval_(static_cast<std::uint64_t>(interval * 1e9)) {
+Ticker::Ticker(double interval) : interval_(static_cast<std::uint64_t>(interval * 1e9)) {
     start_ = time_nsec();
     last_ = start_;
 }
@@ -82,10 +81,10 @@ std::uint64_t FrameCounter::update() {
     timestamps_.emplace_back(time_nsec());
 
     // Keep size >= 2 otherwise dt will give bad results on pauses longer than 1s
-    while (timestamps_.size() > 2 && timestamps_.back() - timestamps_.front() > 1e9) timestamps_.pop_front();
+    while (timestamps_.size() > 2 && timestamps_.back() - timestamps_.front() > 1e9) { timestamps_.pop_front(); }
 
     averager_.update(static_cast<double>(timestamps_.size()));
-    if (ticker_.tick()) averager_.alpha = 2.0 / (1.0 + static_cast<double>(timestamps_.size()));
+    if (ticker_.tick()) { averager_.alpha = 2.0 / (1.0 + static_cast<double>(timestamps_.size())); }
 
     return user_ticker_.tick();
 }
@@ -93,13 +92,13 @@ std::uint64_t FrameCounter::update() {
 double FrameCounter::fps() const { return averager_.value(); }
 
 std::uint64_t FrameCounter::ts() const {
-    if (timestamps_.empty()) return 0;
+    if (timestamps_.empty()) { return 0; }
 
     return timestamps_.back();
 }
 
 double FrameCounter::dt() const {
-    if (timestamps_.size() < 2) return 0;
+    if (timestamps_.size() < 2) { return 0; }
 
     return static_cast<double>(timestamps_.back() - timestamps_[timestamps_.size() - 2]) / 1e9;
 }

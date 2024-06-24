@@ -20,10 +20,12 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
             format = GL_RGB;
         } else if (image_data.comp() == 4) {
             format = GL_RGBA;
-        } else
+        } else {
             IMPERATOR_LOG_ERROR(
-            "Can't handle images with comp '{}', only 3 or 4 channels supported",
-            image_data.comp());
+                    "Can't handle images with comp '{}', only 3 or 4 channels supported",
+                    image_data.comp()
+            );
+        }
 
         if (format != GL_NONE) {
             w = image_data.w();
@@ -39,13 +41,9 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
             for (int y = 0; y < h; ++y) {
                 for (int x = 0; x < w; ++x) {
                     int alpha_ch = (y * w * 4) + (x * 4) + 3;
-                    if (image_data[alpha_ch] < 255) {
-                        fully_opaque = false;
-                    }
+                    if (image_data[alpha_ch] < 255) { fully_opaque = false; }
                 }
-                if (!fully_opaque) {
-                    break;
-                }
+                if (!fully_opaque) { break; }
             }
         }
     }
@@ -53,9 +51,7 @@ TextureUnit::TextureUnit(GfxContext &gfx, const std::filesystem::path &path, boo
     unbind();
 }
 
-TextureUnit::TextureUnit(GfxContext &gfx, TexFormat format, GLsizei w, GLsizei h, bool retro) : gl(gfx.gl),
-                                                                                                w(w),
-                                                                                                h(h) {
+TextureUnit::TextureUnit(GfxContext &gfx, TexFormat format, GLsizei w, GLsizei h, bool retro) : gl(gfx.gl), w(w), h(h) {
     gen_id_();
     bind();
 
@@ -71,16 +67,10 @@ TextureUnit::TextureUnit(GfxContext &gfx, TexFormat format, GLsizei w, GLsizei h
     unbind();
 }
 
-TextureUnit::~TextureUnit() {
-    del_id_();
-}
+TextureUnit::~TextureUnit() { del_id_(); }
 
 TextureUnit::TextureUnit(TextureUnit &&other) noexcept
-    : gl(other.gl),
-      id(other.id),
-      w(other.w),
-      h(other.h),
-      fully_opaque(other.fully_opaque) {
+    : gl(other.gl), id(other.id), w(other.w), h(other.h), fully_opaque(other.fully_opaque) {
     other.id = 0;
     other.w = 0;
     other.h = 0;
@@ -110,9 +100,7 @@ void TextureUnit::bind(int unit) {
     gl.BindTexture(GL_TEXTURE_2D, id);
 }
 
-void TextureUnit::unbind() {
-    gl.BindTexture(GL_TEXTURE_2D, 0);
-}
+void TextureUnit::unbind() { gl.BindTexture(GL_TEXTURE_2D, 0); }
 
 void TextureUnit::gen_id_() {
     gl.GenTextures(1, &id);
@@ -126,4 +114,4 @@ void TextureUnit::del_id_() {
         id = 0;
     }
 }
-} // namespace IMPERATOR
+} // namespace imp

@@ -1,12 +1,11 @@
-#include "imperator/util/log.h"
-
 #include "imperator/util/io.h"
+#include "imperator/util/log.h"
 #include "imperator/util/platform.h"
 #include "imperator/util/time.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #if defined(IMPERATOR_PLATFORM_WINDOWS)
-#include "windows.h"
+#    include "windows.h"
 #endif
 
 namespace imp {
@@ -42,29 +41,27 @@ std::shared_ptr<spdlog::sinks::dist_sink_mt> sinks() {
 }
 
 std::shared_ptr<spdlog::logger> logger() {
-    static auto logger = std::invoke(
-            [&] {
-                auto s = sinks();
+    static auto logger = std::invoke([&] {
+        auto s = sinks();
 
-                auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-                console_sink->set_color_mode(spdlog::color_mode::always);
-                s->add_sink(console_sink);
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        console_sink->set_color_mode(spdlog::color_mode::always);
+        s->add_sink(console_sink);
 
-                auto filename = fmt::format("{}.log", imp::timestamp());
-                auto path = (DATA_FOLDER / "log" / filename).string();
-                auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path);
-                s->add_sink(file_sink);
+        auto filename = fmt::format("{}.log", imp::timestamp());
+        auto path = (DATA_FOLDER / "log" / filename).string();
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path);
+        s->add_sink(file_sink);
 
-                auto l = std::make_shared<spdlog::logger>("imperator", s);
-                l->set_level(spdlog::level::trace);
+        auto l = std::make_shared<spdlog::logger>("imperator", s);
+        l->set_level(spdlog::level::trace);
 
 #if defined(IMPERATOR_PLATFORM_WINDOWS)
-                SetConsoleOutputCP(CP_UTF8);
+        SetConsoleOutputCP(CP_UTF8);
 #endif
 
-                return l;
-            }
-    );
+        return l;
+    });
 
     return logger;
 }

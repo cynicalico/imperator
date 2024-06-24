@@ -1,6 +1,6 @@
+#include "fmt/format.h"
 #include "imperator/util/sops.h"
 
-#include "fmt/format.h"
 #include <sstream>
 
 namespace imp {
@@ -37,10 +37,10 @@ std::vector<std::string> split(const std::string &s, char delim) {
 
     std::stringstream ss(s);
     std::string item;
-    while (getline(ss, item, delim)) res.push_back(item);
+    while (getline(ss, item, delim)) { res.push_back(item); }
 
     // This happens when there's a delimiter at the end with nothing after it
-    if (item.empty()) res.push_back(item);
+    if (item.empty()) { res.push_back(item); }
 
     return res;
 }

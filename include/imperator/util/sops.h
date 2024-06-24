@@ -2,6 +2,7 @@
 #define IMPERATOR_UTIL_SOPS_H
 
 #include "re2/re2.h"
+
 #include <string>
 #include <vector>
 
@@ -19,7 +20,6 @@ std::string rtrim_copy(std::string s);
 std::string trim_copy(std::string s);
 
 std::vector<std::string> split(const std::string &s, char delim);
-
 std::vector<std::string> split(const std::string &s, const std::string &delim);
 
 // Macro for declaring regex splits to use with split_re
@@ -42,7 +42,7 @@ std::vector<std::string> split_re(const std::string &s, const RE2 &regexp);
 
 namespace internal {
 template<typename R, typename F, typename... Args>
-std::optional<R> sto_opt(F &&f, Args &&... args) {
+std::optional<R> sto_opt(F &&f, Args &&...args) {
     std::optional<R> v{};
     try {
         v = f(std::forward<Args>(args)...);
@@ -100,4 +100,4 @@ std::optional<unsigned long long> stoull(const T &str, std::size_t *idx = nullpt
 }
 } // namespace imp
 
-#endif//IMPERATOR_UTIL_SOPS_H
+#endif //IMPERATOR_UTIL_SOPS_H

@@ -4,19 +4,20 @@
 #include "imperator/module/event_bus.h"
 #include "imperator/module/module_mgr.h"
 #include "imperator/module/window.h"
+
 #include <mutex>
+#include <queue>
 #include <unordered_map>
 #include <vector>
-#include <queue>
 
 namespace imp {
 enum class Mods {
-    none    = 0,
-    shift   = 1 << 0,
-    ctrl    = 1 << 1,
-    alt     = 1 << 2,
-    super   = 1 << 3,
-    caps    = 1 << 4,
+    none = 0,
+    shift = 1 << 0,
+    ctrl = 1 << 1,
+    alt = 1 << 2,
+    super = 1 << 3,
+    caps = 1 << 4,
     numlock = 1 << 5
 };
 
@@ -35,19 +36,15 @@ public:
     bool released(const std::string &name, const Mods &mods = Mods::none);
 
     bool down(const std::string &name, const Mods &mods, double interval = 0.0, double delay = 0.0);
-
     bool down(const std::string &name, double interval = 0.0, double delay = 0.0);
 
     double mouse_x() const;
-
     double mouse_y() const;
 
     double mouse_px() const;
-
     double mouse_py() const;
 
     double mouse_dx() const;
-
     double mouse_dy() const;
 
     bool mouse_moved() const;
@@ -55,11 +52,9 @@ public:
     bool mouse_got_first_event() const;
 
     double mouse_sx() const;
-
     double mouse_sy() const;
 
     bool mouse_entered() const;
-
     bool mouse_left() const;
 
 private:
@@ -118,17 +113,11 @@ private:
     std::queue<PendingAction> action_queue_{};
 
     void r_update_(const E_Update &p);
-
     void r_glfw_key_(const E_GlfwKey &p);
-
     void r_glfw_character_(const E_GlfwCharacter &p);
-
     void r_glfw_cursor_pos_(const E_GlfwCursorPos &p);
-
     void r_glfw_cursor_enter_(const E_GlfwCursorEnter &p);
-
     void r_glfw_mouse_button_(const E_GlfwMouseButton &p);
-
     void r_glfw_scroll_(const E_GlfwScroll &p);
 };
 } // namespace imp
@@ -137,4 +126,4 @@ ENUM_ENABLE_BITOPS(imp::Mods);
 
 IMPERATOR_DECLARE_MODULE(imp::InputMgr);
 
-#endif//IMPERATOR_MODULE_INPUT_MGR_H
+#endif //IMPERATOR_MODULE_INPUT_MGR_H

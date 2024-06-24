@@ -5,6 +5,7 @@
 
 #include "GLFW/glfw3.h"
 #include "stb_image.h"
+
 #include <filesystem>
 #include <vector>
 
@@ -55,4 +56,4 @@ private:
 const std::filesystem::path DATA_FOLDER = std::filesystem::current_path() / "data";
 } // namespace imp
 
-#endif//IMPERATOR_UTIL_IO_H
+#endif //IMPERATOR_UTIL_IO_H

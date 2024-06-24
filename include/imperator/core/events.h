@@ -119,4 +119,4 @@ struct E_GlfwDrop {
 };
 } // namespace imp
 
-#endif//IMPERATOR_CORE_EVENTS_HPP
+#endif //IMPERATOR_CORE_EVENTS_HPP

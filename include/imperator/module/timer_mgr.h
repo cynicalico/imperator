@@ -4,6 +4,7 @@
 #include "imperator/module/event_bus.h"
 #include "imperator/module/module_mgr.h"
 #include "imperator/util/rnd.h"
+
 #include <concepts>
 #include <functional>
 #include <string>
@@ -56,9 +57,9 @@ public:
     std::string after(double delay, T &&f);
 
     template<EveryFunc T, AfterFunc T2 = no_op>
-    std::string every(
-            const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f,
-            T2 &&after_f = T2());
+    std::string
+            every(const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f,
+                  T2 &&after_f = T2());
 
     template<EveryFunc T, AfterFunc T2 = no_op>
     std::string every(const std::string &tag, double delay, std::int64_t count, T &&f, T2 &&after_f = T2());
@@ -82,9 +83,9 @@ public:
     std::string every(double delay, T &&f, T2 &&after_f = T2());
 
     template<UntilFunc T, AfterFunc T2 = no_op>
-    std::string until(
-            const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f,
-            T2 &&after_f = T2());
+    std::string
+            until(const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f,
+                  T2 &&after_f = T2());
 
     template<UntilFunc T, AfterFunc T2 = no_op>
     std::string until(const std::string &tag, double delay, std::int64_t count, T &&f, T2 &&after_f = T2());
@@ -128,8 +129,7 @@ private:
     struct AfterTimer : public TimerI {
         AfterFunc f;
 
-        AfterTimer(double delay, AfterFunc &&f)
-                : TimerI(delay), f(std::forward<AfterFunc>(f)) {}
+        AfterTimer(double delay, AfterFunc &&f) : TimerI(delay), f(std::forward<AfterFunc>(f)) {}
 
         void update(double dt) override;
 
@@ -144,8 +144,8 @@ private:
         std::int64_t count, count_acc{0};
 
         EveryTimer(const std::vector<double> &delay_opts, std::int64_t count, EveryFunc &&f, AfterFunc &&f2)
-                : TimerI(rnd::choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<EveryFunc>(f)),
-                  f2(std::forward<AfterFunc>(f2)) {}
+            : TimerI(rnd::choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<EveryFunc>(f)),
+              f2(std::forward<AfterFunc>(f2)) {}
 
         void update(double dt) override;
 
@@ -160,8 +160,8 @@ private:
         std::int64_t count, count_acc{0};
 
         UntilTimer(const std::vector<double> &delay_opts, std::int64_t count, UntilFunc &&f, AfterFunc &&f2)
-                : TimerI(rnd::choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<UntilFunc>(f)),
-                  f2(std::forward<AfterFunc>(f2)) {}
+            : TimerI(rnd::choose(delay_opts)), delay_opts(delay_opts), count(count), f(std::forward<UntilFunc>(f)),
+              f2(std::forward<AfterFunc>(f2)) {}
 
         void update(double dt) override;
 
@@ -186,13 +186,10 @@ std::string TimerMgr::after(double delay, T &&f) {
 
 template<EveryFunc T, AfterFunc T2>
 std::string TimerMgr::every(
-        const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f,
-        T2 &&after_f) {
-    timers_[tag] = std::make_unique<EveryTimer<T, T2>>(
-            delay_opts,
-            count,
-            std::forward<T>(f),
-            std::forward<T2>(after_f));
+        const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f, T2 &&after_f
+) {
+    timers_[tag] =
+            std::make_unique<EveryTimer<T, T2>>(delay_opts, count, std::forward<T>(f), std::forward<T2>(after_f));
     return tag;
 }
 
@@ -233,13 +230,10 @@ std::string TimerMgr::every(double delay, T &&f, T2 &&after_f) {
 
 template<UntilFunc T, AfterFunc T2>
 std::string TimerMgr::until(
-        const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f,
-        T2 &&after_f) {
-    timers_[tag] = std::make_unique<UntilTimer<T, T2>>(
-            delay_opts,
-            count,
-            std::forward<T>(f),
-            std::forward<T2>(after_f));
+        const std::string &tag, const std::vector<double> &delay_opts, std::int64_t count, T &&f, T2 &&after_f
+) {
+    timers_[tag] =
+            std::make_unique<UntilTimer<T, T2>>(delay_opts, count, std::forward<T>(f), std::forward<T2>(after_f));
     return tag;
 }
 
@@ -282,9 +276,7 @@ template<typename T>
 void TimerMgr::AfterTimer<T>::update(double dt) {
     acc += dt;
 
-    if (acc >= delay) {
-        should_fire = true;
-    }
+    if (acc >= delay) { should_fire = true; }
 }
 
 template<typename T>
@@ -298,9 +290,7 @@ template<typename T, typename T2>
 void TimerMgr::EveryTimer<T, T2>::update(double dt) {
     acc += dt;
 
-    if (acc >= delay) {
-        should_fire = true;
-    }
+    if (acc >= delay) { should_fire = true; }
 }
 
 template<typename T, typename T2>
@@ -311,46 +301,34 @@ void TimerMgr::EveryTimer<T, T2>::fire() {
     delay = rnd::choose(delay_opts);
 
     count_acc++;
-    if (count_acc == count) {
-        expired = true;
-    }
+    if (count_acc == count) { expired = true; }
 
-    if (expired) {
-        f2();
-    }
+    if (expired) { f2(); }
 }
 
 template<typename T, typename T2>
 void TimerMgr::UntilTimer<T, T2>::update(double dt) {
     acc += dt;
 
-    if (acc >= delay) {
-        should_fire = true;
-    }
+    if (acc >= delay) { should_fire = true; }
 }
 
 template<typename T, typename T2>
 void TimerMgr::UntilTimer<T, T2>::fire() {
     bool should_continue = f();
-    if (!should_continue) {
-        expired = true;
-    }
+    if (!should_continue) { expired = true; }
 
     should_fire = false;
     acc -= delay;
     delay = rnd::choose(delay_opts);
 
     count_acc++;
-    if (count_acc == count) {
-        expired = true;
-    }
+    if (count_acc == count) { expired = true; }
 
-    if (expired) {
-        f2();
-    }
+    if (expired) { f2(); }
 }
 } // namespace imp
 
 IMPERATOR_DECLARE_MODULE(imp::TimerMgr);
 
-#endif//IMPERATOR_MODULE_TIMER_MGR_H
+#endif //IMPERATOR_MODULE_TIMER_MGR_H
