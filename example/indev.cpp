@@ -16,10 +16,9 @@ public:
         if (dt == 0) { return; }
         if (inputs->pressed("escape")) { window->set_should_close(true); }
 
-        if (inputs->pressed("mb_left")) {
-            IMPERATOR_LOG_INFO("Select!");
-            audio->play_sound(select_sound);
-        }
+        if (inputs->pressed("mb_left")) { audio->play_sound(select_sound); }
+
+        if (inputs->pressed("mb_right")) { audio->unload_sound(select_sound); }
     }
 
     void draw() override { g2d->clear(imp::rgb(0x000000)); }
