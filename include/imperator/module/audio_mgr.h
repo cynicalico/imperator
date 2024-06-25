@@ -12,6 +12,14 @@
 #include <unordered_map>
 
 namespace imp {
+inline LPALCREOPENDEVICESOFT alcReopenDeviceSOFT;
+inline LPALEVENTCONTROLSOFT alEventControlSOFT;
+inline LPALEVENTCALLBACKSOFT alEventCallbackSOFT;
+
+inline LPALCEVENTISSUPPORTEDSOFT alcEventIsSupportedSOFT;
+inline LPALCEVENTCONTROLSOFT alcEventControlSOFT;
+inline LPALCEVENTCALLBACKSOFT alcEventCallbackSOFT;
+
 struct Sound {
     ALuint buffer{0}; // 0 if empty
 
@@ -53,6 +61,15 @@ private:
 
     static bool check_al_errors_();
     static bool check_alc_errors_(ALCdevice *device);
+
+    static void al_event_callback_(
+            ALenum eventType, ALuint object, ALuint param, ALsizei length, const ALchar *message, void *userParam
+    );
+
+    static void alc_event_callback_(
+            ALCenum eventType, ALCenum deviceType, ALCdevice *device, ALCsizei length, const ALCchar *message,
+            void *userParam
+    );
 };
 } // namespace imp
 

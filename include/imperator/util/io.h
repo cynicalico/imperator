@@ -4,10 +4,17 @@
 #define GLFW_INCLUDE_NONE
 
 #include "GLFW/glfw3.h"
+#include "imperator/util/platform.h"
 #include "stb_image.h"
 
 #include <filesystem>
 #include <vector>
+
+#if defined(IMPERATOR_PLATFORM_WINDOWS)
+#    define IMPERATOR_PATH(x) L##x
+#else
+#    define IMPERATOR_PATH(x) x
+#endif
 
 namespace imp {
 class ImageData {
@@ -15,31 +22,24 @@ public:
     explicit ImageData(const std::filesystem::path &path, int desired_channels = 0);
 
     ImageData(std::size_t w, std::size_t h, std::size_t channels = 4);
-
     ~ImageData();
 
     ImageData(const ImageData &) = delete;
-
     ImageData &operator=(const ImageData &) = delete;
 
     ImageData(ImageData &&other) noexcept;
-
     ImageData &operator=(ImageData &&other) noexcept;
 
     stbi_uc &operator[](std::size_t index);
-
     const stbi_uc &operator[](std::size_t index) const;
 
     stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component);
-
     const stbi_uc &operator()(std::size_t r, std::size_t c, std::size_t component) const;
 
     stbi_uc *bytes();
 
     int w() const;
-
     int h() const;
-
     int comp() const;
 
     GLFWimage glfw_image();

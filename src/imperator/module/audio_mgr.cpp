@@ -2,6 +2,7 @@
 #include "imperator/util/log.h"
 #include "imperator/util/platform.h"
 
+#include <typeinfo>
 #include <windows.h>
 
 namespace imp {
@@ -65,12 +66,16 @@ AudioMgr::AudioMgr(ModuleMgr &module_mgr) : Module(module_mgr) {
 
     event_bus->sub<E_Update>(module_name_, [&](const auto &p) { r_update_(p); });
 
-    auto default_device_name = available_devices()[0];
-
-    device_ = alcOpenDevice(default_device_name.c_str());
+    device_ = alcOpenDevice(nullptr);
     if (!device_ || !check_alc_errors_(device_)) {
         IMPERATOR_LOG_ERROR("Failed to open OpenAL device!");
         return;
+    }
+
+    if (alcIsExtensionPresent(device_, "ALC_SOFT_reopen_device")) {
+        alcReopenDeviceSOFT = static_cast<LPALCREOPENDEVICESOFT>(alcGetProcAddress(device_, "alcReopenDeviceSOFT"));
+    } else {
+        IMPERATOR_LOG_WARN("ALC_SOFT_reopen_device not supported");
     }
 
     ctx_ = alcCreateContext(device_, nullptr);
@@ -86,6 +91,36 @@ AudioMgr::AudioMgr(ModuleMgr &module_mgr) : Module(module_mgr) {
         alcCloseDevice(device_);
         IMPERATOR_LOG_ERROR("Failed to make OpenAL context current");
         return;
+    }
+
+    auto vendor = alGetString(AL_VENDOR);
+    auto version = alGetString(AL_VERSION);
+    auto renderer = alGetString(AL_RENDERER);
+    IMPERATOR_LOG_DEBUG("{}, {}, {}", vendor, version, renderer);
+
+    if (alIsExtensionPresent("AL_SOFT_events")) {
+        alEventControlSOFT = static_cast<LPALEVENTCONTROLSOFT>(alGetProcAddress("alEventControlSOFT"));
+        alEventCallbackSOFT = static_cast<LPALEVENTCALLBACKSOFT>(alGetProcAddress("alEventCallbackSOFT"));
+
+        const ALenum types[3] = {
+            AL_EVENT_TYPE_BUFFER_COMPLETED_SOFT,
+            AL_EVENT_TYPE_SOURCE_STATE_CHANGED_SOFT,
+            AL_EVENT_TYPE_DISCONNECTED_SOFT
+        };
+        alEventControlSOFT(sizeof(types) / sizeof(ALenum), types, AL_TRUE);
+        alEventCallbackSOFT(al_event_callback_, nullptr);
+    } else {
+        IMPERATOR_LOG_WARN("AL_SOFT_events not supported");
+    }
+
+    if (alcIsExtensionPresent(device_, "ALC_SOFT_system_events")) {
+        alcEventIsSupportedSOFT = static_cast<LPALCEVENTISSUPPORTEDSOFT>(alcGetProcAddress(device_, "alcEventIsSupportedSOFT"));
+        alcEventControlSOFT = static_cast<LPALCEVENTCONTROLSOFT>(alcGetProcAddress(device_, "alcEventControlSOFT"));
+        alcEventCallbackSOFT = static_cast<LPALCEVENTCALLBACKSOFT>(alcGetProcAddress(device_, "alcEventCallbackSOFT"));
+
+        alcEventCallbackSOFT(alc_event_callback_, nullptr);
+    } else {
+        IMPERATOR_LOG_WARN("ALC_SOFT_system_events not supported");
     }
 
     const ALCchar *name{};
@@ -137,13 +172,14 @@ Sound AudioMgr::load_sound(const std::filesystem::path &path) {
         frames -= m * (60 * sound.sfinfo.samplerate);
         sf_count_t s = frames / sound.sfinfo.samplerate;
         frames -= s * sound.sfinfo.samplerate;
+        sf_count_t ms = (sf_count_t)(1000 * ((double)frames / sound.sfinfo.samplerate));
 
         IMPERATOR_LOG_DEBUG(
                 "Loaded: {} ({}, {}hz, {})",
                 sound.path,
                 FormatName(sound.format),
                 sound.sfinfo.samplerate,
-                fmt::format("{:02}:{:02}:{:02}.{}", h, m, s, frames)
+                fmt::format("{}{}{:02}:{:02}.{:03}", h == 0 ? "" : fmt::to_string(h), h == 0 ? "" : ":", m, s, ms)
         );
     }
     return sound;
@@ -461,5 +497,29 @@ bool AudioMgr::check_alc_errors_(ALCdevice *device) {
         return false;
     }
     return true;
+}
+
+void AudioMgr::al_event_callback_(
+        ALenum eventType, ALuint object, ALuint param, ALsizei length, const ALchar *message, void *userParam
+) {
+#define STRINGIFY(e) \
+    case e: return #e;
+    std::string eventType_string = std::invoke([eventType] {
+        switch (eventType) {
+            STRINGIFY(AL_EVENT_TYPE_BUFFER_COMPLETED_SOFT)
+            STRINGIFY(AL_EVENT_TYPE_SOURCE_STATE_CHANGED_SOFT)
+            STRINGIFY(AL_EVENT_TYPE_DISCONNECTED_SOFT)
+        default: return "?";
+        }
+    });
+#undef STRINGIFY
+    IMPERATOR_LOG_INFO("{}", eventType_string);
+}
+
+void AudioMgr::alc_event_callback_(
+        ALCenum eventType, ALCenum deviceType, ALCdevice *device, ALCsizei length, const ALCchar *message,
+        void *userParam
+) {
+    IMPERATOR_LOG_INFO("alc event");
 }
 } // namespace imp
