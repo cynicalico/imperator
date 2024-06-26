@@ -2,7 +2,7 @@
 #define IMPERATOR_CORE_EVENTS_HPP
 
 #define GLFW_INCLUDE_NONE
-
+#include "AL/alext.h"
 #include "GLFW/glfw3.h"
 
 namespace imp {
@@ -17,6 +17,30 @@ struct E_StartFrame {};
 struct E_Draw {};
 
 struct E_EndFrame {};
+
+struct E_DefaultDeviceChangedSOFT {
+    ALCenum eventType;
+    ALCenum deviceType;
+    ALCdevice *device;
+    ALCsizei length;
+    const ALCchar *message;
+};
+
+struct E_DeviceAddedSOFT {
+    ALCenum eventType;
+    ALCenum deviceType;
+    ALCdevice *device;
+    ALCsizei length;
+    const ALCchar *message;
+};
+
+struct E_DeviceRemoveddSOFT {
+    ALCenum eventType;
+    ALCenum deviceType;
+    ALCdevice *device;
+    ALCsizei length;
+    const ALCchar *message;
+};
 
 struct E_GlfwWindowClose {
     GLFWwindow *window;

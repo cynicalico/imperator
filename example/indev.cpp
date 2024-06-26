@@ -8,7 +8,7 @@ public:
     explicit Indev(imp::ModuleMgr &module_mgr) : Application(module_mgr) {
         g2d = module_mgr_.create<imp::G2D>();
 
-        select_sound = audio->load_sound(IMPERATOR_PATH("example/data/sound/【重音テト】Close to you【UTAUカバー】.mp3"));
+        select_sound = audio->load_sound(IMPERATOR_PATH("example/data/sound/【Yokune Ruko♂】God-ish【UTAU cover】.mp3"));
     }
 
     void update(double dt) override {
@@ -21,7 +21,7 @@ public:
             if (select_sound.buffer != 0) {
                 audio->unload_sound(select_sound);
             } else {
-                select_sound = audio->load_sound(IMPERATOR_PATH("example/data/sound/【重音テト】Close to you【UTAUカバー】.mp3"));
+                select_sound = audio->load_sound(IMPERATOR_PATH("example/data/sound/【Yokune Ruko♂】God-ish【UTAU cover】.mp3"));
             }
         }
     }

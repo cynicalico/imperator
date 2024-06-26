@@ -56,6 +56,7 @@ private:
     std::unordered_map<ALuint, std::vector<ALuint>> sources_{};
 
     void r_update_(const E_Update &p);
+    void r_default_device_changed_soft_(const E_DefaultDeviceChangedSOFT &p);
 
     static Sound load_sound_(const std::filesystem::path &path);
 
